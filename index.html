@@ -59,7 +59,7 @@
         .nav {
             position: sticky;
             top: 0;
-            background: var(--white);
+            background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.98) 100%);
             box-shadow: var(--shadow-sm);
             z-index: 1000;
             padding: 16px 0;
@@ -68,7 +68,7 @@
 
         .nav.scrolled {
             backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
             box-shadow: var(--shadow-md);
         }
 
@@ -194,12 +194,12 @@
         }
 
         .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02);
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
         }
 
         .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.98);
         }
 
         .btn-secondary {
@@ -211,6 +211,7 @@
         .btn-secondary:hover:not(:disabled) {
             background: var(--light-gray);
             border-color: var(--text-gray);
+            transform: translateY(-1px);
         }
 
         .btn-small {
@@ -298,7 +299,7 @@
         }
 
         .btn-white:hover {
-            transform: translateY(-3px);
+            transform: translateY(-3px) scale(1.02);
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4);
         }
 
@@ -353,6 +354,7 @@
             outline: none;
             border-color: var(--primary-blue);
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            transform: translateY(-1px);
         }
 
         .filter-actions {
@@ -370,6 +372,49 @@
         .sort-dropdown {
             margin-left: auto;
             min-width: 200px;
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            min-height: 32px;
+        }
+
+        .filter-chip {
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .filter-chip-close {
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            transition: var(--transition);
+        }
+
+        .filter-chip-close:hover {
+            transform: scale(1.2);
         }
 
         .jobs-section {
@@ -395,6 +440,7 @@
             color: var(--text-gray);
             font-size: 16px;
             font-weight: 500;
+            transition: var(--transition);
         }
 
         .jobs-grid {
@@ -406,7 +452,7 @@
 
         .job-card {
             background: var(--white);
-            padding: 26px;
+            padding: 28px;
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
@@ -435,9 +481,24 @@
         }
 
         .job-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-8px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-blue);
+        }
+
+        .job-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: var(--white);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
         }
 
         .job-header {
@@ -473,8 +534,8 @@
         }
 
         .job-salary {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -507,7 +568,7 @@
         }
 
         .btn-apply {
-            padding: 9px 22px;
+            padding: 10px 24px;
             font-size: 14px;
         }
 
@@ -820,16 +881,30 @@
             margin-top: 6px;
             display: none;
             font-weight: 600;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
         .form-group.error input,
         .form-group.error select,
         .form-group.error textarea {
             border-color: var(--error);
+            animation: shake 0.3s ease;
         }
 
         .form-group.error .form-error {
             display: block;
+        }
+
+        .form-group.success input,
+        .form-group.success select,
+        .form-group.success textarea {
+            border-color: var(--success);
         }
 
         .password-toggle {
@@ -840,10 +915,12 @@
             color: var(--text-gray);
             font-size: 18px;
             user-select: none;
+            transition: var(--transition);
         }
 
         .password-toggle:hover {
             color: var(--text-dark);
+            transform: scale(1.1);
         }
 
         .empty-state {
@@ -859,6 +936,12 @@
             font-size: 72px;
             margin-bottom: 24px;
             opacity: 0.6;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .empty-state h3 {
@@ -988,6 +1071,7 @@
         .pagination-btn:hover:not(:disabled) {
             background: var(--light-gray);
             border-color: var(--primary-blue);
+            transform: translateY(-2px);
         }
 
         .pagination-btn:disabled {
@@ -1050,6 +1134,7 @@
 
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
         }
 
         .profile-title {
@@ -1072,6 +1157,7 @@
         .profile-avatar-section {
             text-align: center;
             margin-bottom: 40px;
+            animation: fadeInUp 0.5s ease;
         }
 
         .profile-avatar-display {
@@ -1089,6 +1175,12 @@
             overflow: hidden;
             border: 4px solid var(--white);
             box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .profile-avatar-display:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(37, 99, 235, 0.3);
         }
 
         .profile-avatar-display img {
@@ -1111,6 +1203,11 @@
             color: var(--primary-blue);
             font-weight: 600;
             text-decoration: underline;
+            transition: var(--transition);
+        }
+
+        .avatar-upload label:hover {
+            color: var(--blue-hover);
         }
 
         .profile-info {
@@ -1139,6 +1236,20 @@
         .profile-info-value {
             font-weight: 600;
             color: var(--text-dark);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -1208,6 +1319,18 @@
             .logo {
                 font-size: 24px;
             }
+
+            .job-card {
+                padding: 24px;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .filter-actions .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -1262,6 +1385,7 @@
                     <option value="salary-asc">По возрастанию зарплаты</option>
                 </select>
             </div>
+            <div class="filter-chips" id="filterChips"></div>
         </section>
 
         <section class="jobs-section">
@@ -1527,6 +1651,7 @@
     </div>
 
     <script>
+        /* ================= DATA ================= */
         const JOBS = [
             {
                 id: 1,
@@ -1535,7 +1660,8 @@
                 city: 'Санкт-Петербург',
                 salary: 30000,
                 type: 'Сезонная, частичная занятость, на свежем воздухе',
-                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии по Санкт-Петербургу. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.'
+                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии по Санкт-Петербургу. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.',
+                isNew: true
             },
             {
                 id: 2,
@@ -1544,7 +1670,8 @@
                 city: 'Санкт-Петербург',
                 salary: 35000,
                 type: 'Постоянная, сменный график',
-                description: 'Прием заказов, расчет на кассе, выдача заказов. Работа круглый год. Бонусы для сотрудников.'
+                description: 'Прием заказов, расчет на кассе, выдача заказов. Работа круглый год. Бонусы для сотрудников.',
+                isNew: true
             },
             {
                 id: 3,
@@ -1553,7 +1680,8 @@
                 city: 'Санкт-Петербург',
                 salary: 40000,
                 type: 'Сменный график, торговля',
-                description: 'Продажа мороженого. Работа с товаром, расчет на кассе, поддержание чистоты.'
+                description: 'Продажа мороженого. Работа с товаром, расчет на кассе, поддержание чистоты.',
+                isNew: false
             },
             {
                 id: 4,
@@ -1562,7 +1690,8 @@
                 city: 'Санкт-Петербург',
                 salary: 40000,
                 type: 'Частичная занятость, сменный график',
-                description: 'Сбор онлайн-заказов, проверка сроков годности, передача курьерам.'
+                description: 'Сбор онлайн-заказов, проверка сроков годности, передача курьерам.',
+                isNew: false
             },
             {
                 id: 5,
@@ -1571,7 +1700,8 @@
                 city: 'Санкт-Петербург',
                 salary: 45000,
                 type: 'Постоянная, сменный график',
-                description: 'Прием заказов, расчет, выдача, общение с клиентами.'
+                description: 'Прием заказов, расчет, выдача, общение с клиентами.',
+                isNew: true
             },
             {
                 id: 6,
@@ -1580,7 +1710,8 @@
                 city: 'Санкт-Петербург',
                 salary: 14000,
                 type: 'Частичная занятость, временная',
-                description: 'Уборка территорий в парках. Работа на свежем воздухе. Подходит для подростков.'
+                description: 'Уборка территорий в парках. Работа на свежем воздухе. Подходит для подростков.',
+                isNew: false
             }
         ];
 
@@ -1590,7 +1721,8 @@
             currentPage: 1,
             jobsPerPage: 6,
             currentUser: null,
-            users: []
+            users: [],
+            activeFilters: {}
         };
 
         const STORAGE = {
@@ -1602,60 +1734,61 @@
             'about': {
                 title: 'О платформе',
                 body: `
-                    <h3 style="margin-bottom: 16px;">Кто мы</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.7;">TeenWork — первая в России платформа для поиска работы подростками 14-18 лет. Мы создали безопасную среду для получения первого трудового опыта.</p>
-                    <h3 style="margin-bottom: 16px;">Наша миссия</h3>
-                    <p style="line-height: 1.7;">Помочь подросткам получить первый опыт работы в легальных условиях, развить навыки и стать финансово независимыми.</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Кто мы</h3>
+                    <p style="margin-bottom: 16px; line-height: 1.7; color: var(--text-gray);">TeenWork — первая в России платформа для поиска работы подростками 14-18 лет. Мы создали безопасную среду для получения первого трудового опыта.</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Наша миссия</h3>
+                    <p style="line-height: 1.7; color: var(--text-gray);">Помочь подросткам получить первый опыт работы в легальных условиях, развить навыки и стать финансово независимыми.</p>
                 `
             },
             'how-it-works': {
                 title: 'Как это работает',
                 body: `
-                    <h3 style="margin-bottom: 16px;">Для подростков</h3>
-                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>1. Регистрация</strong><br>Создайте аккаунт за пару минут</p>
-                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>2. Поиск</strong><br>Используйте фильтры для поиска подходящей работы</p>
-                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>3. Отклик</strong><br>Отправьте заявку работодателю</p>
-                    <p style="line-height: 1.7;"><strong>4. Работа</strong><br>Получите официальное трудоустройство</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Для подростков</h3>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">1. Регистрация</strong><br>Создайте аккаунт за пару минут</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">2. Поиск</strong><br>Используйте фильтры для поиска подходящей работы</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">3. Отклик</strong><br>Отправьте заявку работодателю</p>
+                    <p style="line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">4. Работа</strong><br>Получите официальное трудоустройство</p>
                 `
             },
             'safety': {
                 title: 'Безопасность',
                 body: `
-                    <h3 style="margin-bottom: 16px;">Проверка работодателей</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.7;">Все компании проходят многоуровневую верификацию перед размещением вакансий.</p>
-                    <h3 style="margin-bottom: 16px;">Права подростков</h3>
-                    <p style="line-height: 1.7;">Мы следим за соблюдением трудового законодательства РФ: сокращенный рабочий день, запрет на ночные смены, безопасные условия труда.</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Проверка работодателей</h3>
+                    <p style="margin-bottom: 16px; line-height: 1.7; color: var(--text-gray);">Все компании проходят многоуровневую верификацию перед размещением вакансий.</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Права подростков</h3>
+                    <p style="line-height: 1.7; color: var(--text-gray);">Мы следим за соблюдением трудового законодательства РФ: сокращенный рабочий день, запрет на ночные смены, безопасные условия труда.</p>
                 `
             },
             'employers': {
                 title: 'Работодателям',
                 body: `
-                    <h3 style="margin-bottom: 16px;">Размещение вакансий</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.7;">Для размещения вакансий необходимо пройти верификацию и предоставить документы компании.</p>
-                    <h3 style="margin-bottom: 16px;">Требования</h3>
-                    <p style="line-height: 1.7;">Вакансии должны соответствовать требованиям ТК РФ для несовершеннолетних сотрудников.</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Размещение вакансий</h3>
+                    <p style="margin-bottom: 16px; line-height: 1.7; color: var(--text-gray);">Для размещения вакансий необходимо пройти верификацию и предоставить документы компании.</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Требования</h3>
+                    <p style="line-height: 1.7; color: var(--text-gray);">Вакансии должны соответствовать требованиям ТК РФ для несовершеннолетних сотрудников.</p>
                 `
             },
             'support': {
                 title: 'Поддержка',
                 body: `
-                    <h3 style="margin-bottom: 16px;">Свяжитесь с нами</h3>
-                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>Email:</strong> support@teenwork.ru</p>
-                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>Телефон:</strong> +7 (495) 123-45-67</p>
-                    <p style="line-height: 1.7;"><strong>Время работы:</strong> Пн-Пт, 9:00-18:00 (МСК)</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Свяжитесь с нами</h3>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">Email:</strong> support@teenwork.ru</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">Телефон:</strong> +7 (495) 123-45-67</p>
+                    <p style="line-height: 1.7; color: var(--text-gray);"><strong style="color: var(--text-dark);">Время работы:</strong> Пн-Пт, 9:00-18:00 (МСК)</p>
                 `
             },
             'legal': {
                 title: 'Правовая информация',
                 body: `
-                    <h3 style="margin-bottom: 16px;">Документы</h3>
-                    <p style="margin-bottom: 12px; line-height: 1.7;">• Пользовательское соглашение</p>
-                    <p style="margin-bottom: 12px; line-height: 1.7;">• Политика конфиденциальности</p>
-                    <p style="line-height: 1.7;">• Условия использования платформы</p>
+                    <h3 style="margin-bottom: 16px; font-weight: 700;">Документы</h3>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);">• Пользовательское соглашение</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7; color: var(--text-gray);">• Политика конфиденциальности</p>
+                    <p style="line-height: 1.7; color: var(--text-gray);">• Условия использования платформы</p>
                 `
             }
         };
 
+        /* ================= AUTH ================= */
         function initStorage() {
             try {
                 const storedUsers = localStorage.getItem(STORAGE.USERS);
@@ -1690,33 +1823,6 @@
             }
         }
 
-        function showToast(title, message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icons = {
-                success: '✓',
-                error: '✕',
-                warning: '⚠'
-            };
-
-            toast.innerHTML = `
-                <div class="toast-icon">${icons[type]}</div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-            `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('hiding');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
-        }
-
         function updateNavbar() {
             const navActions = document.getElementById('navActions');
             
@@ -1726,16 +1832,26 @@
                     ? `<img src="${STATE.currentUser.avatar}" alt="Avatar">` 
                     : initial;
                 
-                navActions.innerHTML = `
-                    <div class="user-avatar" onclick="openProfile()">
-                        ${avatarContent}
-                    </div>
-                `;
+                navActions.style.opacity = '0';
+                setTimeout(() => {
+                    navActions.innerHTML = `
+                        <div class="user-avatar" onclick="openProfile()">
+                            ${avatarContent}
+                        </div>
+                    `;
+                    navActions.style.transition = 'opacity 0.3s ease';
+                    navActions.style.opacity = '1';
+                }, 150);
             } else {
-                navActions.innerHTML = `
-                    <button class="btn btn-secondary" onclick="openModal('loginModal')">Войти</button>
-                    <button class="btn btn-secondary" onclick="openModal('registerModal')">Регистрация</button>
-                `;
+                navActions.style.opacity = '0';
+                setTimeout(() => {
+                    navActions.innerHTML = `
+                        <button class="btn btn-secondary" onclick="openModal('loginModal')">Войти</button>
+                        <button class="btn btn-secondary" onclick="openModal('registerModal')">Регистрация</button>
+                    `;
+                    navActions.style.transition = 'opacity 0.3s ease';
+                    navActions.style.opacity = '1';
+                }, 150);
             }
         }
 
@@ -1781,65 +1897,94 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const email = formData.get('email');
-            const password = formData.get('password');
-
-            const user = STATE.users.find(u => u.email === email);
             
-            if (!user || user.password !== password) {
-                const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
-                formGroup.classList.add('error');
-                return;
-            }
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span>';
+            
+            setTimeout(() => {
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const password = formData.get('password');
 
-            STATE.currentUser = user;
-            saveCurrentUser();
-            updateNavbar();
-            closeModal('loginModal');
-            showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
+                const user = STATE.users.find(u => u.email === email);
+                
+                if (!user || user.password !== password) {
+                    const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
+                    formGroup.classList.add('error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+
+                STATE.currentUser = user;
+                saveCurrentUser();
+                updateNavbar();
+                closeModal('loginModal');
+                showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 800);
         }
 
         function handleRegister(e) {
             e.preventDefault();
             
-            if (!validateForm(e.target)) {
-                showToast('Ошибка', 'Заполните все поля корректно', 'error');
-                return;
-            }
-
-            const formData = new FormData(e.target);
-            const email = formData.get('email');
-            const password = formData.get('password');
-            const nickname = formData.get('nickname');
-
-            if (STATE.users.find(u => u.email === email)) {
-                showToast('Ошибка', 'Пользователь с таким email уже существует', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
-                formGroup.classList.add('error');
-                return;
-            }
-
-            const newUser = {
-                email,
-                password,
-                nickname,
-                avatar: null,
-                createdAt: Date.now()
-            };
-
-            STATE.users.push(newUser);
-            STATE.currentUser = newUser;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span>';
             
-            saveUsers();
-            saveCurrentUser();
-            updateNavbar();
-            closeModal('registerModal');
-            showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+            setTimeout(() => {
+                if (!validateForm(e.target)) {
+                    showToast('Ошибка', 'Заполните все поля корректно', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const password = formData.get('password');
+                const nickname = formData.get('nickname');
+
+                if (STATE.users.find(u => u.email === email)) {
+                    showToast('Ошибка', 'Пользователь с таким email уже существует', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+
+                if (password.length < 6) {
+                    const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
+                    formGroup.classList.add('error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+
+                const newUser = {
+                    email,
+                    password,
+                    nickname,
+                    avatar: null,
+                    createdAt: Date.now()
+                };
+
+                STATE.users.push(newUser);
+                STATE.currentUser = newUser;
+                
+                saveUsers();
+                saveCurrentUser();
+                updateNavbar();
+                closeModal('registerModal');
+                showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 800);
         }
 
         function handleProfileUpdate(e) {
@@ -1888,11 +2033,19 @@
             reader.readAsDataURL(file);
         }
 
+        /* ================= FILTERS ================= */
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const cityFilter = document.getElementById('cityFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
             const salaryFilter = document.getElementById('salaryFilter').value;
+            
+            STATE.activeFilters = {};
+            
+            if (searchTerm) STATE.activeFilters.search = searchTerm;
+            if (cityFilter) STATE.activeFilters.city = cityFilter;
+            if (typeFilter) STATE.activeFilters.type = typeFilter;
+            if (salaryFilter) STATE.activeFilters.salary = salaryFilter;
             
             STATE.filteredJobs = STATE.jobs.filter(job => {
                 const matchesSearch = !searchTerm || 
@@ -1913,6 +2066,7 @@
 
             applySorting();
             STATE.currentPage = 1;
+            renderFilterChips();
             renderJobs();
         }
 
@@ -1933,17 +2087,87 @@
             document.getElementById('salaryFilter').value = '';
             document.getElementById('sortFilter').value = 'salary-desc';
             
+            STATE.activeFilters = {};
             STATE.filteredJobs = [...STATE.jobs];
             applySorting();
             STATE.currentPage = 1;
+            renderFilterChips();
             renderJobs();
         }
 
+        function renderFilterChips() {
+            const container = document.getElementById('filterChips');
+            
+            if (Object.keys(STATE.activeFilters).length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const chips = [];
+            
+            if (STATE.activeFilters.search) {
+                chips.push(`
+                    <div class="filter-chip">
+                        <span>Поиск: ${STATE.activeFilters.search}</span>
+                        <span class="filter-chip-close" onclick="removeFilter('search')">×</span>
+                    </div>
+                `);
+            }
+            
+            if (STATE.activeFilters.city) {
+                chips.push(`
+                    <div class="filter-chip">
+                        <span>${STATE.activeFilters.city}</span>
+                        <span class="filter-chip-close" onclick="removeFilter('city')">×</span>
+                    </div>
+                `);
+            }
+            
+            if (STATE.activeFilters.type) {
+                chips.push(`
+                    <div class="filter-chip">
+                        <span>${STATE.activeFilters.type}</span>
+                        <span class="filter-chip-close" onclick="removeFilter('type')">×</span>
+                    </div>
+                `);
+            }
+            
+            if (STATE.activeFilters.salary) {
+                const salaryText = STATE.activeFilters.salary.replace('-', ' - ') + ' ₽';
+                chips.push(`
+                    <div class="filter-chip">
+                        <span>${salaryText}</span>
+                        <span class="filter-chip-close" onclick="removeFilter('salary')">×</span>
+                    </div>
+                `);
+            }
+
+            container.innerHTML = chips.join('');
+        }
+
+        function removeFilter(filterType) {
+            if (filterType === 'search') document.getElementById('searchInput').value = '';
+            if (filterType === 'city') document.getElementById('cityFilter').value = '';
+            if (filterType === 'type') document.getElementById('typeFilter').value = '';
+            if (filterType === 'salary') document.getElementById('salaryFilter').value = '';
+            
+            applyFilters();
+        }
+
+        /* ================= JOBS ================= */
         function renderJobs() {
             const grid = document.getElementById('jobsGrid');
             const jobCount = document.getElementById('jobCount');
             
-            jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
+            const countElement = jobCount.querySelector('span') || jobCount;
+            const newCount = STATE.filteredJobs.length;
+            countElement.style.transition = 'transform 0.3s ease';
+            countElement.style.transform = 'scale(1.1)';
+            
+            setTimeout(() => {
+                jobCount.textContent = `Найдено вакансий: ${newCount}`;
+                countElement.style.transform = 'scale(1)';
+            }, 150);
             
             if (STATE.filteredJobs.length === 0) {
                 grid.innerHTML = `
@@ -1963,6 +2187,7 @@
             
             grid.innerHTML = jobsToRender.map(job => `
                 <div class="job-card" onclick="openApplyModal(${job.id})">
+                    ${job.isNew ? '<div class="job-badge">Новое</div>' : ''}
                     <div class="job-header">
                         <div class="job-title">${job.title}</div>
                         <div class="job-company">${job.company}</div>
@@ -2028,6 +2253,93 @@
             scrollToSearch();
         }
 
+        function openApplyModal(jobId, event) {
+            if (event) event.stopPropagation();
+            
+            if (!STATE.currentUser) {
+                showToast('Требуется авторизация', 'Войдите в аккаунт для отклика', 'warning');
+                openModal('loginModal');
+                return;
+            }
+            
+            const job = STATE.jobs.find(j => j.id === jobId);
+            if (!job) return;
+            
+            const modalBody = document.getElementById('applyModalBody');
+            modalBody.innerHTML = `
+                <div style="margin-bottom: 28px;">
+                    <h3 style="margin-bottom: 10px; font-weight: 700; font-size: 22px;">${job.title}</h3>
+                    <p style="color: var(--text-gray); margin-bottom: 20px; font-weight: 600;">${job.company} • ${job.city}</p>
+                    <div style="background: var(--light-gray); padding: 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                        <strong>Зарплата:</strong> ${job.salary.toLocaleString('ru-RU')} ₽<br>
+                        <strong>Тип:</strong> ${job.type}
+                    </div>
+                    <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
+                </div>
+                <div style="text-align: center; padding: 20px;">
+                    <p style="margin-bottom: 16px; color: var(--text-gray);">Для отклика свяжитесь с работодателем напрямую</p>
+                    <button class="btn btn-secondary" onclick="closeModal('applyModal')">Закрыть</button>
+                </div>
+            `;
+            
+            openModal('applyModal');
+        }
+
+        /* ================= UI ================= */
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠'
+            };
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            const answer = faqItem.querySelector('.faq-answer');
+            const answerContent = answer.querySelector('.faq-answer-content');
+            
+            const isActive = faqItem.classList.contains('active');
+            
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.faq-answer').style.maxHeight = '0px';
+            });
+            
+            if (!isActive) {
+                faqItem.classList.add('active');
+                answer.style.maxHeight = answerContent.scrollHeight + 'px';
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToSearch() {
+            document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        /* ================= MODALS ================= */
         function openModal(modalId, contentKey) {
             const modal = document.getElementById(modalId);
             
@@ -2062,7 +2374,7 @@
 
         function clearFormErrors(form) {
             form.querySelectorAll('.form-group').forEach(group => {
-                group.classList.remove('error');
+                group.classList.remove('error', 'success');
             });
         }
 
@@ -2082,70 +2394,15 @@
                 } else if (field.type === 'password' && field.value.length < 6) {
                     formGroup.classList.add('error');
                     isValid = false;
+                } else {
+                    formGroup.classList.add('success');
                 }
             });
 
             return isValid;
         }
 
-        function openApplyModal(jobId, event) {
-            if (event) event.stopPropagation();
-            
-            if (!STATE.currentUser) {
-                showToast('Требуется авторизация', 'Войдите в аккаунт для отклика', 'warning');
-                openModal('loginModal');
-                return;
-            }
-            
-            const job = STATE.jobs.find(j => j.id === jobId);
-            if (!job) return;
-            
-            const modalBody = document.getElementById('applyModalBody');
-            modalBody.innerHTML = `
-                <div style="margin-bottom: 28px;">
-                    <h3 style="margin-bottom: 10px; font-weight: 700; font-size: 22px;">${job.title}</h3>
-                    <p style="color: var(--text-gray); margin-bottom: 20px; font-weight: 600;">${job.company} • ${job.city}</p>
-                    <div style="background: var(--light-gray); padding: 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
-                        <strong>Зарплата:</strong> ${job.salary.toLocaleString('ru-RU')} ₽<br>
-                        <strong>Тип:</strong> ${job.type}
-                    </div>
-                    <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
-                </div>
-                <div style="text-align: center; padding: 20px;">
-                    <p style="margin-bottom: 16px;">Для отклика свяжитесь с работодателем напрямую</p>
-                    <button class="btn btn-secondary" onclick="closeModal('applyModal')">Закрыть</button>
-                </div>
-            `;
-            
-            openModal('applyModal');
-        }
-
-        function toggleFaq(element) {
-            const faqItem = element.parentElement;
-            const answer = faqItem.querySelector('.faq-answer');
-            const answerContent = answer.querySelector('.faq-answer-content');
-            
-            const isActive = faqItem.classList.contains('active');
-            
-            document.querySelectorAll('.faq-item').forEach(item => {
-                item.classList.remove('active');
-                item.querySelector('.faq-answer').style.maxHeight = '0px';
-            });
-            
-            if (!isActive) {
-                faqItem.classList.add('active');
-                answer.style.maxHeight = answerContent.scrollHeight + 'px';
-            }
-        }
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function scrollToSearch() {
-            document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
+        /* ================= INITIALIZATION ================= */
         function initEventListeners() {
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('sortFilter').addEventListener('change', () => {
@@ -2158,6 +2415,20 @@
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
             document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
+
+            const loginForm = document.getElementById('loginForm');
+            loginForm.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    input.closest('.form-group').classList.remove('error');
+                });
+            });
+
+            const registerForm = document.getElementById('registerForm');
+            registerForm.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    input.closest('.form-group').classList.remove('error');
+                });
+            });
 
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
@@ -2188,6 +2459,17 @@
                     const profilePage = document.getElementById('profilePage');
                     if (profilePage.classList.contains('active')) {
                         closeProfile();
+                    }
+                }
+
+                if (e.key === 'Enter') {
+                    const activeModal = document.querySelector('.modal.active');
+                    if (activeModal) {
+                        const form = activeModal.querySelector('form');
+                        if (form && document.activeElement.tagName === 'INPUT') {
+                            e.preventDefault();
+                            form.dispatchEvent(new Event('submit'));
+                        }
                     }
                 }
             });
