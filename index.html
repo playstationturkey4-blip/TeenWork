@@ -56,7 +56,6 @@
             to { opacity: 1; }
         }
 
-        /* Navigation */
         .nav {
             position: sticky;
             top: 0;
@@ -83,7 +82,7 @@
         }
 
         .logo {
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 800;
             color: var(--primary-blue);
             letter-spacing: -1px;
@@ -119,14 +118,9 @@
             align-items: center;
         }
 
-        /* User Profile Dropdown */
-        .user-menu {
-            position: relative;
-        }
-
         .user-avatar {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
             color: var(--white);
@@ -138,6 +132,13 @@
             cursor: pointer;
             transition: var(--transition);
             border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .user-avatar:hover {
@@ -146,82 +147,6 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        .user-dropdown {
-            position: absolute;
-            top: calc(100% + 12px);
-            right: 0;
-            background: var(--white);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            min-width: 220px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: var(--transition);
-            z-index: 100;
-        }
-
-        .user-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .user-dropdown::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            right: 16px;
-            width: 12px;
-            height: 12px;
-            background: var(--white);
-            transform: rotate(45deg);
-            border-top: 1px solid var(--border-gray);
-            border-left: 1px solid var(--border-gray);
-        }
-
-        .dropdown-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-gray);
-        }
-
-        .dropdown-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .dropdown-email {
-            font-size: 13px;
-            color: var(--text-gray);
-        }
-
-        .dropdown-menu {
-            list-style: none;
-            padding: 8px;
-        }
-
-        .dropdown-item {
-            padding: 10px 12px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-
-        .dropdown-item:hover {
-            background: var(--light-gray);
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: var(--border-gray);
-            margin: 8px 0;
-        }
-
-        /* Buttons */
         .btn {
             padding: 11px 24px;
             border-radius: var(--radius-md);
@@ -288,22 +213,11 @@
             border-color: var(--text-gray);
         }
 
-        .btn-danger {
-            background: var(--error);
-            color: var(--white);
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: #dc2626;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-
         .btn-small {
             padding: 7px 16px;
             font-size: 13px;
         }
 
-        /* Hero Section */
         .hero {
             background: linear-gradient(135deg, #1e40af 0%, var(--primary-blue) 50%, var(--blue-light) 100%);
             color: var(--white);
@@ -399,14 +313,12 @@
             transform: translateY(-3px);
         }
 
-        /* Container */
         .container {
             max-width: var(--max-width);
             margin: 0 auto;
             padding: 0 24px;
         }
 
-        /* Filters Section */
         .filters-section {
             background: var(--white);
             padding: 36px 28px;
@@ -460,7 +372,6 @@
             min-width: 200px;
         }
 
-        /* Jobs Section */
         .jobs-section {
             padding: 70px 0;
         }
@@ -486,51 +397,6 @@
             font-weight: 500;
         }
 
-        /* Skeleton Loader */
-        .skeleton-loader {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-
-        .skeleton-card {
-            background: var(--white);
-            padding: 24px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .skeleton-line {
-            height: 20px;
-            background: linear-gradient(90deg, var(--light-gray) 25%, var(--border-gray) 50%, var(--light-gray) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 4px;
-            margin-bottom: 12px;
-        }
-
-        .skeleton-line.title {
-            width: 70%;
-            height: 24px;
-        }
-
-        .skeleton-line.subtitle {
-            width: 50%;
-            height: 16px;
-        }
-
-        .skeleton-line.small {
-            width: 30%;
-            height: 14px;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Jobs Grid */
         .jobs-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -574,52 +440,6 @@
             border-color: var(--primary-blue);
         }
 
-        .job-card-actions {
-            position: absolute;
-            top: 18px;
-            right: 18px;
-            display: flex;
-            gap: 8px;
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .job-card:hover .job-card-actions {
-            opacity: 1;
-        }
-
-        .icon-btn {
-            background: var(--light-gray);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 16px;
-        }
-
-        .icon-btn:hover {
-            background: var(--border-gray);
-            transform: scale(1.15) rotate(5deg);
-        }
-
-        .job-badge {
-            position: absolute;
-            top: 18px;
-            left: 18px;
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: var(--white);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-        }
-
         .job-header {
             margin-bottom: 18px;
         }
@@ -629,7 +449,6 @@
             font-weight: 700;
             margin-bottom: 10px;
             color: var(--text-dark);
-            padding-right: 90px;
             line-height: 1.3;
         }
 
@@ -681,16 +500,10 @@
 
         .job-footer {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             padding-top: 18px;
             border-top: 1.5px solid var(--border-gray);
-        }
-
-        .job-date {
-            color: var(--text-gray);
-            font-size: 13px;
-            font-weight: 500;
         }
 
         .btn-apply {
@@ -698,7 +511,6 @@
             font-size: 14px;
         }
 
-        /* Info Section */
         .info-section {
             padding: 90px 0;
             background: var(--white);
@@ -755,7 +567,6 @@
             font-weight: 500;
         }
 
-        /* FAQ Section */
         .faq-section {
             padding: 90px 0;
         }
@@ -823,7 +634,6 @@
             font-weight: 500;
         }
 
-        /* Footer */
         .footer {
             background: var(--text-dark);
             color: var(--white);
@@ -872,7 +682,6 @@
             font-weight: 500;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -968,6 +777,7 @@
 
         .form-group {
             margin-bottom: 22px;
+            position: relative;
         }
 
         .form-group label {
@@ -1022,15 +832,20 @@
             display: block;
         }
 
-        .modal-footer {
-            padding: 18px 28px;
-            border-top: 1.5px solid var(--border-gray);
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
+        .password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 42px;
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 18px;
+            user-select: none;
         }
 
-        /* Empty State */
+        .password-toggle:hover {
+            color: var(--text-dark);
+        }
+
         .empty-state {
             text-align: center;
             padding: 100px 20px;
@@ -1057,7 +872,6 @@
             font-weight: 500;
         }
 
-        /* Toast Notifications */
         .toast-container {
             position: fixed;
             top: 24px;
@@ -1151,7 +965,6 @@
             color: var(--warning);
         }
 
-        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -1188,8 +1001,7 @@
             border-color: var(--primary-blue);
         }
 
-        /* Content Pages */
-        .content-page {
+        .profile-page {
             position: fixed;
             top: 0;
             left: 0;
@@ -1202,11 +1014,11 @@
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .content-page.active {
+        .profile-page.active {
             transform: translateX(0);
         }
 
-        .content-page-header {
+        .profile-header {
             background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
             color: var(--white);
             padding: 40px 24px;
@@ -1215,7 +1027,7 @@
             z-index: 10;
         }
 
-        .content-page-nav {
+        .profile-nav {
             max-width: var(--max-width);
             margin: 0 auto;
             display: flex;
@@ -1240,61 +1052,95 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
-        .content-page-title {
+        .profile-title {
             max-width: var(--max-width);
             margin: 0 auto;
         }
 
-        .content-page-title h1 {
+        .profile-title h1 {
             font-size: 42px;
             font-weight: 800;
             letter-spacing: -1px;
         }
 
-        .content-page-body {
-            max-width: 900px;
+        .profile-body {
+            max-width: 700px;
             margin: 0 auto;
             padding: 60px 24px;
         }
 
-        .content-section {
-            margin-bottom: 48px;
+        .profile-avatar-section {
+            text-align: center;
+            margin-bottom: 40px;
         }
 
-        .content-section h2 {
-            font-size: 28px;
+        .profile-avatar-display {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
             font-weight: 700;
-            margin-bottom: 18px;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 4px solid var(--white);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-avatar-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload {
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .avatar-upload input {
+            display: none;
+        }
+
+        .avatar-upload label {
+            cursor: pointer;
+            color: var(--primary-blue);
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .profile-info {
+            background: var(--light-gray);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+        }
+
+        .profile-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .profile-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-info-label {
+            font-weight: 600;
+            color: var(--text-gray);
+        }
+
+        .profile-info-value {
+            font-weight: 600;
             color: var(--text-dark);
         }
 
-        .content-section h3 {
-            font-size: 22px;
-            font-weight: 700;
-            margin: 32px 0 14px;
-            color: var(--text-dark);
-        }
-
-        .content-section p {
-            color: var(--text-gray);
-            line-height: 1.8;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
-
-        .content-section ul {
-            margin-left: 24px;
-            margin-bottom: 16px;
-        }
-
-        .content-section li {
-            color: var(--text-gray);
-            line-height: 1.8;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 40px;
@@ -1355,18 +1201,7 @@
                 max-width: none;
             }
 
-            .job-title {
-                padding-right: 0;
-            }
-
-            .job-card-actions {
-                position: static;
-                opacity: 1;
-                margin-bottom: 14px;
-                justify-content: flex-end;
-            }
-
-            .content-page-title h1 {
+            .profile-title h1 {
                 font-size: 32px;
             }
 
@@ -1377,73 +1212,58 @@
     </style>
 </head>
 <body>
-    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Navigation -->
     <nav class="nav" id="navbar">
         <div class="nav-container">
             <div class="logo" onclick="scrollToTop()">TeenWork</div>
-            <div class="nav-actions" id="navActions">
-                <!-- Will be populated by JS -->
-            </div>
+            <div class="nav-actions" id="navActions"></div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
             <h1>Твоя первая работа начинается здесь</h1>
             <p>Безопасная платформа для поиска работы подросткам 14-18 лет. Официальное трудоустройство, реальная зарплата, проверенные работодатели.</p>
             <div class="hero-actions">
                 <button class="btn btn-hero btn-white" onclick="scrollToSearch()">Найти работу</button>
-                <button class="btn btn-hero btn-outline" onclick="openModal('postJobModal')">Разместить вакансию</button>
+                <button class="btn btn-hero btn-outline" onclick="openModal('infoModal', 'employers')">Работодателям</button>
             </div>
         </div>
     </section>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Filters Section -->
         <section class="filters-section" id="search">
             <div class="filters-grid">
                 <input type="text" class="input" id="searchInput" placeholder="Поиск по названию или компании...">
                 <select class="select" id="cityFilter">
                     <option value="">Все города</option>
-                    <option value="Москва">Москва</option>
                     <option value="Санкт-Петербург">Санкт-Петербург</option>
-                    <option value="Новосибирск">Новосибирск</option>
-                    <option value="Екатеринбург">Екатеринбург</option>
-                    <option value="Казань">Казань</option>
                 </select>
                 <select class="select" id="typeFilter">
                     <option value="">Тип работы</option>
                     <option value="Частичная занятость">Частичная занятость</option>
-                    <option value="Удалённо">Удалённо</option>
-                    <option value="Летняя работа">Летняя работа</option>
-                    <option value="Стажировка">Стажировка</option>
+                    <option value="Сезонная">Сезонная</option>
+                    <option value="Постоянная">Постоянная</option>
+                    <option value="Временная">Временная</option>
                 </select>
                 <select class="select" id="salaryFilter">
                     <option value="">Зарплата</option>
-                    <option value="0-15000">до 15 000 ₽</option>
-                    <option value="15000-25000">15 000 - 25 000 ₽</option>
-                    <option value="25000-40000">25 000 - 40 000 ₽</option>
-                    <option value="40000+">от 40 000 ₽</option>
+                    <option value="0-20000">до 20 000 ₽</option>
+                    <option value="20000-35000">20 000 - 35 000 ₽</option>
+                    <option value="35000-50000">35 000 - 50 000 ₽</option>
                 </select>
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" onclick="applyFilters()">Применить фильтры</button>
                 <button class="btn btn-secondary" onclick="resetFilters()">Сбросить</button>
                 <select class="select sort-dropdown" id="sortFilter">
-                    <option value="date-desc">Сначала новые</option>
-                    <option value="date-asc">Сначала старые</option>
                     <option value="salary-desc">По убыванию зарплаты</option>
                     <option value="salary-asc">По возрастанию зарплаты</option>
                 </select>
             </div>
         </section>
 
-        <!-- Jobs Section -->
         <section class="jobs-section">
             <div class="section-header">
                 <div>
@@ -1451,15 +1271,11 @@
                     <p class="section-info" id="jobCount">Найдено вакансий: 0</p>
                 </div>
             </div>
-            <div class="skeleton-loader" id="skeletonLoader" style="display: none;">
-                <!-- Skeleton cards will be inserted here -->
-            </div>
             <div class="jobs-grid" id="jobsGrid"></div>
             <div class="pagination" id="pagination"></div>
         </section>
     </div>
 
-    <!-- Info Section -->
     <section class="info-section">
         <div class="container">
             <div class="section-header" style="text-align: center; display: block;">
@@ -1491,7 +1307,6 @@
         </div>
     </section>
 
-    <!-- FAQ Section -->
     <section class="faq-section">
         <div class="container">
             <div class="section-header" style="text-align: center; display: block;">
@@ -1558,40 +1373,33 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>О платформе</h4>
                     <ul class="footer-links">
-                        <li><a onclick="openContentPage('about')">О нас</a></li>
-                        <li><a onclick="openContentPage('how-it-works')">Как это работает</a></li>
-                        <li><a onclick="openContentPage('safety')">Безопасность</a></li>
-                        <li><a onclick="openContentPage('blog')">Блог</a></li>
+                        <li><a onclick="openModal('infoModal', 'about')">О нас</a></li>
+                        <li><a onclick="openModal('infoModal', 'how-it-works')">Как это работает</a></li>
+                        <li><a onclick="openModal('infoModal', 'safety')">Безопасность</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Работодателям</h4>
                     <ul class="footer-links">
-                        <li><a onclick="openModal('postJobModal')">Разместить вакансию</a></li>
-                        <li><a onclick="openContentPage('pricing')">Тарифы</a></li>
-                        <li><a onclick="openContentPage('requirements')">Требования</a></li>
+                        <li><a onclick="openModal('infoModal', 'employers')">Информация</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Поддержка</h4>
                     <ul class="footer-links">
-                        <li><a onclick="openContentPage('help')">Помощь</a></li>
-                        <li><a onclick="openContentPage('contacts')">Контакты</a></li>
-                        <li><a onclick="scrollToSection('faqList')">FAQ</a></li>
+                        <li><a onclick="openModal('infoModal', 'support')">Помощь</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Правовая информация</h4>
                     <ul class="footer-links">
-                        <li><a onclick="openContentPage('terms')">Пользовательское соглашение</a></li>
-                        <li><a onclick="openContentPage('privacy')">Политика конфиденциальности</a></li>
+                        <li><a onclick="openModal('infoModal', 'legal')">Документы</a></li>
                     </ul>
                 </div>
             </div>
@@ -1601,22 +1409,48 @@
         </div>
     </footer>
 
-    <!-- Content Pages -->
-    <div class="content-page" id="contentPage">
-        <div class="content-page-header">
-            <div class="content-page-nav">
-                <button class="back-btn" onclick="closeContentPage()">← Назад</button>
+    <div class="profile-page" id="profilePage">
+        <div class="profile-header">
+            <div class="profile-nav">
+                <button class="back-btn" onclick="closeProfile()">← Назад</button>
             </div>
-            <div class="content-page-title">
-                <h1 id="contentPageTitle"></h1>
+            <div class="profile-title">
+                <h1>Мой профиль</h1>
             </div>
         </div>
-        <div class="content-page-body" id="contentPageBody">
-            <!-- Content will be loaded here -->
+        <div class="profile-body">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar-display" id="profileAvatarDisplay"></div>
+                <div class="avatar-upload">
+                    <input type="file" id="avatarUpload" accept="image/*">
+                    <label for="avatarUpload">Изменить фото</label>
+                </div>
+            </div>
+            
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Никнейм</label>
+                    <input type="text" id="profileNickname" required>
+                    <div class="form-error">Это поле обязательно</div>
+                </div>
+                
+                <div class="profile-info">
+                    <div class="profile-info-item">
+                        <span class="profile-info-label">Email:</span>
+                        <span class="profile-info-value" id="profileEmail"></span>
+                    </div>
+                    <div class="profile-info-item">
+                        <span class="profile-info-label">Дата регистрации:</span>
+                        <span class="profile-info-value" id="profileDate"></span>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Сохранить изменения</button>
+                <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="logout()">Выйти из аккаунта</button>
+            </form>
         </div>
     </div>
 
-    <!-- Modals -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1632,8 +1466,9 @@
                     </div>
                     <div class="form-group">
                         <label>Пароль</label>
-                        <input type="password" name="password" required>
-                        <div class="form-error">Это поле обязательно</div>
+                        <input type="password" id="loginPassword" name="password" required>
+                        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+                        <div class="form-error">Неверный пароль или email</div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Войти</button>
                 </form>
@@ -1650,8 +1485,8 @@
             <div class="modal-body">
                 <form id="registerForm">
                     <div class="form-group">
-                        <label>Имя</label>
-                        <input type="text" name="name" required>
+                        <label>Никнейм</label>
+                        <input type="text" name="nickname" required>
                         <div class="form-error">Это поле обязательно</div>
                     </div>
                     <div class="form-group">
@@ -1660,88 +1495,12 @@
                         <div class="form-error">Введите корректный email</div>
                     </div>
                     <div class="form-group">
-                        <label>Телефон</label>
-                        <input type="tel" name="phone" required>
-                        <div class="form-error">Это поле обязательно</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Возраст</label>
-                        <select name="age" required>
-                            <option value="">Выберите возраст</option>
-                            <option value="14">14 лет</option>
-                            <option value="15">15 лет</option>
-                            <option value="16">16 лет</option>
-                            <option value="17">17 лет</option>
-                            <option value="18">18 лет</option>
-                        </select>
-                        <div class="form-error">Выберите возраст</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Пароль</label>
-                        <input type="password" name="password" required>
+                        <label>Пароль (минимум 6 символов)</label>
+                        <input type="password" id="registerPassword" name="password" required>
+                        <span class="password-toggle" onclick="togglePassword('registerPassword')">👁️</span>
                         <div class="form-error">Пароль должен быть не менее 6 символов</div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Зарегистрироваться</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="postJobModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="postJobTitle">Разместить вакансию</h3>
-                <button class="modal-close" onclick="closeModal('postJobModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="postJobForm">
-                    <input type="hidden" id="editJobId" value="">
-                    <div class="form-group">
-                        <label>Название вакансии *</label>
-                        <input type="text" id="jobTitle" name="title" required>
-                        <div class="form-error">Это поле обязательно</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Компания *</label>
-                        <input type="text" id="jobCompany" name="company" required>
-                        <div class="form-error">Это поле обязательно</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Город *</label>
-                        <select id="jobCity" name="city" required>
-                            <option value="">Выберите город</option>
-                            <option value="Москва">Москва</option>
-                            <option value="Санкт-Петербург">Санкт-Петербург</option>
-                            <option value="Новосибирск">Новосибирск</option>
-                            <option value="Екатеринбург">Екатеринбург</option>
-                            <option value="Казань">Казань</option>
-                        </select>
-                        <div class="form-error">Выберите город</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Зарплата (₽/месяц) *</label>
-                        <input type="number" id="jobSalary" name="salary" required min="0">
-                        <div class="form-error">Введите корректную зарплату</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Тип работы *</label>
-                        <select id="jobType" name="type" required>
-                            <option value="">Выберите тип</option>
-                            <option value="Частичная занятость">Частичная занятость</option>
-                            <option value="Удалённо">Удалённо</option>
-                            <option value="Летняя работа">Летняя работа</option>
-                            <option value="Стажировка">Стажировка</option>
-                        </select>
-                        <div class="form-error">Выберите тип работы</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Описание вакансии *</label>
-                        <textarea id="jobDescription" name="description" required></textarea>
-                        <div class="form-error">Это поле обязательно</div>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
-                        <span id="submitBtnText">Опубликовать вакансию</span>
-                    </button>
                 </form>
             </div>
         </div>
@@ -1757,182 +1516,180 @@
         </div>
     </div>
 
+    <div class="modal" id="infoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="infoModalTitle"></h3>
+                <button class="modal-close" onclick="closeModal('infoModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="infoModalBody"></div>
+        </div>
+    </div>
+
     <script>
-        // ============================================
-        // STATE MANAGEMENT
-        // ============================================
+        const JOBS = [
+            {
+                id: 1,
+                title: 'Промоутер водных экскурсий',
+                company: 'Нева Тревел',
+                city: 'Санкт-Петербург',
+                salary: 30000,
+                type: 'Сезонная, частичная занятость, на свежем воздухе',
+                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии по Санкт-Петербургу. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.'
+            },
+            {
+                id: 2,
+                title: 'Кассир',
+                company: 'Додо Пицца',
+                city: 'Санкт-Петербург',
+                salary: 35000,
+                type: 'Постоянная, сменный график',
+                description: 'Прием заказов, расчет на кассе, выдача заказов. Работа круглый год. Бонусы для сотрудников.'
+            },
+            {
+                id: 3,
+                title: 'Продавец-кассир',
+                company: 'Carte Dor',
+                city: 'Санкт-Петербург',
+                salary: 40000,
+                type: 'Сменный график, торговля',
+                description: 'Продажа мороженого. Работа с товаром, расчет на кассе, поддержание чистоты.'
+            },
+            {
+                id: 4,
+                title: 'Сборщик онлайн-заказов',
+                company: 'Перекресток',
+                city: 'Санкт-Петербург',
+                salary: 40000,
+                type: 'Частичная занятость, сменный график',
+                description: 'Сбор онлайн-заказов, проверка сроков годности, передача курьерам.'
+            },
+            {
+                id: 5,
+                title: 'Кассир',
+                company: 'Вкусно и точка',
+                city: 'Санкт-Петербург',
+                salary: 45000,
+                type: 'Постоянная, сменный график',
+                description: 'Прием заказов, расчет, выдача, общение с клиентами.'
+            },
+            {
+                id: 6,
+                title: 'Разнорабочий (благоустройство территорий)',
+                company: 'Городская программа временной занятости',
+                city: 'Санкт-Петербург',
+                salary: 14000,
+                type: 'Частичная занятость, временная',
+                description: 'Уборка территорий в парках. Работа на свежем воздухе. Подходит для подростков.'
+            }
+        ];
+
         const STATE = {
             jobs: [],
             filteredJobs: [],
             currentPage: 1,
             jobsPerPage: 6,
-            nextJobId: 1,
             currentUser: null,
-            savedJobs: [],
-            applications: []
+            users: []
         };
 
-        const STORAGE_KEYS = {
-            JOBS: 'teenwork_jobs',
-            APPLICATIONS: 'teenwork_applications',
-            SAVED_JOBS: 'teenwork_saved_jobs',
-            CURRENT_USER: 'teenwork_current_user',
-            NEXT_ID: 'teenwork_next_id'
+        const STORAGE = {
+            USERS: 'teenwork_users',
+            CURRENT_USER: 'teenwork_current_user'
         };
 
-        const DEFAULT_JOBS = [
-            {
-                id: 1,
-                title: 'Помощник официанта',
-                company: 'Кофейня "Чашка"',
-                city: 'Москва',
-                salary: 18000,
-                type: 'Частичная занятость',
-                description: 'Требуется помощник официанта в уютную кофейню. График гибкий, возможность совмещать с учебой.',
-                date: Date.now() - 2 * 24 * 60 * 60 * 1000,
-                isNew: true
+        const INFO_CONTENT = {
+            'about': {
+                title: 'О платформе',
+                body: `
+                    <h3 style="margin-bottom: 16px;">Кто мы</h3>
+                    <p style="margin-bottom: 16px; line-height: 1.7;">TeenWork — первая в России платформа для поиска работы подростками 14-18 лет. Мы создали безопасную среду для получения первого трудового опыта.</p>
+                    <h3 style="margin-bottom: 16px;">Наша миссия</h3>
+                    <p style="line-height: 1.7;">Помочь подросткам получить первый опыт работы в легальных условиях, развить навыки и стать финансово независимыми.</p>
+                `
             },
-            {
-                id: 2,
-                title: 'Курьер',
-                company: 'Delivery Pro',
-                city: 'Санкт-Петербург',
-                salary: 25000,
-                type: 'Частичная занятость',
-                description: 'Доставка еды и товаров по городу. Свободный график, еженедельные выплаты.',
-                date: Date.now() - 5 * 24 * 60 * 60 * 1000
+            'how-it-works': {
+                title: 'Как это работает',
+                body: `
+                    <h3 style="margin-bottom: 16px;">Для подростков</h3>
+                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>1. Регистрация</strong><br>Создайте аккаунт за пару минут</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>2. Поиск</strong><br>Используйте фильтры для поиска подходящей работы</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>3. Отклик</strong><br>Отправьте заявку работодателю</p>
+                    <p style="line-height: 1.7;"><strong>4. Работа</strong><br>Получите официальное трудоустройство</p>
+                `
             },
-            {
-                id: 3,
-                title: 'SMM-менеджер',
-                company: 'Digital Kids',
-                city: 'Москва',
-                salary: 30000,
-                type: 'Удалённо',
-                description: 'Ведение социальных сетей для молодёжного бренда. Удалённая работа, гибкий график.',
-                date: Date.now() - 7 * 24 * 60 * 60 * 1000
+            'safety': {
+                title: 'Безопасность',
+                body: `
+                    <h3 style="margin-bottom: 16px;">Проверка работодателей</h3>
+                    <p style="margin-bottom: 16px; line-height: 1.7;">Все компании проходят многоуровневую верификацию перед размещением вакансий.</p>
+                    <h3 style="margin-bottom: 16px;">Права подростков</h3>
+                    <p style="line-height: 1.7;">Мы следим за соблюдением трудового законодательства РФ: сокращенный рабочий день, запрет на ночные смены, безопасные условия труда.</p>
+                `
             },
-            {
-                id: 4,
-                title: 'Промоутер',
-                company: 'Event Masters',
-                city: 'Казань',
-                salary: 15000,
-                type: 'Частичная занятость',
-                description: 'Раздача листовок и промо-материалов на мероприятиях. Работа в выходные.',
-                date: Date.now() - 3 * 24 * 60 * 60 * 1000,
-                isNew: true
+            'employers': {
+                title: 'Работодателям',
+                body: `
+                    <h3 style="margin-bottom: 16px;">Размещение вакансий</h3>
+                    <p style="margin-bottom: 16px; line-height: 1.7;">Для размещения вакансий необходимо пройти верификацию и предоставить документы компании.</p>
+                    <h3 style="margin-bottom: 16px;">Требования</h3>
+                    <p style="line-height: 1.7;">Вакансии должны соответствовать требованиям ТК РФ для несовершеннолетних сотрудников.</p>
+                `
             },
-            {
-                id: 5,
-                title: 'Помощник в летнем лагере',
-                company: 'Солнечный лагерь',
-                city: 'Новосибирск',
-                salary: 35000,
-                type: 'Летняя работа',
-                description: 'Работа вожатым в детском летнем лагере. Июнь-август, питание и проживание.',
-                date: Date.now() - 1 * 24 * 60 * 60 * 1000,
-                isNew: true
+            'support': {
+                title: 'Поддержка',
+                body: `
+                    <h3 style="margin-bottom: 16px;">Свяжитесь с нами</h3>
+                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>Email:</strong> support@teenwork.ru</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7;"><strong>Телефон:</strong> +7 (495) 123-45-67</p>
+                    <p style="line-height: 1.7;"><strong>Время работы:</strong> Пн-Пт, 9:00-18:00 (МСК)</p>
+                `
             },
-            {
-                id: 6,
-                title: 'Стажёр-дизайнер',
-                company: 'Creative Hub',
-                city: 'Москва',
-                salary: 28000,
-                type: 'Стажировка',
-                description: 'Стажировка в дизайн-студии. Создание графики для соц.сетей и сайтов.',
-                date: Date.now() - 4 * 24 * 60 * 60 * 1000
-            },
-            {
-                id: 7,
-                title: 'Продавец-консультант',
-                company: 'TechStore',
-                city: 'Екатеринбург',
-                salary: 22000,
-                type: 'Частичная занятость',
-                description: 'Консультирование покупателей в магазине электроники. График 2/2.',
-                date: Date.now() - 6 * 24 * 60 * 60 * 1000
-            },
-            {
-                id: 8,
-                title: 'Контент-мейкер',
-                company: 'Youth Media',
-                city: 'Санкт-Петербург',
-                salary: 32000,
-                type: 'Удалённо',
-                description: 'Создание контента для TikTok и Instagram. Удалённая работа, креативная команда.',
-                date: Date.now() - 2 * 24 * 60 * 60 * 1000,
-                isNew: true
+            'legal': {
+                title: 'Правовая информация',
+                body: `
+                    <h3 style="margin-bottom: 16px;">Документы</h3>
+                    <p style="margin-bottom: 12px; line-height: 1.7;">• Пользовательское соглашение</p>
+                    <p style="margin-bottom: 12px; line-height: 1.7;">• Политика конфиденциальности</p>
+                    <p style="line-height: 1.7;">• Условия использования платформы</p>
+                `
             }
-        ];
+        };
 
-        // ============================================
-        // STORAGE FUNCTIONS
-        // ============================================
         function initStorage() {
-            const storedJobs = localStorage.getItem(STORAGE_KEYS.JOBS);
-            const storedNextId = localStorage.getItem(STORAGE_KEYS.NEXT_ID);
-            const storedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-            const storedSavedJobs = localStorage.getItem(STORAGE_KEYS.SAVED_JOBS);
-            const storedApplications = localStorage.getItem(STORAGE_KEYS.APPLICATIONS);
+            try {
+                const storedUsers = localStorage.getItem(STORAGE.USERS);
+                const storedUser = localStorage.getItem(STORAGE.CURRENT_USER);
 
-            if (storedJobs) {
-                STATE.jobs = JSON.parse(storedJobs);
-            } else {
-                STATE.jobs = [...DEFAULT_JOBS];
-                saveJobs();
+                if (storedUsers) {
+                    STATE.users = JSON.parse(storedUsers);
+                }
+
+                if (storedUser) {
+                    STATE.currentUser = JSON.parse(storedUser);
+                }
+            } catch (e) {
+                console.error('Storage error:', e);
+                localStorage.removeItem(STORAGE.USERS);
+                localStorage.removeItem(STORAGE.CURRENT_USER);
             }
 
-            if (storedNextId) {
-                STATE.nextJobId = parseInt(storedNextId);
-            } else {
-                STATE.nextJobId = Math.max(...STATE.jobs.map(j => j.id)) + 1;
-                saveNextId();
-            }
-
-            if (storedUser) {
-                STATE.currentUser = JSON.parse(storedUser);
-            }
-
-            if (storedSavedJobs) {
-                STATE.savedJobs = JSON.parse(storedSavedJobs);
-            }
-
-            if (storedApplications) {
-                STATE.applications = JSON.parse(storedApplications);
-            }
-
-            STATE.filteredJobs = [...STATE.jobs];
+            STATE.jobs = [...JOBS];
+            STATE.filteredJobs = [...JOBS];
         }
 
-        function saveJobs() {
-            localStorage.setItem(STORAGE_KEYS.JOBS, JSON.stringify(STATE.jobs));
-        }
-
-        function saveNextId() {
-            localStorage.setItem(STORAGE_KEYS.NEXT_ID, STATE.nextJobId.toString());
+        function saveUsers() {
+            localStorage.setItem(STORAGE.USERS, JSON.stringify(STATE.users));
         }
 
         function saveCurrentUser() {
             if (STATE.currentUser) {
-                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(STATE.currentUser));
+                localStorage.setItem(STORAGE.CURRENT_USER, JSON.stringify(STATE.currentUser));
             } else {
-                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                localStorage.removeItem(STORAGE.CURRENT_USER);
             }
         }
 
-        function saveSavedJobs() {
-            localStorage.setItem(STORAGE_KEYS.SAVED_JOBS, JSON.stringify(STATE.savedJobs));
-        }
-
-        function saveApplications() {
-            localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(STATE.applications));
-        }
-
-        // ============================================
-        // TOAST NOTIFICATIONS
-        // ============================================
         function showToast(title, message, type = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1960,78 +1717,83 @@
             }, 4000);
         }
 
-        // ============================================
-        // USER AUTHENTICATION
-        // ============================================
         function updateNavbar() {
             const navActions = document.getElementById('navActions');
             
             if (STATE.currentUser) {
-                const initials = STATE.currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const initial = STATE.currentUser.nickname ? STATE.currentUser.nickname[0].toUpperCase() : 'U';
+                const avatarContent = STATE.currentUser.avatar 
+                    ? `<img src="${STATE.currentUser.avatar}" alt="Avatar">` 
+                    : initial;
+                
                 navActions.innerHTML = `
-                    <button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>
-                    <div class="user-menu">
-                        <div class="user-avatar" onclick="toggleUserDropdown()">${initials}</div>
-                        <div class="user-dropdown" id="userDropdown">
-                            <div class="dropdown-header">
-                                <div class="dropdown-name">${STATE.currentUser.name}</div>
-                                <div class="dropdown-email">${STATE.currentUser.email}</div>
-                            </div>
-                            <ul class="dropdown-menu">
-                                <li class="dropdown-item" onclick="showToast('Информация', 'Функция в разработке', 'warning')">
-                                    <span>👤</span> Мой профиль
-                                </li>
-                                <li class="dropdown-item" onclick="showUserApplications()">
-                                    <span>📋</span> Мои отклики
-                                </li>
-                                <li class="dropdown-item" onclick="showToast('Информация', 'Функция в разработке', 'warning')">
-                                    <span>💼</span> Мои вакансии
-                                </li>
-                                <li class="dropdown-item" onclick="showSavedJobs()">
-                                    <span>⭐</span> Избранное
-                                </li>
-                                <div class="dropdown-divider"></div>
-                                <li class="dropdown-item" onclick="logout()">
-                                    <span>🚪</span> Выйти
-                                </li>
-                            </ul>
-                        </div>
+                    <div class="user-avatar" onclick="openProfile()">
+                        ${avatarContent}
                     </div>
                 `;
             } else {
                 navActions.innerHTML = `
                     <button class="btn btn-secondary" onclick="openModal('loginModal')">Войти</button>
                     <button class="btn btn-secondary" onclick="openModal('registerModal')">Регистрация</button>
-                    <button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>
                 `;
             }
         }
 
-        function toggleUserDropdown() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.classList.toggle('active');
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function openProfile() {
+            if (!STATE.currentUser) return;
+            
+            const initial = STATE.currentUser.nickname ? STATE.currentUser.nickname[0].toUpperCase() : 'U';
+            const avatarDisplay = document.getElementById('profileAvatarDisplay');
+            
+            if (STATE.currentUser.avatar) {
+                avatarDisplay.innerHTML = `<img src="${STATE.currentUser.avatar}" alt="Avatar">`;
+            } else {
+                avatarDisplay.textContent = initial;
+            }
+            
+            document.getElementById('profileNickname').value = STATE.currentUser.nickname || '';
+            document.getElementById('profileEmail').textContent = STATE.currentUser.email;
+            
+            const date = new Date(STATE.currentUser.createdAt);
+            document.getElementById('profileDate').textContent = date.toLocaleDateString('ru-RU');
+            
+            document.getElementById('profilePage').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProfile() {
+            document.getElementById('profilePage').classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
 
         function logout() {
             STATE.currentUser = null;
             saveCurrentUser();
             updateNavbar();
-            showToast('До встречи!', 'Вы успешно вышли из аккаунта', 'success');
-            const dropdown = document.getElementById('userDropdown');
-            if (dropdown) dropdown.classList.remove('active');
+            closeProfile();
+            showToast('До встречи!', 'Вы вышли из аккаунта', 'success');
         }
 
         function handleLogin(e) {
             e.preventDefault();
-            if (!validateForm(e.target)) return;
-
             const formData = new FormData(e.target);
-            STATE.currentUser = {
-                email: formData.get('email'),
-                name: formData.get('email').split('@')[0],
-                loginDate: Date.now()
-            };
+            const email = formData.get('email');
+            const password = formData.get('password');
 
+            const user = STATE.users.find(u => u.email === email);
+            
+            if (!user || user.password !== password) {
+                const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
+                formGroup.classList.add('error');
+                return;
+            }
+
+            STATE.currentUser = user;
             saveCurrentUser();
             updateNavbar();
             closeModal('loginModal');
@@ -2040,114 +1802,92 @@
 
         function handleRegister(e) {
             e.preventDefault();
+            
             if (!validateForm(e.target)) {
-                showToast('Ошибка', 'Заполните все обязательные поля', 'error');
+                showToast('Ошибка', 'Заполните все поля корректно', 'error');
                 return;
             }
 
             const formData = new FormData(e.target);
-            STATE.currentUser = {
-                name: formData.get('name'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                age: formData.get('age'),
-                registrationDate: Date.now()
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const nickname = formData.get('nickname');
+
+            if (STATE.users.find(u => u.email === email)) {
+                showToast('Ошибка', 'Пользователь с таким email уже существует', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
+                formGroup.classList.add('error');
+                return;
+            }
+
+            const newUser = {
+                email,
+                password,
+                nickname,
+                avatar: null,
+                createdAt: Date.now()
             };
 
+            STATE.users.push(newUser);
+            STATE.currentUser = newUser;
+            
+            saveUsers();
             saveCurrentUser();
             updateNavbar();
             closeModal('registerModal');
             showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
         }
 
-        // ============================================
-        // SAVED JOBS & APPLICATIONS
-        // ============================================
-        function toggleSaveJob(jobId, event) {
-            event.stopPropagation();
+        function handleProfileUpdate(e) {
+            e.preventDefault();
             
-            if (!STATE.currentUser) {
-                showToast('Требуется авторизация', 'Войдите, чтобы сохранять вакансии', 'warning');
+            const nickname = document.getElementById('profileNickname').value;
+            
+            if (!nickname) {
+                showToast('Ошибка', 'Заполните никнейм', 'error');
                 return;
             }
 
-            const index = STATE.savedJobs.indexOf(jobId);
-            if (index > -1) {
-                STATE.savedJobs.splice(index, 1);
-                showToast('Удалено', 'Вакансия удалена из избранного', 'success');
-            } else {
-                STATE.savedJobs.push(jobId);
-                showToast('Сохранено', 'Вакансия добавлена в избранное', 'success');
+            STATE.currentUser.nickname = nickname;
+            
+            const userIndex = STATE.users.findIndex(u => u.email === STATE.currentUser.email);
+            if (userIndex !== -1) {
+                STATE.users[userIndex] = STATE.currentUser;
             }
             
-            saveSavedJobs();
-            renderJobs();
+            saveUsers();
+            saveCurrentUser();
+            updateNavbar();
+            showToast('Успешно', 'Профиль обновлен', 'success');
         }
 
-        function isJobSaved(jobId) {
-            return STATE.savedJobs.includes(jobId);
+        function handleAvatarUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                STATE.currentUser.avatar = event.target.result;
+                
+                const userIndex = STATE.users.findIndex(u => u.email === STATE.currentUser.email);
+                if (userIndex !== -1) {
+                    STATE.users[userIndex] = STATE.currentUser;
+                }
+                
+                saveUsers();
+                saveCurrentUser();
+                
+                document.getElementById('profileAvatarDisplay').innerHTML = `<img src="${event.target.result}" alt="Avatar">`;
+                updateNavbar();
+                showToast('Успешно', 'Фото обновлено', 'success');
+            };
+            reader.readAsDataURL(file);
         }
 
-        function hasApplied(jobId) {
-            return STATE.applications.some(app => app.jobId === jobId && app.userId === STATE.currentUser?.email);
-        }
-
-        function showSavedJobs() {
-            const dropdown = document.getElementById('userDropdown');
-            if (dropdown) dropdown.classList.remove('active');
-
-            if (STATE.savedJobs.length === 0) {
-                showToast('Пусто', 'У вас пока нет сохранённых вакансий', 'warning');
-                return;
-            }
-
-            const savedJobsData = STATE.jobs.filter(job => STATE.savedJobs.includes(job.id));
-            STATE.filteredJobs = savedJobsData;
-            STATE.currentPage = 1;
-            renderJobs();
-            scrollToSearch();
-            showToast('Избранное', `Показано ${savedJobsData.length} сохранённых вакансий`, 'success');
-        }
-
-        function showUserApplications() {
-            const dropdown = document.getElementById('userDropdown');
-            if (dropdown) dropdown.classList.remove('active');
-
-            const userApps = STATE.applications.filter(app => app.userId === STATE.currentUser?.email);
-            
-            if (userApps.length === 0) {
-                showToast('Пусто', 'У вас пока нет откликов', 'warning');
-                return;
-            }
-
-            const appliedJobIds = userApps.map(app => app.jobId);
-            const appliedJobsData = STATE.jobs.filter(job => appliedJobIds.includes(job.id));
-            STATE.filteredJobs = appliedJobsData;
-            STATE.currentPage = 1;
-            renderJobs();
-            scrollToSearch();
-            showToast('Мои отклики', `Показано ${appliedJobsData.length} вакансий`, 'success');
-        }
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        function getRelativeTime(timestamp) {
-            const now = Date.now();
-            const diff = now - timestamp;
-            const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-
-            if (days === 0) return 'Сегодня';
-            if (days === 1) return '1 день назад';
-            if (days < 7) return `${days} дня назад`;
-            if (days < 14) return '1 неделю назад';
-            if (days < 30) return `${Math.floor(days / 7)} недели назад`;
-            return `${Math.floor(days / 30)} месяца назад`;
-        }
-
-        // ============================================
-        // FILTERS & SORTING
-        // ============================================
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const cityFilter = document.getElementById('cityFilter').value;
@@ -2160,19 +1900,12 @@
                     job.company.toLowerCase().includes(searchTerm);
                 
                 const matchesCity = !cityFilter || job.city === cityFilter;
-                const matchesType = !typeFilter || job.type === typeFilter;
+                const matchesType = !typeFilter || job.type.includes(typeFilter);
                 
                 let matchesSalary = true;
                 if (salaryFilter) {
-                    if (salaryFilter === '0-15000') {
-                        matchesSalary = job.salary <= 15000;
-                    } else if (salaryFilter === '15000-25000') {
-                        matchesSalary = job.salary > 15000 && job.salary <= 25000;
-                    } else if (salaryFilter === '25000-40000') {
-                        matchesSalary = job.salary > 25000 && job.salary <= 40000;
-                    } else if (salaryFilter === '40000+') {
-                        matchesSalary = job.salary > 40000;
-                    }
+                    const [min, max] = salaryFilter.split('-').map(v => parseInt(v) || Infinity);
+                    matchesSalary = job.salary >= min && (max === Infinity || job.salary <= max);
                 }
                 
                 return matchesSearch && matchesCity && matchesType && matchesSalary;
@@ -2187,18 +1920,9 @@
             const sortValue = document.getElementById('sortFilter').value;
             
             STATE.filteredJobs.sort((a, b) => {
-                switch(sortValue) {
-                    case 'date-desc':
-                        return b.date - a.date;
-                    case 'date-asc':
-                        return a.date - b.date;
-                    case 'salary-desc':
-                        return b.salary - a.salary;
-                    case 'salary-asc':
-                        return a.salary - b.salary;
-                    default:
-                        return 0;
-                }
+                if (sortValue === 'salary-desc') return b.salary - a.salary;
+                if (sortValue === 'salary-asc') return a.salary - b.salary;
+                return 0;
             });
         }
 
@@ -2207,40 +1931,12 @@
             document.getElementById('cityFilter').value = '';
             document.getElementById('typeFilter').value = '';
             document.getElementById('salaryFilter').value = '';
-            document.getElementById('sortFilter').value = 'date-desc';
+            document.getElementById('sortFilter').value = 'salary-desc';
             
             STATE.filteredJobs = [...STATE.jobs];
             applySorting();
             STATE.currentPage = 1;
             renderJobs();
-        }
-
-        // ============================================
-        // RENDERING FUNCTIONS
-        // ============================================
-        function showSkeletonLoader() {
-            const loader = document.getElementById('skeletonLoader');
-            const grid = document.getElementById('jobsGrid');
-            
-            loader.style.display = 'grid';
-            grid.style.display = 'none';
-            
-            loader.innerHTML = Array(6).fill(0).map(() => `
-                <div class="skeleton-card">
-                    <div class="skeleton-line title"></div>
-                    <div class="skeleton-line subtitle"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line small"></div>
-                </div>
-            `).join('');
-        }
-
-        function hideSkeletonLoader() {
-            const loader = document.getElementById('skeletonLoader');
-            const grid = document.getElementById('jobsGrid');
-            
-            loader.style.display = 'none';
-            grid.style.display = 'grid';
         }
 
         function renderJobs() {
@@ -2250,12 +1946,11 @@
             jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
             
             if (STATE.filteredJobs.length === 0) {
-                hideSkeletonLoader();
                 grid.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🔍</div>
                         <h3>Вакансии не найдены</h3>
-                        <p>Попробуйте изменить параметры поиска или сбросить фильтры</p>
+                        <p>Попробуйте изменить параметры поиска</p>
                     </div>
                 `;
                 document.getElementById('pagination').innerHTML = '';
@@ -2266,16 +1961,8 @@
             const endIndex = startIndex + STATE.jobsPerPage;
             const jobsToRender = STATE.filteredJobs.slice(startIndex, endIndex);
             
-            const saveIcon = (jobId) => isJobSaved(jobId) ? '⭐' : '☆';
-            
             grid.innerHTML = jobsToRender.map(job => `
                 <div class="job-card" onclick="openApplyModal(${job.id})">
-                    ${job.isNew ? '<div class="job-badge">НОВАЯ</div>' : ''}
-                    <div class="job-card-actions">
-                        <button class="icon-btn" onclick="toggleSaveJob(${job.id}, event)" title="${isJobSaved(job.id) ? 'Удалить из избранного' : 'Сохранить'}">${saveIcon(job.id)}</button>
-                        <button class="icon-btn" onclick="editJob(${job.id}, event)" title="Редактировать">✏️</button>
-                        <button class="icon-btn" onclick="deleteJob(${job.id}, event)" title="Удалить">🗑️</button>
-                    </div>
                     <div class="job-header">
                         <div class="job-title">${job.title}</div>
                         <div class="job-company">${job.company}</div>
@@ -2288,15 +1975,11 @@
                         </div>
                     </div>
                     <div class="job-footer">
-                        <span class="job-date">${getRelativeTime(job.date)}</span>
-                        <button class="btn btn-primary btn-apply" onclick="openApplyModal(${job.id}, event)">
-                            ${hasApplied(job.id) ? 'Откликнулись ✓' : 'Откликнуться'}
-                        </button>
+                        <button class="btn btn-primary btn-apply" onclick="openApplyModal(${job.id}, event)">Откликнуться</button>
                     </div>
                 </div>
             `).join('');
 
-            hideSkeletonLoader();
             renderPagination();
         }
 
@@ -2345,11 +2028,17 @@
             scrollToSearch();
         }
 
-        // ============================================
-        // MODAL FUNCTIONS
-        // ============================================
-        function openModal(modalId) {
+        function openModal(modalId, contentKey) {
             const modal = document.getElementById(modalId);
+            
+            if (modalId === 'infoModal' && contentKey) {
+                const content = INFO_CONTENT[contentKey];
+                if (content) {
+                    document.getElementById('infoModalTitle').textContent = content.title;
+                    document.getElementById('infoModalBody').innerHTML = content.body;
+                }
+            }
+            
             modal.classList.remove('hiding');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2390,9 +2079,6 @@
                 } else if (field.type === 'email' && !field.validity.valid) {
                     formGroup.classList.add('error');
                     isValid = false;
-                } else if (field.type === 'number' && field.value < 0) {
-                    formGroup.classList.add('error');
-                    isValid = false;
                 } else if (field.type === 'password' && field.value.length < 6) {
                     formGroup.classList.add('error');
                     isValid = false;
@@ -2402,94 +2088,17 @@
             return isValid;
         }
 
-        // ============================================
-        // JOB MANAGEMENT
-        // ============================================
-        function deleteJob(jobId, event) {
-            event.stopPropagation();
-            if (!confirm('Вы уверены, что хотите удалить эту вакансию?')) return;
-
-            STATE.jobs = STATE.jobs.filter(job => job.id !== jobId);
-            saveJobs();
-            applyFilters();
-            showToast('Успешно', 'Вакансия удалена', 'success');
-        }
-
-        function editJob(jobId, event) {
-            event.stopPropagation();
-            const job = STATE.jobs.find(j => j.id === jobId);
-            if (!job) return;
-
-            document.getElementById('postJobTitle').textContent = 'Редактировать вакансию';
-            document.getElementById('submitBtnText').textContent = 'Сохранить изменения';
-            document.getElementById('editJobId').value = jobId;
-            document.getElementById('jobTitle').value = job.title;
-            document.getElementById('jobCompany').value = job.company;
-            document.getElementById('jobCity').value = job.city;
-            document.getElementById('jobSalary').value = job.salary;
-            document.getElementById('jobType').value = job.type;
-            document.getElementById('jobDescription').value = job.description;
-
-            openModal('postJobModal');
-        }
-
-        function handlePostJob(e) {
-            e.preventDefault();
-
-            if (!validateForm(e.target)) {
-                showToast('Ошибка', 'Заполните все обязательные поля', 'error');
-                return;
-            }
-
-            const editJobId = document.getElementById('editJobId').value;
-            const jobData = {
-                title: document.getElementById('jobTitle').value,
-                company: document.getElementById('jobCompany').value,
-                city: document.getElementById('jobCity').value,
-                salary: parseInt(document.getElementById('jobSalary').value),
-                type: document.getElementById('jobType').value,
-                description: document.getElementById('jobDescription').value,
-                date: Date.now(),
-                isNew: true
-            };
-
-            if (editJobId) {
-                const jobIndex = STATE.jobs.findIndex(j => j.id === parseInt(editJobId));
-                if (jobIndex !== -1) {
-                    STATE.jobs[jobIndex] = { ...STATE.jobs[jobIndex], ...jobData };
-                    showToast('Успешно', 'Вакансия обновлена', 'success');
-                }
-            } else {
-                const newJob = {
-                    id: STATE.nextJobId++,
-                    ...jobData
-                };
-                STATE.jobs.unshift(newJob);
-                saveNextId();
-                showToast('Успешно', 'Вакансия опубликована', 'success');
-            }
-
-            saveJobs();
-            applyFilters();
-            closeModal('postJobModal');
-            
-            document.getElementById('postJobTitle').textContent = 'Разместить вакансию';
-            document.getElementById('submitBtnText').textContent = 'Опубликовать вакансию';
-            document.getElementById('editJobId').value = '';
-
-            setTimeout(scrollToSearch, 100);
-        }
-
         function openApplyModal(jobId, event) {
             if (event) event.stopPropagation();
             
-            const job = STATE.jobs.find(j => j.id === jobId);
-            if (!job) return;
-
-            if (hasApplied(jobId)) {
-                showToast('Уже откликнулись', 'Вы уже откликнулись на эту вакансию', 'warning');
+            if (!STATE.currentUser) {
+                showToast('Требуется авторизация', 'Войдите в аккаунт для отклика', 'warning');
+                openModal('loginModal');
                 return;
             }
+            
+            const job = STATE.jobs.find(j => j.id === jobId);
+            if (!job) return;
             
             const modalBody = document.getElementById('applyModalBody');
             modalBody.innerHTML = `
@@ -2502,66 +2111,15 @@
                     </div>
                     <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
                 </div>
-                <form id="applyForm" data-job-id="${jobId}">
-                    <div class="form-group">
-                        <label>Ваше имя *</label>
-                        <input type="text" name="name" value="${STATE.currentUser?.name || ''}" required>
-                        <div class="form-error">Это поле обязательно</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Телефон *</label>
-                        <input type="tel" name="phone" value="${STATE.currentUser?.phone || ''}" required>
-                        <div class="form-error">Это поле обязательно</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" name="email" value="${STATE.currentUser?.email || ''}" required>
-                        <div class="form-error">Введите корректный email</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Сопроводительное письмо</label>
-                        <textarea name="cover_letter" placeholder="Расскажите, почему вы хотите работать у нас..."></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Отправить отклик</button>
-                </form>
+                <div style="text-align: center; padding: 20px;">
+                    <p style="margin-bottom: 16px;">Для отклика свяжитесь с работодателем напрямую</p>
+                    <button class="btn btn-secondary" onclick="closeModal('applyModal')">Закрыть</button>
+                </div>
             `;
             
             openModal('applyModal');
-
-            document.getElementById('applyForm').addEventListener('submit', handleApplicationSubmit);
         }
 
-        function handleApplicationSubmit(e) {
-            e.preventDefault();
-
-            if (!validateForm(e.target)) {
-                showToast('Ошибка', 'Заполните все обязательные поля', 'error');
-                return;
-            }
-
-            const jobId = parseInt(e.target.dataset.jobId);
-            const formData = new FormData(e.target);
-            
-            const application = {
-                jobId,
-                userId: STATE.currentUser?.email || formData.get('email'),
-                name: formData.get('name'),
-                phone: formData.get('phone'),
-                email: formData.get('email'),
-                coverLetter: formData.get('cover_letter'),
-                date: Date.now()
-            };
-
-            STATE.applications.push(application);
-            saveApplications();
-            closeModal('applyModal');
-            renderJobs();
-            showToast('Успешно', 'Ваш отклик отправлен! Работодатель свяжется с вами в ближайшее время.', 'success');
-        }
-
-        // ============================================
-        // FAQ
-        // ============================================
         function toggleFaq(element) {
             const faqItem = element.parentElement;
             const answer = faqItem.querySelector('.faq-answer');
@@ -2580,272 +2138,6 @@
             }
         }
 
-        // ============================================
-        // CONTENT PAGES
-        // ============================================
-        const CONTENT_PAGES = {
-            'about': {
-                title: 'О нас',
-                content: `
-                    <div class="content-section">
-                        <h2>Кто мы такие</h2>
-                        <p>TeenWork — это первая в России специализированная платформа для поиска работы подростками в возрасте от 14 до 18 лет. Мы создали безопасную среду, где молодые люди могут найти свою первую работу, а работодатели — ответственных и мотивированных сотрудников.</p>
-                        <p>Наша миссия — помочь подросткам получить первый трудовой опыт в безопасных и законных условиях, развить профессиональные навыки и научиться финансовой независимости.</p>
-                    </div>
-                    <div class="content-section">
-                        <h2>Почему TeenWork?</h2>
-                        <p>Мы понимаем особенности работы с несовершеннолетними и создали платформу, которая учитывает все юридические требования и обеспечивает максимальную безопасность:</p>
-                        <ul>
-                            <li>Все работодатели проходят тщательную проверку</li>
-                            <li>Вакансии соответствуют трудовому законодательству РФ</li>
-                            <li>Контроль рабочего времени и условий труда</li>
-                            <li>Поддержка и консультации для подростков и родителей</li>
-                        </ul>
-                    </div>
-                `
-            },
-            'how-it-works': {
-                title: 'Как это работает',
-                content: `
-                    <div class="content-section">
-                        <h2>Для подростков</h2>
-                        <h3>1. Регистрация</h3>
-                        <p>Создайте аккаунт, указав основную информацию о себе. Это займёт всего пару минут.</p>
-                        <h3>2. Поиск вакансий</h3>
-                        <p>Используйте удобные фильтры для поиска подходящей работы: город, тип занятости, зарплата.</p>
-                        <h3>3. Отклик на вакансию</h3>
-                        <p>Заполните форму отклика, расскажите о себе и своих навыках. Работодатель свяжется с вами напрямую.</p>
-                        <h3>4. Собеседование и трудоустройство</h3>
-                        <p>Пройдите собеседование и получите официальное трудоустройство со всеми необходимыми документами.</p>
-                    </div>
-                    <div class="content-section">
-                        <h2>Для работодателей</h2>
-                        <h3>1. Верификация</h3>
-                        <p>Пройдите проверку, предоставив документы компании и информацию о вакансии.</p>
-                        <h3>2. Размещение вакансии</h3>
-                        <p>Опубликуйте подробное описание вакансии с указанием всех условий работы.</p>
-                        <h3>3. Получение откликов</h3>
-                        <p>Просматривайте анкеты кандидатов и связывайтесь с подходящими.</p>
-                        <h3>4. Найм сотрудника</h3>
-                        <p>Оформите трудоустройство в соответствии с законодательством РФ.</p>
-                    </div>
-                `
-            },
-            'safety': {
-                title: 'Безопасность',
-                content: `
-                    <div class="content-section">
-                        <h2>Наши гарантии</h2>
-                        <p>Безопасность подростков — наш главный приоритет. Мы предпринимаем все необходимые меры для защиты молодых работников:</p>
-                        <h3>Проверка работодателей</h3>
-                        <p>Каждая компания проходит многоуровневую проверку:</p>
-                        <ul>
-                            <li>Верификация юридических документов</li>
-                            <li>Проверка репутации и истории компании</li>
-                            <li>Оценка условий труда и рабочих мест</li>
-                            <li>Соблюдение требований законодательства</li>
-                        </ul>
-                        <h3>Контроль вакансий</h3>
-                        <p>Все вакансии модерируются перед публикацией. Мы не допускаем размещение предложений, которые:</p>
-                        <ul>
-                            <li>Нарушают трудовое законодательство</li>
-                            <li>Содержат опасные или вредные условия труда</li>
-                            <li>Не соответствуют возрастным ограничениям</li>
-                            <li>Предлагают неофициальное трудоустройство</li>
-                        </ul>
-                    </div>
-                    <div class="content-section">
-                        <h2>Права подростков</h2>
-                        <p>По законодательству РФ, несовершеннолетние работники имеют особые права и гарантии. Мы следим за их соблюдением:</p>
-                        <ul>
-                            <li>Сокращённый рабочий день</li>
-                            <li>Запрет на работу в ночное время</li>
-                            <li>Обязательные перерывы и выходные</li>
-                            <li>Ежегодный оплачиваемый отпуск 31 день</li>
-                            <li>Запрет на тяжёлый физический труд</li>
-                        </ul>
-                    </div>
-                `
-            },
-            'blog': {
-                title: 'Блог',
-                content: `
-                    <div class="content-section">
-                        <h2>Полезные материалы</h2>
-                        <p>Здесь будут публиковаться статьи о поиске работы, развитии навыков, трудовом законодательстве и истории успеха подростков.</p>
-                        <h3>Скоро:</h3>
-                        <ul>
-                            <li>Как составить своё первое резюме</li>
-                            <li>Советы по прохождению собеседования</li>
-                            <li>Трудовые права подростков</li>
-                            <li>Истории успеха наших пользователей</li>
-                            <li>Профориентация: как выбрать свой путь</li>
-                        </ul>
-                    </div>
-                `
-            },
-            'pricing': {
-                title: 'Тарифы для работодателей',
-                content: `
-                    <div class="content-section">
-                        <h2>Прозрачные цены</h2>
-                        <p>Мы предлагаем гибкие тарифные планы для работодателей разного масштаба:</p>
-                        <h3>Базовый — 2 990 ₽/месяц</h3>
-                        <ul>
-                            <li>До 3 активных вакансий</li>
-                            <li>Доступ к базе кандидатов</li>
-                            <li>Базовая статистика откликов</li>
-                        </ul>
-                        <h3>Стандарт — 5 990 ₽/месяц</h3>
-                        <ul>
-                            <li>До 10 активных вакансий</li>
-                            <li>Приоритетное размещение</li>
-                            <li>Расширенная статистика</li>
-                            <li>Поддержка менеджера</li>
-                        </ul>
-                        <h3>Премиум — 9 990 ₽/месяц</h3>
-                        <ul>
-                            <li>Неограниченное количество вакансий</li>
-                            <li>Топ размещение в поиске</li>
-                            <li>Персональный менеджер</li>
-                            <li>Доступ к аналитике рынка</li>
-                            <li>Брендированная страница компании</li>
-                        </ul>
-                    </div>
-                `
-            },
-            'requirements': {
-                title: 'Требования к работодателям',
-                content: `
-                    <div class="content-section">
-                        <h2>Кто может размещать вакансии</h2>
-                        <p>Для размещения вакансий на платформе TeenWork работодатель должен соответствовать следующим требованиям:</p>
-                        <h3>Документы</h3>
-                        <ul>
-                            <li>Регистрация юридического лица или ИП</li>
-                            <li>Действующие учредительные документы</li>
-                            <li>Подтверждение легальной деятельности</li>
-                        </ul>
-                        <h3>Условия труда</h3>
-                        <ul>
-                            <li>Официальное трудоустройство по ТК РФ</li>
-                            <li>Соблюдение норм рабочего времени для подростков</li>
-                            <li>Безопасные условия труда</li>
-                            <li>Своевременная оплата труда</li>
-                        </ul>
-                        <h3>Запреты</h3>
-                        <p>На платформе запрещено размещать вакансии:</p>
-                        <ul>
-                            <li>Связанные с продажей алкоголя и табака</li>
-                            <li>С вредными или опасными условиями труда</li>
-                            <li>Требующие работы в ночное время</li>
-                            <li>С тяжёлым физическим трудом</li>
-                        </ul>
-                    </div>
-                `
-            },
-            'help': {
-                title: 'Помощь',
-                content: `
-                    <div class="content-section">
-                        <h2>Часто задаваемые вопросы</h2>
-                        <p>Если вы не нашли ответ на свой вопрос в разделе FAQ, свяжитесь с нами любым удобным способом.</p>
-                        <h3>Техническая поддержка</h3>
-                        <p>Мы работаем с понедельника по пятницу с 9:00 до 18:00 (МСК)</p>
-                        <h3>Для подростков</h3>
-                        <p>Если у вас возникли вопросы о поиске работы, оформлении или ваших правах, наша команда всегда готова помочь.</p>
-                        <h3>Для родителей</h3>
-                        <p>Мы понимаем, что родители хотят быть уверены в безопасности своих детей. Обращайтесь с любыми вопросами — мы подробно расскажем о нашей работе.</p>
-                    </div>
-                `
-            },
-            'contacts': {
-                title: 'Контакты',
-                content: `
-                    <div class="content-section">
-                        <h2>Свяжитесь с нами</h2>
-                        <h3>Email</h3>
-                        <p>support@teenwork.ru — общие вопросы<br>
-                        hr@teenwork.ru — для работодателей<br>
-                        help@teenwork.ru — техподдержка</p>
-                        <h3>Телефон</h3>
-                        <p>+7 (495) 123-45-67 — горячая линия<br>
-                        Пн-Пт: 9:00 - 18:00 (МСК)</p>
-                        <h3>Офис</h3>
-                        <p>г. Москва, ул. Примерная, д. 1<br>
-                        БЦ "TeenWork", офис 301</p>
-                        <h3>Социальные сети</h3>
-                        <p>VK: vk.com/teenwork<br>
-                        Telegram: @teenwork_official<br>
-                        Instagram*: @teenwork.ru</p>
-                    </div>
-                `
-            },
-            'terms': {
-                title: 'Пользовательское соглашение',
-                content: `
-                    <div class="content-section">
-                        <h2>Общие положения</h2>
-                        <p>Настоящее Пользовательское соглашение регулирует отношения между TeenWork и пользователями платформы.</p>
-                        <h3>1. Термины и определения</h3>
-                        <p>Платформа — веб-сайт teenwork.ru и мобильное приложение TeenWork.</p>
-                        <p>Пользователь — физическое или юридическое лицо, использующее Платформу.</p>
-                        <h3>2. Предмет соглашения</h3>
-                        <p>Платформа предоставляет услуги по размещению вакансий и поиску работы для подростков 14-18 лет.</p>
-                        <h3>3. Регистрация</h3>
-                        <p>Для использования функций Платформы необходимо пройти регистрацию и предоставить достоверную информацию.</p>
-                        <h3>4. Права и обязанности сторон</h3>
-                        <p>Платформа обязуется обеспечивать безопасность данных пользователей и модерировать размещаемый контент.</p>
-                        <p>Пользователи обязуются соблюдать правила Платформы и законодательство РФ.</p>
-                    </div>
-                `
-            },
-            'privacy': {
-                title: 'Политика конфиденциальности',
-                content: `
-                    <div class="content-section">
-                        <h2>Защита персональных данных</h2>
-                        <p>TeenWork серьёзно относится к защите персональных данных пользователей.</p>
-                        <h3>Какие данные мы собираем</h3>
-                        <ul>
-                            <li>ФИО, возраст, контактная информация</li>
-                            <li>Информация о профессиональных навыках</li>
-                            <li>Данные об откликах на вакансии</li>
-                        </ul>
-                        <h3>Как мы используем данные</h3>
-                        <ul>
-                            <li>Для предоставления услуг платформы</li>
-                            <li>Для связи работодателей и кандидатов</li>
-                            <li>Для улучшения качества сервиса</li>
-                            <li>Для соблюдения законодательства</li>
-                        </ul>
-                        <h3>Безопасность данных</h3>
-                        <p>Мы используем современные технологии шифрования и защиты данных. Доступ к персональной информации имеют только уполномоченные сотрудники.</p>
-                        <h3>Ваши права</h3>
-                        <p>Вы имеете право запросить удаление или изменение своих данных в любое время.</p>
-                    </div>
-                `
-            }
-        };
-
-        function openContentPage(pageId) {
-            const page = CONTENT_PAGES[pageId];
-            if (!page) return;
-
-            document.getElementById('contentPageTitle').textContent = page.title;
-            document.getElementById('contentPageBody').innerHTML = page.content;
-            document.getElementById('contentPage').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeContentPage() {
-            document.getElementById('contentPage').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // ============================================
-        // NAVIGATION FUNCTIONS
-        // ============================================
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -2854,15 +2146,7 @@
             document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function scrollToSection(sectionId) {
-            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
         function initEventListeners() {
-            // Input filters
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('sortFilter').addEventListener('change', () => {
                 applySorting();
@@ -2870,12 +2154,11 @@
                 renderJobs();
             });
 
-            // Forms
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
-            document.getElementById('postJobForm').addEventListener('submit', handlePostJob);
+            document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
+            document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
 
-            // Close modals on outside click
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -2884,17 +2167,6 @@
                 });
             });
 
-            // Close dropdown on outside click
-            document.addEventListener('click', (e) => {
-                const userMenu = document.querySelector('.user-menu');
-                const dropdown = document.getElementById('userDropdown');
-                if (userMenu && dropdown && !userMenu.contains(e.target)) {
-                    dropdown.classList.remove('active');
-                }
-            });
-
-            // Navbar scroll effect
-            let lastScroll = 0;
             window.addEventListener('scroll', () => {
                 const navbar = document.getElementById('navbar');
                 const currentScroll = window.pageYOffset;
@@ -2904,11 +2176,8 @@
                 } else {
                     navbar.classList.remove('scrolled');
                 }
-                
-                lastScroll = currentScroll;
             });
 
-            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     const activeModal = document.querySelector('.modal.active');
@@ -2916,40 +2185,21 @@
                         closeModal(activeModal.id);
                     }
                     
-                    const contentPage = document.getElementById('contentPage');
-                    if (contentPage.classList.contains('active')) {
-                        closeContentPage();
-                    }
-
-                    const dropdown = document.getElementById('userDropdown');
-                    if (dropdown?.classList.contains('active')) {
-                        dropdown.classList.remove('active');
+                    const profilePage = document.getElementById('profilePage');
+                    if (profilePage.classList.contains('active')) {
+                        closeProfile();
                     }
                 }
             });
         }
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
         function init() {
-            // Show skeleton loader
-            showSkeletonLoader();
-
-            // Initialize storage
             initStorage();
-
-            // Update navbar based on user state
             updateNavbar();
-
-            // Simulate loading delay for better UX
-            setTimeout(() => {
-                renderJobs();
-                initEventListeners();
-            }, 500);
+            renderJobs();
+            initEventListeners();
         }
 
-        // Start application
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
