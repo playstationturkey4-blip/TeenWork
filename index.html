@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TeenWork — Работа для подростков 14-18 лет</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,35 +14,49 @@
         }
 
         :root {
-            --primary-blue: #1e66ff;
-            --blue-hover: #0052ea;
-            --soft-blue: #e8f1ff;
-            --light-gray: #f8f9fb;
-            --border-gray: #e1e4e8;
-            --text-dark: #1a1a1a;
-            --text-gray: #6b7280;
+            --primary-blue: #2563eb;
+            --blue-hover: #1d4ed8;
+            --blue-light: #3b82f6;
+            --soft-blue: #eff6ff;
+            --light-gray: #f8fafc;
+            --border-gray: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-gray: #64748b;
             --white: #ffffff;
             --success: #10b981;
             --error: #ef4444;
             --warning: #f59e0b;
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
-            --transition: all 0.25s ease;
+            --radius-xl: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --max-width: 1280px;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--light-gray);
             color: var(--text-dark);
             line-height: 1.6;
             overflow-x: hidden;
+            opacity: 0;
+            animation: fadeInPage 0.4s ease forwards;
         }
 
+        @keyframes fadeInPage {
+            to { opacity: 1; }
+        }
+
+        /* Navigation */
         .nav {
             position: sticky;
             top: 0;
@@ -48,6 +64,13 @@
             box-shadow: var(--shadow-sm);
             z-index: 1000;
             padding: 16px 0;
+            transition: var(--transition);
+        }
+
+        .nav.scrolled {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-md);
         }
 
         .nav-container {
@@ -60,10 +83,34 @@
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 28px;
+            font-weight: 800;
             color: var(--primary-blue);
-            letter-spacing: -0.5px;
+            letter-spacing: -1px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--blue-light));
+            transition: width 0.4s ease;
+            border-radius: 2px;
+        }
+
+        .logo:hover::after {
+            width: 100%;
+        }
+
+        .logo:hover {
+            transform: translateY(-1px);
+            filter: drop-shadow(0 4px 8px rgba(37, 99, 235, 0.3));
         }
 
         .nav-actions {
@@ -72,12 +119,115 @@
             align-items: center;
         }
 
-        .btn {
-            padding: 10px 20px;
+        /* User Profile Dropdown */
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .user-avatar:hover {
+            border-color: var(--primary-blue);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .user-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 16px;
+            width: 12px;
+            height: 12px;
+            background: var(--white);
+            transform: rotate(45deg);
+            border-top: 1px solid var(--border-gray);
+            border-left: 1px solid var(--border-gray);
+        }
+
+        .dropdown-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .dropdown-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .dropdown-email {
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+
+        .dropdown-menu {
+            list-style: none;
+            padding: 8px;
+        }
+
+        .dropdown-item {
+            padding: 10px 12px;
             border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--light-gray);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-gray);
+            margin: 8px 0;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 11px 24px;
+            border-radius: var(--radius-md);
             border: none;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             font-family: inherit;
@@ -85,6 +235,26 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn:disabled {
@@ -93,24 +263,29 @@
         }
 
         .btn-primary {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
             color: var(--white);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: var(--blue-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         .btn-secondary {
             background: transparent;
             color: var(--text-dark);
-            border: 1px solid var(--border-gray);
+            border: 1.5px solid var(--border-gray);
         }
 
         .btn-secondary:hover:not(:disabled) {
             background: var(--light-gray);
+            border-color: var(--text-gray);
         }
 
         .btn-danger {
@@ -120,30 +295,49 @@
 
         .btn-danger:hover:not(:disabled) {
             background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
         .btn-small {
-            padding: 6px 14px;
+            padding: 7px 16px;
             font-size: 13px;
         }
 
+        /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #1e66ff 0%, #0052ea 100%);
+            background: linear-gradient(135deg, #1e40af 0%, var(--primary-blue) 50%, var(--blue-light) 100%);
             color: var(--white);
-            padding: 80px 24px 100px;
+            padding: 100px 24px 120px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .hero-content {
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto;
-            animation: fadeInUp 0.6s ease;
+            animation: fadeInUp 0.7s ease;
+            position: relative;
+            z-index: 1;
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -152,18 +346,21 @@
         }
 
         .hero h1 {
-            font-size: 52px;
+            font-size: 58px;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             line-height: 1.1;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
+            animation: fadeInUp 0.7s ease 0.1s backwards;
         }
 
         .hero p {
-            font-size: 20px;
-            margin-bottom: 36px;
+            font-size: 21px;
+            margin-bottom: 40px;
             opacity: 0.95;
-            font-weight: 400;
+            font-weight: 500;
+            line-height: 1.7;
+            animation: fadeInUp 0.7s ease 0.2s backwards;
         }
 
         .hero-actions {
@@ -171,12 +368,14 @@
             gap: 16px;
             justify-content: center;
             flex-wrap: wrap;
+            animation: fadeInUp 0.7s ease 0.3s backwards;
         }
 
         .btn-hero {
-            padding: 14px 32px;
-            font-size: 16px;
-            border-radius: var(--radius-md);
+            padding: 16px 36px;
+            font-size: 17px;
+            border-radius: var(--radius-lg);
+            font-weight: 700;
         }
 
         .btn-white {
@@ -185,58 +384,63 @@
         }
 
         .btn-white:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4);
         }
 
         .btn-outline {
             background: transparent;
             color: var(--white);
-            border: 2px solid var(--white);
+            border: 2.5px solid var(--white);
         }
 
         .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
         }
 
+        /* Container */
         .container {
             max-width: var(--max-width);
             margin: 0 auto;
             padding: 0 24px;
         }
 
+        /* Filters Section */
         .filters-section {
             background: var(--white);
-            padding: 32px 24px;
-            margin-top: -50px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
+            padding: 36px 28px;
+            margin-top: -60px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
             position: relative;
             z-index: 10;
+            animation: fadeInUp 0.6s ease 0.4s backwards;
         }
 
         .filters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
         }
 
         .input, .select {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-gray);
-            border-radius: var(--radius-sm);
+            padding: 13px 18px;
+            border: 1.5px solid var(--border-gray);
+            border-radius: var(--radius-md);
             font-size: 15px;
             font-family: inherit;
             transition: var(--transition);
             background: var(--white);
+            font-weight: 500;
         }
 
         .input:focus, .select:focus {
             outline: none;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(30, 102, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         .filter-actions {
@@ -248,20 +452,21 @@
 
         .filter-actions .btn {
             flex: 1;
-            min-width: 140px;
+            min-width: 150px;
         }
 
         .sort-dropdown {
             margin-left: auto;
-            min-width: 180px;
+            min-width: 200px;
         }
 
+        /* Jobs Section */
         .jobs-section {
-            padding: 60px 0;
+            padding: 70px 0;
         }
 
         .section-header {
-            margin-bottom: 32px;
+            margin-bottom: 36px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -270,15 +475,62 @@
         }
 
         .section-header h2 {
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
         .section-info {
             color: var(--text-gray);
             font-size: 16px;
+            font-weight: 500;
         }
 
+        /* Skeleton Loader */
+        .skeleton-loader {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .skeleton-card {
+            background: var(--white);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .skeleton-line {
+            height: 20px;
+            background: linear-gradient(90deg, var(--light-gray) 25%, var(--border-gray) 50%, var(--light-gray) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .skeleton-line.title {
+            width: 70%;
+            height: 24px;
+        }
+
+        .skeleton-line.subtitle {
+            width: 50%;
+            height: 16px;
+        }
+
+        .skeleton-line.small {
+            width: 30%;
+            height: 14px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Jobs Grid */
         .jobs-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -288,20 +540,27 @@
 
         .job-card {
             background: var(--white);
-            padding: 24px;
-            border-radius: var(--radius-md);
+            padding: 26px;
+            border-radius: var(--radius-lg);
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
             cursor: pointer;
-            border: 1px solid transparent;
+            border: 2px solid transparent;
             position: relative;
-            animation: fadeIn 0.4s ease;
+            animation: fadeIn 0.5s ease backwards;
         }
+
+        .job-card:nth-child(1) { animation-delay: 0.05s; }
+        .job-card:nth-child(2) { animation-delay: 0.1s; }
+        .job-card:nth-child(3) { animation-delay: 0.15s; }
+        .job-card:nth-child(4) { animation-delay: 0.2s; }
+        .job-card:nth-child(5) { animation-delay: 0.25s; }
+        .job-card:nth-child(6) { animation-delay: 0.3s; }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -310,15 +569,15 @@
         }
 
         .job-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-6px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-blue);
         }
 
         .job-card-actions {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 18px;
+            right: 18px;
             display: flex;
             gap: 8px;
             opacity: 0;
@@ -332,8 +591,8 @@
         .icon-btn {
             background: var(--light-gray);
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -345,25 +604,40 @@
 
         .icon-btn:hover {
             background: var(--border-gray);
-            transform: scale(1.1);
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .job-badge {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: var(--white);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
         }
 
         .job-header {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .job-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 10px;
             color: var(--text-dark);
-            padding-right: 80px;
+            padding-right: 90px;
+            line-height: 1.3;
         }
 
         .job-company {
             color: var(--text-gray);
             font-size: 15px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            font-weight: 600;
         }
 
         .job-location {
@@ -371,56 +645,62 @@
             font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            font-weight: 500;
         }
 
         .job-details {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .job-salary {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary-blue);
-            margin-bottom: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 14px;
         }
 
         .job-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .tag {
-            padding: 6px 12px;
+            padding: 7px 14px;
             background: var(--soft-blue);
             color: var(--primary-blue);
-            border-radius: 20px;
+            border-radius: 24px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .job-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 16px;
-            border-top: 1px solid var(--border-gray);
+            padding-top: 18px;
+            border-top: 1.5px solid var(--border-gray);
         }
 
         .job-date {
             color: var(--text-gray);
             font-size: 13px;
+            font-weight: 500;
         }
 
         .btn-apply {
-            padding: 8px 20px;
+            padding: 9px 22px;
             font-size: 14px;
         }
 
+        /* Info Section */
         .info-section {
-            padding: 80px 0;
+            padding: 90px 0;
             background: var(--white);
         }
 
@@ -428,67 +708,84 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 32px;
-            margin-top: 48px;
+            margin-top: 56px;
         }
 
         .info-card {
-            padding: 32px;
+            padding: 36px;
             background: var(--light-gray);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
             transition: var(--transition);
+            border: 2px solid transparent;
         }
 
         .info-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-6px);
             box-shadow: var(--shadow-md);
+            border-color: var(--soft-blue);
+            background: var(--white);
         }
 
         .info-icon {
-            width: 56px;
-            height: 56px;
-            background: var(--soft-blue);
-            border-radius: var(--radius-md);
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--soft-blue), #dbeafe);
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 32px;
+            margin-bottom: 24px;
+            transition: var(--transition);
+        }
+
+        .info-card:hover .info-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .info-card h3 {
-            font-size: 20px;
-            margin-bottom: 12px;
+            font-size: 21px;
+            margin-bottom: 14px;
+            font-weight: 700;
         }
 
         .info-card p {
             color: var(--text-gray);
-            line-height: 1.6;
+            line-height: 1.7;
+            font-weight: 500;
         }
 
+        /* FAQ Section */
         .faq-section {
-            padding: 80px 0;
+            padding: 90px 0;
         }
 
         .faq-list {
-            max-width: 800px;
-            margin: 48px auto 0;
+            max-width: 850px;
+            margin: 56px auto 0;
         }
 
         .faq-item {
             background: var(--white);
-            border-radius: var(--radius-md);
-            margin-bottom: 16px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 18px;
             overflow: hidden;
             box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .faq-item:hover {
+            box-shadow: var(--shadow-md);
         }
 
         .faq-question {
-            padding: 20px 24px;
+            padding: 22px 26px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 16px;
             transition: var(--transition);
             user-select: none;
         }
@@ -498,43 +795,52 @@
         }
 
         .faq-icon {
-            font-size: 20px;
+            font-size: 18px;
             transition: transform 0.3s ease;
             flex-shrink: 0;
+            color: var(--primary-blue);
         }
 
         .faq-item.active .faq-icon {
             transform: rotate(180deg);
         }
 
+        .faq-item.active .faq-question {
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+        }
+
         .faq-answer {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease;
+            transition: max-height 0.4s ease;
         }
 
         .faq-answer-content {
-            padding: 0 24px 20px;
+            padding: 0 26px 22px;
             color: var(--text-gray);
-            line-height: 1.7;
+            line-height: 1.8;
+            font-weight: 500;
         }
 
+        /* Footer */
         .footer {
             background: var(--text-dark);
             color: var(--white);
-            padding: 48px 0 24px;
+            padding: 60px 0 28px;
         }
 
         .footer-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 32px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
         }
 
         .footer-section h4 {
-            margin-bottom: 16px;
-            font-size: 16px;
+            margin-bottom: 18px;
+            font-size: 17px;
+            font-weight: 700;
         }
 
         .footer-links {
@@ -542,26 +848,31 @@
         }
 
         .footer-links li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .footer-links a {
             color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             transition: var(--transition);
+            font-weight: 500;
+            cursor: pointer;
         }
 
         .footer-links a:hover {
             color: var(--white);
+            padding-left: 4px;
         }
 
         .footer-bottom {
-            padding-top: 24px;
+            padding-top: 28px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
             color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
         }
 
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -569,12 +880,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.65);
             z-index: 2000;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
@@ -583,90 +895,105 @@
 
         .modal-content {
             background: var(--white);
-            border-radius: var(--radius-lg);
-            max-width: 500px;
+            border-radius: var(--radius-xl);
+            max-width: 520px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            animation: modalSlideIn 0.3s ease;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes modalSlideIn {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: scale(0.9) translateY(-30px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal.hiding .modal-content {
+            animation: modalSlideOut 0.3s ease forwards;
+        }
+
+        @keyframes modalSlideOut {
+            to {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
             }
         }
 
         .modal-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-gray);
+            padding: 28px;
+            border-bottom: 1.5px solid var(--border-gray);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .modal-header h3 {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
         .modal-close {
-            background: none;
+            background: var(--light-gray);
             border: none;
-            font-size: 28px;
+            font-size: 24px;
             cursor: pointer;
             color: var(--text-gray);
             transition: var(--transition);
             padding: 0;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 50%;
         }
 
         .modal-close:hover {
-            background: var(--light-gray);
+            background: var(--border-gray);
             color: var(--text-dark);
+            transform: rotate(90deg);
         }
 
         .modal-body {
-            padding: 24px;
+            padding: 28px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
+            margin-bottom: 10px;
+            font-weight: 600;
             font-size: 14px;
+            color: var(--text-dark);
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-gray);
-            border-radius: var(--radius-sm);
+            padding: 13px 18px;
+            border: 1.5px solid var(--border-gray);
+            border-radius: var(--radius-md);
             font-size: 15px;
             font-family: inherit;
             transition: var(--transition);
+            font-weight: 500;
         }
 
         .form-group textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 110px;
         }
 
         .form-group input:focus,
@@ -674,14 +1001,15 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(30, 102, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         .form-error {
             color: var(--error);
             font-size: 13px;
-            margin-top: 4px;
+            margin-top: 6px;
             display: none;
+            font-weight: 600;
         }
 
         .form-group.error input,
@@ -695,79 +1023,91 @@
         }
 
         .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border-gray);
+            padding: 18px 28px;
+            border-top: 1.5px solid var(--border-gray);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
         }
 
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 80px 20px;
+            padding: 100px 20px;
             color: var(--text-gray);
             background: var(--white);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
             box-shadow: var(--shadow-sm);
         }
 
         .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
+            font-size: 72px;
+            margin-bottom: 24px;
+            opacity: 0.6;
         }
 
         .empty-state h3 {
-            font-size: 24px;
-            margin-bottom: 12px;
+            font-size: 26px;
+            margin-bottom: 14px;
             color: var(--text-dark);
+            font-weight: 700;
         }
 
-        .toast {
+        .empty-state p {
+            font-weight: 500;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
             position: fixed;
             top: 24px;
             right: 24px;
-            background: var(--white);
-            padding: 16px 24px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
             z-index: 3000;
-            animation: slideInRight 0.3s ease;
-            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: var(--white);
+            padding: 18px 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: start;
+            gap: 14px;
+            min-width: 320px;
+            max-width: 420px;
+            animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-left: 4px solid;
         }
 
         @keyframes slideInRight {
             from {
-                transform: translateX(400px);
+                transform: translateX(450px);
                 opacity: 0;
             }
             to {
                 transform: translateX(0);
                 opacity: 1;
-            }
-        }
-
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(400px);
-                opacity: 0;
             }
         }
 
         .toast.hiding {
-            animation: slideOutRight 0.3s ease;
+            animation: slideOutRight 0.3s ease forwards;
+        }
+
+        @keyframes slideOutRight {
+            to {
+                transform: translateX(450px);
+                opacity: 0;
+            }
         }
 
         .toast-icon {
-            font-size: 24px;
+            font-size: 26px;
             flex-shrink: 0;
+            line-height: 1;
         }
 
         .toast-content {
@@ -775,77 +1115,190 @@
         }
 
         .toast-title {
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 4px;
+            font-size: 15px;
         }
 
         .toast-message {
             font-size: 14px;
             color: var(--text-gray);
+            line-height: 1.5;
+            font-weight: 500;
         }
 
         .toast.success {
-            border-left: 4px solid var(--success);
+            border-left-color: var(--success);
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
         }
 
         .toast.error {
-            border-left: 4px solid var(--error);
+            border-left-color: var(--error);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error);
         }
 
         .toast.warning {
-            border-left: 4px solid var(--warning);
+            border-left-color: var(--warning);
         }
 
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-top: 40px;
+            gap: 10px;
+            margin-top: 48px;
         }
 
         .pagination-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-gray);
+            padding: 10px 18px;
+            border: 1.5px solid var(--border-gray);
             background: var(--white);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             cursor: pointer;
             transition: var(--transition);
             font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
         }
 
         .pagination-btn:hover:not(:disabled) {
             background: var(--light-gray);
+            border-color: var(--primary-blue);
         }
 
         .pagination-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
         }
 
         .pagination-btn.active {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
             color: var(--white);
             border-color: var(--primary-blue);
         }
 
-        .loading-spinner {
-            border: 3px solid var(--border-gray);
-            border-top: 3px solid var(--primary-blue);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 0.8s linear infinite;
+        /* Content Pages */
+        .content-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--white);
+            z-index: 1500;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .content-page.active {
+            transform: translateX(0);
         }
 
+        .content-page-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+            color: var(--white);
+            padding: 40px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .content-page-nav {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: var(--white);
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .content-page-title {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .content-page-title h1 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .content-page-body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .content-section {
+            margin-bottom: 48px;
+        }
+
+        .content-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: var(--text-dark);
+        }
+
+        .content-section h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 32px 0 14px;
+            color: var(--text-dark);
+        }
+
+        .content-section p {
+            color: var(--text-gray);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .content-section ul {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .content-section li {
+            color: var(--text-gray);
+            line-height: 1.8;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 36px;
+                font-size: 40px;
+                letter-spacing: -1px;
             }
 
             .hero p {
@@ -866,6 +1319,7 @@
 
             .hero-actions {
                 flex-direction: column;
+                width: 100%;
             }
 
             .btn-hero {
@@ -877,7 +1331,7 @@
             }
 
             .btn {
-                padding: 8px 14px;
+                padding: 9px 16px;
                 font-size: 14px;
             }
 
@@ -891,9 +1345,13 @@
                 width: 100%;
             }
 
-            .toast {
+            .toast-container {
                 right: 12px;
                 left: 12px;
+            }
+
+            .toast {
+                min-width: auto;
                 max-width: none;
             }
 
@@ -904,36 +1362,49 @@
             .job-card-actions {
                 position: static;
                 opacity: 1;
-                margin-bottom: 12px;
+                margin-bottom: 14px;
                 justify-content: flex-end;
+            }
+
+            .content-page-title h1 {
+                font-size: 32px;
+            }
+
+            .logo {
+                font-size: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <nav class="nav">
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="navbar">
         <div class="nav-container">
-            <div class="logo">TeenWork</div>
-            <div class="nav-actions">
-                <button class="btn btn-secondary" data-action="login">Войти</button>
-                <button class="btn btn-secondary" data-action="register">Регистрация</button>
-                <button class="btn btn-primary" data-action="post-job">Разместить вакансию</button>
+            <div class="logo" onclick="scrollToTop()">TeenWork</div>
+            <div class="nav-actions" id="navActions">
+                <!-- Will be populated by JS -->
             </div>
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
             <h1>Твоя первая работа начинается здесь</h1>
             <p>Безопасная платформа для поиска работы подросткам 14-18 лет. Официальное трудоустройство, реальная зарплата, проверенные работодатели.</p>
             <div class="hero-actions">
-                <button class="btn btn-hero btn-white" data-action="scroll-search">Найти работу</button>
-                <button class="btn btn-hero btn-outline" data-action="post-job">Разместить вакансию</button>
+                <button class="btn btn-hero btn-white" onclick="scrollToSearch()">Найти работу</button>
+                <button class="btn btn-hero btn-outline" onclick="openModal('postJobModal')">Разместить вакансию</button>
             </div>
         </div>
     </section>
 
+    <!-- Main Container -->
     <div class="container">
+        <!-- Filters Section -->
         <section class="filters-section" id="search">
             <div class="filters-grid">
                 <input type="text" class="input" id="searchInput" placeholder="Поиск по названию или компании...">
@@ -961,8 +1432,8 @@
                 </select>
             </div>
             <div class="filter-actions">
-                <button class="btn btn-primary" data-action="apply-filters">Применить фильтры</button>
-                <button class="btn btn-secondary" data-action="reset-filters">Сбросить</button>
+                <button class="btn btn-primary" onclick="applyFilters()">Применить фильтры</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">Сбросить</button>
                 <select class="select sort-dropdown" id="sortFilter">
                     <option value="date-desc">Сначала новые</option>
                     <option value="date-asc">Сначала старые</option>
@@ -972,6 +1443,7 @@
             </div>
         </section>
 
+        <!-- Jobs Section -->
         <section class="jobs-section">
             <div class="section-header">
                 <div>
@@ -979,11 +1451,15 @@
                     <p class="section-info" id="jobCount">Найдено вакансий: 0</p>
                 </div>
             </div>
+            <div class="skeleton-loader" id="skeletonLoader" style="display: none;">
+                <!-- Skeleton cards will be inserted here -->
+            </div>
             <div class="jobs-grid" id="jobsGrid"></div>
             <div class="pagination" id="pagination"></div>
         </section>
     </div>
 
+    <!-- Info Section -->
     <section class="info-section">
         <div class="container">
             <div class="section-header" style="text-align: center; display: block;">
@@ -1015,6 +1491,7 @@
         </div>
     </section>
 
+    <!-- FAQ Section -->
     <section class="faq-section">
         <div class="container">
             <div class="section-header" style="text-align: center; display: block;">
@@ -1023,7 +1500,7 @@
             </div>
             <div class="faq-list" id="faqList">
                 <div class="faq-item">
-                    <div class="faq-question">
+                    <div class="faq-question" onclick="toggleFaq(this)">
                         <span>С какого возраста можно работать?</span>
                         <span class="faq-icon">▼</span>
                     </div>
@@ -1034,7 +1511,7 @@
                     </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-question">
+                    <div class="faq-question" onclick="toggleFaq(this)">
                         <span>Сколько часов в неделю может работать подросток?</span>
                         <span class="faq-icon">▼</span>
                     </div>
@@ -1045,7 +1522,7 @@
                     </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-question">
+                    <div class="faq-question" onclick="toggleFaq(this)">
                         <span>Нужны ли какие-то документы?</span>
                         <span class="faq-icon">▼</span>
                     </div>
@@ -1056,7 +1533,7 @@
                     </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-question">
+                    <div class="faq-question" onclick="toggleFaq(this)">
                         <span>Как проверить надежность работодателя?</span>
                         <span class="faq-icon">▼</span>
                     </div>
@@ -1067,7 +1544,7 @@
                     </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-question">
+                    <div class="faq-question" onclick="toggleFaq(this)">
                         <span>Можно ли работать удалённо?</span>
                         <span class="faq-icon">▼</span>
                     </div>
@@ -1081,39 +1558,40 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>О платформе</h4>
                     <ul class="footer-links">
-                        <li><a href="#">О нас</a></li>
-                        <li><a href="#">Как это работает</a></li>
-                        <li><a href="#">Безопасность</a></li>
-                        <li><a href="#">Блог</a></li>
+                        <li><a onclick="openContentPage('about')">О нас</a></li>
+                        <li><a onclick="openContentPage('how-it-works')">Как это работает</a></li>
+                        <li><a onclick="openContentPage('safety')">Безопасность</a></li>
+                        <li><a onclick="openContentPage('blog')">Блог</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Работодателям</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Разместить вакансию</a></li>
-                        <li><a href="#">Тарифы</a></li>
-                        <li><a href="#">Требования</a></li>
+                        <li><a onclick="openModal('postJobModal')">Разместить вакансию</a></li>
+                        <li><a onclick="openContentPage('pricing')">Тарифы</a></li>
+                        <li><a onclick="openContentPage('requirements')">Требования</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Поддержка</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Помощь</a></li>
-                        <li><a href="#">Контакты</a></li>
-                        <li><a href="#">FAQ</a></li>
+                        <li><a onclick="openContentPage('help')">Помощь</a></li>
+                        <li><a onclick="openContentPage('contacts')">Контакты</a></li>
+                        <li><a onclick="scrollToSection('faqList')">FAQ</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Правовая информация</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Пользовательское соглашение</a></li>
-                        <li><a href="#">Политика конфиденциальности</a></li>
+                        <li><a onclick="openContentPage('terms')">Пользовательское соглашение</a></li>
+                        <li><a onclick="openContentPage('privacy')">Политика конфиденциальности</a></li>
                     </ul>
                 </div>
             </div>
@@ -1123,25 +1601,41 @@
         </div>
     </footer>
 
+    <!-- Content Pages -->
+    <div class="content-page" id="contentPage">
+        <div class="content-page-header">
+            <div class="content-page-nav">
+                <button class="back-btn" onclick="closeContentPage()">← Назад</button>
+            </div>
+            <div class="content-page-title">
+                <h1 id="contentPageTitle"></h1>
+            </div>
+        </div>
+        <div class="content-page-body" id="contentPageBody">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Modals -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Вход в аккаунт</h3>
-                <button class="modal-close" data-modal="loginModal">&times;</button>
+                <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="loginForm">
                     <div class="form-group">
-                        <label>Email или телефон</label>
-                        <input type="text" name="login" required>
-                        <div class="form-error">Это поле обязательно</div>
+                        <label>Email</label>
+                        <input type="email" name="email" required>
+                        <div class="form-error">Введите корректный email</div>
                     </div>
                     <div class="form-group">
                         <label>Пароль</label>
                         <input type="password" name="password" required>
                         <div class="form-error">Это поле обязательно</div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Войти</button>
                 </form>
             </div>
         </div>
@@ -1151,7 +1645,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Регистрация</h3>
-                <button class="modal-close" data-modal="registerModal">&times;</button>
+                <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="registerForm">
@@ -1187,7 +1681,7 @@
                         <input type="password" name="password" required>
                         <div class="form-error">Пароль должен быть не менее 6 символов</div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Зарегистрироваться</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Зарегистрироваться</button>
                 </form>
             </div>
         </div>
@@ -1197,7 +1691,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="postJobTitle">Разместить вакансию</h3>
-                <button class="modal-close" data-modal="postJobModal">&times;</button>
+                <button class="modal-close" onclick="closeModal('postJobModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="postJobForm">
@@ -1245,7 +1739,7 @@
                         <textarea id="jobDescription" name="description" required></textarea>
                         <div class="form-error">Это поле обязательно</div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
                         <span id="submitBtnText">Опубликовать вакансию</span>
                     </button>
                 </form>
@@ -1257,24 +1751,32 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Откликнуться на вакансию</h3>
-                <button class="modal-close" data-modal="applyModal">&times;</button>
+                <button class="modal-close" onclick="closeModal('applyModal')">&times;</button>
             </div>
             <div class="modal-body" id="applyModalBody"></div>
         </div>
     </div>
 
     <script>
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
         const STATE = {
             jobs: [],
             filteredJobs: [],
             currentPage: 1,
             jobsPerPage: 6,
-            nextJobId: 1
+            nextJobId: 1,
+            currentUser: null,
+            savedJobs: [],
+            applications: []
         };
 
         const STORAGE_KEYS = {
             JOBS: 'teenwork_jobs',
             APPLICATIONS: 'teenwork_applications',
+            SAVED_JOBS: 'teenwork_saved_jobs',
+            CURRENT_USER: 'teenwork_current_user',
             NEXT_ID: 'teenwork_next_id'
         };
 
@@ -1288,7 +1790,7 @@
                 type: 'Частичная занятость',
                 description: 'Требуется помощник официанта в уютную кофейню. График гибкий, возможность совмещать с учебой.',
                 date: Date.now() - 2 * 24 * 60 * 60 * 1000,
-                dateText: '2 дня назад'
+                isNew: true
             },
             {
                 id: 2,
@@ -1298,8 +1800,7 @@
                 salary: 25000,
                 type: 'Частичная занятость',
                 description: 'Доставка еды и товаров по городу. Свободный график, еженедельные выплаты.',
-                date: Date.now() - 5 * 24 * 60 * 60 * 1000,
-                dateText: '5 дней назад'
+                date: Date.now() - 5 * 24 * 60 * 60 * 1000
             },
             {
                 id: 3,
@@ -1309,8 +1810,7 @@
                 salary: 30000,
                 type: 'Удалённо',
                 description: 'Ведение социальных сетей для молодёжного бренда. Удалённая работа, гибкий график.',
-                date: Date.now() - 7 * 24 * 60 * 60 * 1000,
-                dateText: '1 неделю назад'
+                date: Date.now() - 7 * 24 * 60 * 60 * 1000
             },
             {
                 id: 4,
@@ -1321,7 +1821,7 @@
                 type: 'Частичная занятость',
                 description: 'Раздача листовок и промо-материалов на мероприятиях. Работа в выходные.',
                 date: Date.now() - 3 * 24 * 60 * 60 * 1000,
-                dateText: '3 дня назад'
+                isNew: true
             },
             {
                 id: 5,
@@ -1332,7 +1832,7 @@
                 type: 'Летняя работа',
                 description: 'Работа вожатым в детском летнем лагере. Июнь-август, питание и проживание.',
                 date: Date.now() - 1 * 24 * 60 * 60 * 1000,
-                dateText: '1 день назад'
+                isNew: true
             },
             {
                 id: 6,
@@ -1342,8 +1842,7 @@
                 salary: 28000,
                 type: 'Стажировка',
                 description: 'Стажировка в дизайн-студии. Создание графики для соц.сетей и сайтов.',
-                date: Date.now() - 4 * 24 * 60 * 60 * 1000,
-                dateText: '4 дня назад'
+                date: Date.now() - 4 * 24 * 60 * 60 * 1000
             },
             {
                 id: 7,
@@ -1353,8 +1852,7 @@
                 salary: 22000,
                 type: 'Частичная занятость',
                 description: 'Консультирование покупателей в магазине электроники. График 2/2.',
-                date: Date.now() - 6 * 24 * 60 * 60 * 1000,
-                dateText: '6 дней назад'
+                date: Date.now() - 6 * 24 * 60 * 60 * 1000
             },
             {
                 id: 8,
@@ -1365,13 +1863,19 @@
                 type: 'Удалённо',
                 description: 'Создание контента для TikTok и Instagram. Удалённая работа, креативная команда.',
                 date: Date.now() - 2 * 24 * 60 * 60 * 1000,
-                dateText: '2 дня назад'
+                isNew: true
             }
         ];
 
+        // ============================================
+        // STORAGE FUNCTIONS
+        // ============================================
         function initStorage() {
             const storedJobs = localStorage.getItem(STORAGE_KEYS.JOBS);
             const storedNextId = localStorage.getItem(STORAGE_KEYS.NEXT_ID);
+            const storedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+            const storedSavedJobs = localStorage.getItem(STORAGE_KEYS.SAVED_JOBS);
+            const storedApplications = localStorage.getItem(STORAGE_KEYS.APPLICATIONS);
 
             if (storedJobs) {
                 STATE.jobs = JSON.parse(storedJobs);
@@ -1387,6 +1891,18 @@
                 saveNextId();
             }
 
+            if (storedUser) {
+                STATE.currentUser = JSON.parse(storedUser);
+            }
+
+            if (storedSavedJobs) {
+                STATE.savedJobs = JSON.parse(storedSavedJobs);
+            }
+
+            if (storedApplications) {
+                STATE.applications = JSON.parse(storedApplications);
+            }
+
             STATE.filteredJobs = [...STATE.jobs];
         }
 
@@ -1398,13 +1914,27 @@
             localStorage.setItem(STORAGE_KEYS.NEXT_ID, STATE.nextJobId.toString());
         }
 
-        function saveApplication(application) {
-            const applications = JSON.parse(localStorage.getItem(STORAGE_KEYS.APPLICATIONS) || '[]');
-            applications.push(application);
-            localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(applications));
+        function saveCurrentUser() {
+            if (STATE.currentUser) {
+                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(STATE.currentUser));
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            }
         }
 
+        function saveSavedJobs() {
+            localStorage.setItem(STORAGE_KEYS.SAVED_JOBS, JSON.stringify(STATE.savedJobs));
+        }
+
+        function saveApplications() {
+            localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(STATE.applications));
+        }
+
+        // ============================================
+        // TOAST NOTIFICATIONS
+        // ============================================
         function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             
@@ -1422,14 +1952,186 @@
                 </div>
             `;
 
-            document.body.appendChild(toast);
+            container.appendChild(toast);
 
             setTimeout(() => {
                 toast.classList.add('hiding');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 4000);
         }
 
+        // ============================================
+        // USER AUTHENTICATION
+        // ============================================
+        function updateNavbar() {
+            const navActions = document.getElementById('navActions');
+            
+            if (STATE.currentUser) {
+                const initials = STATE.currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                navActions.innerHTML = `
+                    <button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>
+                    <div class="user-menu">
+                        <div class="user-avatar" onclick="toggleUserDropdown()">${initials}</div>
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-name">${STATE.currentUser.name}</div>
+                                <div class="dropdown-email">${STATE.currentUser.email}</div>
+                            </div>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-item" onclick="showToast('Информация', 'Функция в разработке', 'warning')">
+                                    <span>👤</span> Мой профиль
+                                </li>
+                                <li class="dropdown-item" onclick="showUserApplications()">
+                                    <span>📋</span> Мои отклики
+                                </li>
+                                <li class="dropdown-item" onclick="showToast('Информация', 'Функция в разработке', 'warning')">
+                                    <span>💼</span> Мои вакансии
+                                </li>
+                                <li class="dropdown-item" onclick="showSavedJobs()">
+                                    <span>⭐</span> Избранное
+                                </li>
+                                <div class="dropdown-divider"></div>
+                                <li class="dropdown-item" onclick="logout()">
+                                    <span>🚪</span> Выйти
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else {
+                navActions.innerHTML = `
+                    <button class="btn btn-secondary" onclick="openModal('loginModal')">Войти</button>
+                    <button class="btn btn-secondary" onclick="openModal('registerModal')">Регистрация</button>
+                    <button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>
+                `;
+            }
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function logout() {
+            STATE.currentUser = null;
+            saveCurrentUser();
+            updateNavbar();
+            showToast('До встречи!', 'Вы успешно вышли из аккаунта', 'success');
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.remove('active');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            if (!validateForm(e.target)) return;
+
+            const formData = new FormData(e.target);
+            STATE.currentUser = {
+                email: formData.get('email'),
+                name: formData.get('email').split('@')[0],
+                loginDate: Date.now()
+            };
+
+            saveCurrentUser();
+            updateNavbar();
+            closeModal('loginModal');
+            showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            if (!validateForm(e.target)) {
+                showToast('Ошибка', 'Заполните все обязательные поля', 'error');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            STATE.currentUser = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                age: formData.get('age'),
+                registrationDate: Date.now()
+            };
+
+            saveCurrentUser();
+            updateNavbar();
+            closeModal('registerModal');
+            showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+        }
+
+        // ============================================
+        // SAVED JOBS & APPLICATIONS
+        // ============================================
+        function toggleSaveJob(jobId, event) {
+            event.stopPropagation();
+            
+            if (!STATE.currentUser) {
+                showToast('Требуется авторизация', 'Войдите, чтобы сохранять вакансии', 'warning');
+                return;
+            }
+
+            const index = STATE.savedJobs.indexOf(jobId);
+            if (index > -1) {
+                STATE.savedJobs.splice(index, 1);
+                showToast('Удалено', 'Вакансия удалена из избранного', 'success');
+            } else {
+                STATE.savedJobs.push(jobId);
+                showToast('Сохранено', 'Вакансия добавлена в избранное', 'success');
+            }
+            
+            saveSavedJobs();
+            renderJobs();
+        }
+
+        function isJobSaved(jobId) {
+            return STATE.savedJobs.includes(jobId);
+        }
+
+        function hasApplied(jobId) {
+            return STATE.applications.some(app => app.jobId === jobId && app.userId === STATE.currentUser?.email);
+        }
+
+        function showSavedJobs() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.remove('active');
+
+            if (STATE.savedJobs.length === 0) {
+                showToast('Пусто', 'У вас пока нет сохранённых вакансий', 'warning');
+                return;
+            }
+
+            const savedJobsData = STATE.jobs.filter(job => STATE.savedJobs.includes(job.id));
+            STATE.filteredJobs = savedJobsData;
+            STATE.currentPage = 1;
+            renderJobs();
+            scrollToSearch();
+            showToast('Избранное', `Показано ${savedJobsData.length} сохранённых вакансий`, 'success');
+        }
+
+        function showUserApplications() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.remove('active');
+
+            const userApps = STATE.applications.filter(app => app.userId === STATE.currentUser?.email);
+            
+            if (userApps.length === 0) {
+                showToast('Пусто', 'У вас пока нет откликов', 'warning');
+                return;
+            }
+
+            const appliedJobIds = userApps.map(app => app.jobId);
+            const appliedJobsData = STATE.jobs.filter(job => appliedJobIds.includes(job.id));
+            STATE.filteredJobs = appliedJobsData;
+            STATE.currentPage = 1;
+            renderJobs();
+            scrollToSearch();
+            showToast('Мои отклики', `Показано ${appliedJobsData.length} вакансий`, 'success');
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
         function getRelativeTime(timestamp) {
             const now = Date.now();
             const diff = now - timestamp;
@@ -1443,6 +2145,9 @@
             return `${Math.floor(days / 30)} месяца назад`;
         }
 
+        // ============================================
+        // FILTERS & SORTING
+        // ============================================
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const cityFilter = document.getElementById('cityFilter').value;
@@ -1510,6 +2215,34 @@
             renderJobs();
         }
 
+        // ============================================
+        // RENDERING FUNCTIONS
+        // ============================================
+        function showSkeletonLoader() {
+            const loader = document.getElementById('skeletonLoader');
+            const grid = document.getElementById('jobsGrid');
+            
+            loader.style.display = 'grid';
+            grid.style.display = 'none';
+            
+            loader.innerHTML = Array(6).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line subtitle"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line small"></div>
+                </div>
+            `).join('');
+        }
+
+        function hideSkeletonLoader() {
+            const loader = document.getElementById('skeletonLoader');
+            const grid = document.getElementById('jobsGrid');
+            
+            loader.style.display = 'none';
+            grid.style.display = 'grid';
+        }
+
         function renderJobs() {
             const grid = document.getElementById('jobsGrid');
             const jobCount = document.getElementById('jobCount');
@@ -1517,6 +2250,7 @@
             jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
             
             if (STATE.filteredJobs.length === 0) {
+                hideSkeletonLoader();
                 grid.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🔍</div>
@@ -1532,11 +2266,15 @@
             const endIndex = startIndex + STATE.jobsPerPage;
             const jobsToRender = STATE.filteredJobs.slice(startIndex, endIndex);
             
+            const saveIcon = (jobId) => isJobSaved(jobId) ? '⭐' : '☆';
+            
             grid.innerHTML = jobsToRender.map(job => `
-                <div class="job-card" data-job-id="${job.id}">
+                <div class="job-card" onclick="openApplyModal(${job.id})">
+                    ${job.isNew ? '<div class="job-badge">НОВАЯ</div>' : ''}
                     <div class="job-card-actions">
-                        <button class="icon-btn" onclick="editJob(${job.id})" title="Редактировать">✏️</button>
-                        <button class="icon-btn" onclick="deleteJob(${job.id})" title="Удалить">🗑️</button>
+                        <button class="icon-btn" onclick="toggleSaveJob(${job.id}, event)" title="${isJobSaved(job.id) ? 'Удалить из избранного' : 'Сохранить'}">${saveIcon(job.id)}</button>
+                        <button class="icon-btn" onclick="editJob(${job.id}, event)" title="Редактировать">✏️</button>
+                        <button class="icon-btn" onclick="deleteJob(${job.id}, event)" title="Удалить">🗑️</button>
                     </div>
                     <div class="job-header">
                         <div class="job-title">${job.title}</div>
@@ -1550,12 +2288,15 @@
                         </div>
                     </div>
                     <div class="job-footer">
-                        <span class="job-date">${job.dateText || getRelativeTime(job.date)}</span>
-                        <button class="btn btn-primary btn-apply" onclick="openApplyModal(${job.id})">Откликнуться</button>
+                        <span class="job-date">${getRelativeTime(job.date)}</span>
+                        <button class="btn btn-primary btn-apply" onclick="openApplyModal(${job.id}, event)">
+                            ${hasApplied(job.id) ? 'Откликнулись ✓' : 'Откликнуться'}
+                        </button>
                     </div>
                 </div>
             `).join('');
 
+            hideSkeletonLoader();
             renderPagination();
         }
 
@@ -1601,25 +2342,33 @@
             
             STATE.currentPage = page;
             renderJobs();
-            document.getElementById('search').scrollIntoView({ behavior: 'smooth' });
+            scrollToSearch();
         }
 
+        // ============================================
+        // MODAL FUNCTIONS
+        // ============================================
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
+            modal.classList.remove('hiding');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
+            modal.classList.add('hiding');
             
-            const form = modal.querySelector('form');
-            if (form) {
-                form.reset();
-                clearFormErrors(form);
-            }
+            setTimeout(() => {
+                modal.classList.remove('active', 'hiding');
+                document.body.style.overflow = 'auto';
+                
+                const form = modal.querySelector('form');
+                if (form) {
+                    form.reset();
+                    clearFormErrors(form);
+                }
+            }, 300);
         }
 
         function clearFormErrors(form) {
@@ -1644,13 +2393,20 @@
                 } else if (field.type === 'number' && field.value < 0) {
                     formGroup.classList.add('error');
                     isValid = false;
+                } else if (field.type === 'password' && field.value.length < 6) {
+                    formGroup.classList.add('error');
+                    isValid = false;
                 }
             });
 
             return isValid;
         }
 
-        function deleteJob(jobId) {
+        // ============================================
+        // JOB MANAGEMENT
+        // ============================================
+        function deleteJob(jobId, event) {
+            event.stopPropagation();
             if (!confirm('Вы уверены, что хотите удалить эту вакансию?')) return;
 
             STATE.jobs = STATE.jobs.filter(job => job.id !== jobId);
@@ -1659,7 +2415,8 @@
             showToast('Успешно', 'Вакансия удалена', 'success');
         }
 
-        function editJob(jobId) {
+        function editJob(jobId, event) {
+            event.stopPropagation();
             const job = STATE.jobs.find(j => j.id === jobId);
             if (!job) return;
 
@@ -1693,7 +2450,7 @@
                 type: document.getElementById('jobType').value,
                 description: document.getElementById('jobDescription').value,
                 date: Date.now(),
-                dateText: 'Только что'
+                isNew: true
             };
 
             if (editJobId) {
@@ -1720,47 +2477,52 @@
             document.getElementById('submitBtnText').textContent = 'Опубликовать вакансию';
             document.getElementById('editJobId').value = '';
 
-            setTimeout(() => {
-                document.getElementById('search').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+            setTimeout(scrollToSearch, 100);
         }
 
-        function openApplyModal(jobId) {
+        function openApplyModal(jobId, event) {
+            if (event) event.stopPropagation();
+            
             const job = STATE.jobs.find(j => j.id === jobId);
             if (!job) return;
+
+            if (hasApplied(jobId)) {
+                showToast('Уже откликнулись', 'Вы уже откликнулись на эту вакансию', 'warning');
+                return;
+            }
             
             const modalBody = document.getElementById('applyModalBody');
             modalBody.innerHTML = `
-                <div style="margin-bottom: 24px;">
-                    <h3 style="margin-bottom: 8px;">${job.title}</h3>
-                    <p style="color: var(--text-gray); margin-bottom: 16px;">${job.company} • ${job.city}</p>
-                    <div style="background: var(--light-gray); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 16px;">
+                <div style="margin-bottom: 28px;">
+                    <h3 style="margin-bottom: 10px; font-weight: 700; font-size: 22px;">${job.title}</h3>
+                    <p style="color: var(--text-gray); margin-bottom: 20px; font-weight: 600;">${job.company} • ${job.city}</p>
+                    <div style="background: var(--light-gray); padding: 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
                         <strong>Зарплата:</strong> ${job.salary.toLocaleString('ru-RU')} ₽<br>
                         <strong>Тип:</strong> ${job.type}
                     </div>
-                    <p style="line-height: 1.6; color: var(--text-gray);">${job.description}</p>
+                    <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
                 </div>
                 <form id="applyForm" data-job-id="${jobId}">
                     <div class="form-group">
                         <label>Ваше имя *</label>
-                        <input type="text" name="name" required>
+                        <input type="text" name="name" value="${STATE.currentUser?.name || ''}" required>
                         <div class="form-error">Это поле обязательно</div>
                     </div>
                     <div class="form-group">
                         <label>Телефон *</label>
-                        <input type="tel" name="phone" required>
+                        <input type="tel" name="phone" value="${STATE.currentUser?.phone || ''}" required>
                         <div class="form-error">Это поле обязательно</div>
                     </div>
                     <div class="form-group">
                         <label>Email *</label>
-                        <input type="email" name="email" required>
+                        <input type="email" name="email" value="${STATE.currentUser?.email || ''}" required>
                         <div class="form-error">Введите корректный email</div>
                     </div>
                     <div class="form-group">
                         <label>Сопроводительное письмо</label>
                         <textarea name="cover_letter" placeholder="Расскажите, почему вы хотите работать у нас..."></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Отправить отклик</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Отправить отклик</button>
                 </form>
             `;
             
@@ -1782,6 +2544,7 @@
             
             const application = {
                 jobId,
+                userId: STATE.currentUser?.email || formData.get('email'),
                 name: formData.get('name'),
                 phone: formData.get('phone'),
                 email: formData.get('email'),
@@ -1789,11 +2552,16 @@
                 date: Date.now()
             };
 
-            saveApplication(application);
+            STATE.applications.push(application);
+            saveApplications();
             closeModal('applyModal');
+            renderJobs();
             showToast('Успешно', 'Ваш отклик отправлен! Работодатель свяжется с вами в ближайшее время.', 'success');
         }
 
+        // ============================================
+        // FAQ
+        // ============================================
         function toggleFaq(element) {
             const faqItem = element.parentElement;
             const answer = faqItem.querySelector('.faq-answer');
@@ -1812,39 +2580,302 @@
             }
         }
 
+        // ============================================
+        // CONTENT PAGES
+        // ============================================
+        const CONTENT_PAGES = {
+            'about': {
+                title: 'О нас',
+                content: `
+                    <div class="content-section">
+                        <h2>Кто мы такие</h2>
+                        <p>TeenWork — это первая в России специализированная платформа для поиска работы подростками в возрасте от 14 до 18 лет. Мы создали безопасную среду, где молодые люди могут найти свою первую работу, а работодатели — ответственных и мотивированных сотрудников.</p>
+                        <p>Наша миссия — помочь подросткам получить первый трудовой опыт в безопасных и законных условиях, развить профессиональные навыки и научиться финансовой независимости.</p>
+                    </div>
+                    <div class="content-section">
+                        <h2>Почему TeenWork?</h2>
+                        <p>Мы понимаем особенности работы с несовершеннолетними и создали платформу, которая учитывает все юридические требования и обеспечивает максимальную безопасность:</p>
+                        <ul>
+                            <li>Все работодатели проходят тщательную проверку</li>
+                            <li>Вакансии соответствуют трудовому законодательству РФ</li>
+                            <li>Контроль рабочего времени и условий труда</li>
+                            <li>Поддержка и консультации для подростков и родителей</li>
+                        </ul>
+                    </div>
+                `
+            },
+            'how-it-works': {
+                title: 'Как это работает',
+                content: `
+                    <div class="content-section">
+                        <h2>Для подростков</h2>
+                        <h3>1. Регистрация</h3>
+                        <p>Создайте аккаунт, указав основную информацию о себе. Это займёт всего пару минут.</p>
+                        <h3>2. Поиск вакансий</h3>
+                        <p>Используйте удобные фильтры для поиска подходящей работы: город, тип занятости, зарплата.</p>
+                        <h3>3. Отклик на вакансию</h3>
+                        <p>Заполните форму отклика, расскажите о себе и своих навыках. Работодатель свяжется с вами напрямую.</p>
+                        <h3>4. Собеседование и трудоустройство</h3>
+                        <p>Пройдите собеседование и получите официальное трудоустройство со всеми необходимыми документами.</p>
+                    </div>
+                    <div class="content-section">
+                        <h2>Для работодателей</h2>
+                        <h3>1. Верификация</h3>
+                        <p>Пройдите проверку, предоставив документы компании и информацию о вакансии.</p>
+                        <h3>2. Размещение вакансии</h3>
+                        <p>Опубликуйте подробное описание вакансии с указанием всех условий работы.</p>
+                        <h3>3. Получение откликов</h3>
+                        <p>Просматривайте анкеты кандидатов и связывайтесь с подходящими.</p>
+                        <h3>4. Найм сотрудника</h3>
+                        <p>Оформите трудоустройство в соответствии с законодательством РФ.</p>
+                    </div>
+                `
+            },
+            'safety': {
+                title: 'Безопасность',
+                content: `
+                    <div class="content-section">
+                        <h2>Наши гарантии</h2>
+                        <p>Безопасность подростков — наш главный приоритет. Мы предпринимаем все необходимые меры для защиты молодых работников:</p>
+                        <h3>Проверка работодателей</h3>
+                        <p>Каждая компания проходит многоуровневую проверку:</p>
+                        <ul>
+                            <li>Верификация юридических документов</li>
+                            <li>Проверка репутации и истории компании</li>
+                            <li>Оценка условий труда и рабочих мест</li>
+                            <li>Соблюдение требований законодательства</li>
+                        </ul>
+                        <h3>Контроль вакансий</h3>
+                        <p>Все вакансии модерируются перед публикацией. Мы не допускаем размещение предложений, которые:</p>
+                        <ul>
+                            <li>Нарушают трудовое законодательство</li>
+                            <li>Содержат опасные или вредные условия труда</li>
+                            <li>Не соответствуют возрастным ограничениям</li>
+                            <li>Предлагают неофициальное трудоустройство</li>
+                        </ul>
+                    </div>
+                    <div class="content-section">
+                        <h2>Права подростков</h2>
+                        <p>По законодательству РФ, несовершеннолетние работники имеют особые права и гарантии. Мы следим за их соблюдением:</p>
+                        <ul>
+                            <li>Сокращённый рабочий день</li>
+                            <li>Запрет на работу в ночное время</li>
+                            <li>Обязательные перерывы и выходные</li>
+                            <li>Ежегодный оплачиваемый отпуск 31 день</li>
+                            <li>Запрет на тяжёлый физический труд</li>
+                        </ul>
+                    </div>
+                `
+            },
+            'blog': {
+                title: 'Блог',
+                content: `
+                    <div class="content-section">
+                        <h2>Полезные материалы</h2>
+                        <p>Здесь будут публиковаться статьи о поиске работы, развитии навыков, трудовом законодательстве и истории успеха подростков.</p>
+                        <h3>Скоро:</h3>
+                        <ul>
+                            <li>Как составить своё первое резюме</li>
+                            <li>Советы по прохождению собеседования</li>
+                            <li>Трудовые права подростков</li>
+                            <li>Истории успеха наших пользователей</li>
+                            <li>Профориентация: как выбрать свой путь</li>
+                        </ul>
+                    </div>
+                `
+            },
+            'pricing': {
+                title: 'Тарифы для работодателей',
+                content: `
+                    <div class="content-section">
+                        <h2>Прозрачные цены</h2>
+                        <p>Мы предлагаем гибкие тарифные планы для работодателей разного масштаба:</p>
+                        <h3>Базовый — 2 990 ₽/месяц</h3>
+                        <ul>
+                            <li>До 3 активных вакансий</li>
+                            <li>Доступ к базе кандидатов</li>
+                            <li>Базовая статистика откликов</li>
+                        </ul>
+                        <h3>Стандарт — 5 990 ₽/месяц</h3>
+                        <ul>
+                            <li>До 10 активных вакансий</li>
+                            <li>Приоритетное размещение</li>
+                            <li>Расширенная статистика</li>
+                            <li>Поддержка менеджера</li>
+                        </ul>
+                        <h3>Премиум — 9 990 ₽/месяц</h3>
+                        <ul>
+                            <li>Неограниченное количество вакансий</li>
+                            <li>Топ размещение в поиске</li>
+                            <li>Персональный менеджер</li>
+                            <li>Доступ к аналитике рынка</li>
+                            <li>Брендированная страница компании</li>
+                        </ul>
+                    </div>
+                `
+            },
+            'requirements': {
+                title: 'Требования к работодателям',
+                content: `
+                    <div class="content-section">
+                        <h2>Кто может размещать вакансии</h2>
+                        <p>Для размещения вакансий на платформе TeenWork работодатель должен соответствовать следующим требованиям:</p>
+                        <h3>Документы</h3>
+                        <ul>
+                            <li>Регистрация юридического лица или ИП</li>
+                            <li>Действующие учредительные документы</li>
+                            <li>Подтверждение легальной деятельности</li>
+                        </ul>
+                        <h3>Условия труда</h3>
+                        <ul>
+                            <li>Официальное трудоустройство по ТК РФ</li>
+                            <li>Соблюдение норм рабочего времени для подростков</li>
+                            <li>Безопасные условия труда</li>
+                            <li>Своевременная оплата труда</li>
+                        </ul>
+                        <h3>Запреты</h3>
+                        <p>На платформе запрещено размещать вакансии:</p>
+                        <ul>
+                            <li>Связанные с продажей алкоголя и табака</li>
+                            <li>С вредными или опасными условиями труда</li>
+                            <li>Требующие работы в ночное время</li>
+                            <li>С тяжёлым физическим трудом</li>
+                        </ul>
+                    </div>
+                `
+            },
+            'help': {
+                title: 'Помощь',
+                content: `
+                    <div class="content-section">
+                        <h2>Часто задаваемые вопросы</h2>
+                        <p>Если вы не нашли ответ на свой вопрос в разделе FAQ, свяжитесь с нами любым удобным способом.</p>
+                        <h3>Техническая поддержка</h3>
+                        <p>Мы работаем с понедельника по пятницу с 9:00 до 18:00 (МСК)</p>
+                        <h3>Для подростков</h3>
+                        <p>Если у вас возникли вопросы о поиске работы, оформлении или ваших правах, наша команда всегда готова помочь.</p>
+                        <h3>Для родителей</h3>
+                        <p>Мы понимаем, что родители хотят быть уверены в безопасности своих детей. Обращайтесь с любыми вопросами — мы подробно расскажем о нашей работе.</p>
+                    </div>
+                `
+            },
+            'contacts': {
+                title: 'Контакты',
+                content: `
+                    <div class="content-section">
+                        <h2>Свяжитесь с нами</h2>
+                        <h3>Email</h3>
+                        <p>support@teenwork.ru — общие вопросы<br>
+                        hr@teenwork.ru — для работодателей<br>
+                        help@teenwork.ru — техподдержка</p>
+                        <h3>Телефон</h3>
+                        <p>+7 (495) 123-45-67 — горячая линия<br>
+                        Пн-Пт: 9:00 - 18:00 (МСК)</p>
+                        <h3>Офис</h3>
+                        <p>г. Москва, ул. Примерная, д. 1<br>
+                        БЦ "TeenWork", офис 301</p>
+                        <h3>Социальные сети</h3>
+                        <p>VK: vk.com/teenwork<br>
+                        Telegram: @teenwork_official<br>
+                        Instagram*: @teenwork.ru</p>
+                    </div>
+                `
+            },
+            'terms': {
+                title: 'Пользовательское соглашение',
+                content: `
+                    <div class="content-section">
+                        <h2>Общие положения</h2>
+                        <p>Настоящее Пользовательское соглашение регулирует отношения между TeenWork и пользователями платформы.</p>
+                        <h3>1. Термины и определения</h3>
+                        <p>Платформа — веб-сайт teenwork.ru и мобильное приложение TeenWork.</p>
+                        <p>Пользователь — физическое или юридическое лицо, использующее Платформу.</p>
+                        <h3>2. Предмет соглашения</h3>
+                        <p>Платформа предоставляет услуги по размещению вакансий и поиску работы для подростков 14-18 лет.</p>
+                        <h3>3. Регистрация</h3>
+                        <p>Для использования функций Платформы необходимо пройти регистрацию и предоставить достоверную информацию.</p>
+                        <h3>4. Права и обязанности сторон</h3>
+                        <p>Платформа обязуется обеспечивать безопасность данных пользователей и модерировать размещаемый контент.</p>
+                        <p>Пользователи обязуются соблюдать правила Платформы и законодательство РФ.</p>
+                    </div>
+                `
+            },
+            'privacy': {
+                title: 'Политика конфиденциальности',
+                content: `
+                    <div class="content-section">
+                        <h2>Защита персональных данных</h2>
+                        <p>TeenWork серьёзно относится к защите персональных данных пользователей.</p>
+                        <h3>Какие данные мы собираем</h3>
+                        <ul>
+                            <li>ФИО, возраст, контактная информация</li>
+                            <li>Информация о профессиональных навыках</li>
+                            <li>Данные об откликах на вакансии</li>
+                        </ul>
+                        <h3>Как мы используем данные</h3>
+                        <ul>
+                            <li>Для предоставления услуг платформы</li>
+                            <li>Для связи работодателей и кандидатов</li>
+                            <li>Для улучшения качества сервиса</li>
+                            <li>Для соблюдения законодательства</li>
+                        </ul>
+                        <h3>Безопасность данных</h3>
+                        <p>Мы используем современные технологии шифрования и защиты данных. Доступ к персональной информации имеют только уполномоченные сотрудники.</p>
+                        <h3>Ваши права</h3>
+                        <p>Вы имеете право запросить удаление или изменение своих данных в любое время.</p>
+                    </div>
+                `
+            }
+        };
+
+        function openContentPage(pageId) {
+            const page = CONTENT_PAGES[pageId];
+            if (!page) return;
+
+            document.getElementById('contentPageTitle').textContent = page.title;
+            document.getElementById('contentPageBody').innerHTML = page.content;
+            document.getElementById('contentPage').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeContentPage() {
+            document.getElementById('contentPage').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ============================================
+        // NAVIGATION FUNCTIONS
+        // ============================================
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToSearch() {
+            document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
         function initEventListeners() {
-            document.querySelectorAll('[data-action="login"]').forEach(btn => {
-                btn.addEventListener('click', () => openModal('loginModal'));
+            // Input filters
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('sortFilter').addEventListener('change', () => {
+                applySorting();
+                STATE.currentPage = 1;
+                renderJobs();
             });
 
-            document.querySelectorAll('[data-action="register"]').forEach(btn => {
-                btn.addEventListener('click', () => openModal('registerModal'));
-            });
+            // Forms
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('postJobForm').addEventListener('submit', handlePostJob);
 
-            document.querySelectorAll('[data-action="post-job"]').forEach(btn => {
-                btn.addEventListener('click', () => openModal('postJobModal'));
-            });
-
-            document.querySelectorAll('[data-action="scroll-search"]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('search').scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-
-            document.querySelectorAll('[data-action="apply-filters"]').forEach(btn => {
-                btn.addEventListener('click', applyFilters);
-            });
-
-            document.querySelectorAll('[data-action="reset-filters"]').forEach(btn => {
-                btn.addEventListener('click', resetFilters);
-            });
-
-            document.querySelectorAll('[data-modal]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    closeModal(e.target.dataset.modal);
-                });
-            });
-
+            // Close modals on outside click
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -1853,48 +2884,72 @@
                 });
             });
 
-            document.getElementById('searchInput').addEventListener('input', applyFilters);
-            document.getElementById('sortFilter').addEventListener('change', () => {
-                applySorting();
-                STATE.currentPage = 1;
-                renderJobs();
+            // Close dropdown on outside click
+            document.addEventListener('click', (e) => {
+                const userMenu = document.querySelector('.user-menu');
+                const dropdown = document.getElementById('userDropdown');
+                if (userMenu && dropdown && !userMenu.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
             });
 
-            document.getElementById('loginForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (!validateForm(e.target)) return;
-                showToast('Информация', 'Функция входа будет доступна после запуска платформы', 'warning');
-                closeModal('loginModal');
+            // Navbar scroll effect
+            let lastScroll = 0;
+            window.addEventListener('scroll', () => {
+                const navbar = document.getElementById('navbar');
+                const currentScroll = window.pageYOffset;
+                
+                if (currentScroll > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                
+                lastScroll = currentScroll;
             });
 
-            document.getElementById('registerForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (!validateForm(e.target)) return;
-                showToast('Спасибо!', 'Мы свяжемся с вами после запуска платформы', 'success');
-                closeModal('registerModal');
-            });
-
-            document.getElementById('postJobForm').addEventListener('submit', handlePostJob);
-
-            document.getElementById('faqList').addEventListener('click', (e) => {
-                const question = e.target.closest('.faq-question');
-                if (question) toggleFaq(question);
-            });
-
+            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     const activeModal = document.querySelector('.modal.active');
-                    if (activeModal) closeModal(activeModal.id);
+                    if (activeModal) {
+                        closeModal(activeModal.id);
+                    }
+                    
+                    const contentPage = document.getElementById('contentPage');
+                    if (contentPage.classList.contains('active')) {
+                        closeContentPage();
+                    }
+
+                    const dropdown = document.getElementById('userDropdown');
+                    if (dropdown?.classList.contains('active')) {
+                        dropdown.classList.remove('active');
+                    }
                 }
             });
         }
 
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         function init() {
+            // Show skeleton loader
+            showSkeletonLoader();
+
+            // Initialize storage
             initStorage();
-            renderJobs();
-            initEventListeners();
+
+            // Update navbar based on user state
+            updateNavbar();
+
+            // Simulate loading delay for better UX
+            setTimeout(() => {
+                renderJobs();
+                initEventListeners();
+            }, 500);
         }
 
+        // Start application
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
