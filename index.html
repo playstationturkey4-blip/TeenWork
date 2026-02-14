@@ -1200,6 +1200,26 @@
             color: var(--text-gray);
         }
 
+        .role-selector-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .role-option {
+            padding: 18px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .role-option:hover {
+            border-color: var(--primary-blue);
+            background: var(--soft-blue);
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 40px;
@@ -1290,7 +1310,7 @@
             <p>Безопасная платформа для поиска работы подросткам 14-18 лет. Официальное трудоустройство, реальная зарплата, проверенные работодатели.</p>
             <div class="hero-actions">
                 <button class="btn btn-hero btn-white" onclick="scrollToSearch()">Найти работу</button>
-                <button class="btn btn-hero btn-outline" onclick="openModal('infoModal', 'employers')">Работодателям</button>
+                <button class="btn btn-hero btn-outline" onclick="handleEmployerButtonClick()">Работодателям</button>
             </div>
         </div>
     </section>
@@ -1513,6 +1533,7 @@
                 </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Сохранить изменения</button>
+                <button type="button" class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;" onclick="openRoleSelectorModal()">Изменить роль</button>
                 <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="logout()">Выйти из аккаунта</button>
             </form>
 
@@ -1583,7 +1604,7 @@
                     </div>
                     <div class="form-group">
                         <label>Я регистрируюсь как</label>
-                        <select name="role" required>
+                        <select name="role" id="registerRoleSelect" required>
                             <option value="">Выберите роль</option>
                             <option value="worker">Я ищу работу</option>
                             <option value="employer">Я работодатель</option>
@@ -1663,6 +1684,40 @@
         </div>
     </div>
 
+    <div class="modal" id="roleSelectorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Изменить роль</h3>
+                <button class="modal-close" onclick="closeModal('roleSelectorModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="role-selector-options">
+                    <div class="role-option" onclick="changeUserRole('worker')">
+                        <div style="font-size: 18px; margin-bottom: 4px;">Я ищу работу</div>
+                        <div style="font-size: 14px; color: var(--text-gray); font-weight: 500;">Соискатель</div>
+                    </div>
+                    <div class="role-option" onclick="changeUserRole('employer')">
+                        <div style="font-size: 18px; margin-bottom: 4px;">Я работодатель</div>
+                        <div style="font-size: 14px; color: var(--text-gray); font-weight: 500;">Размещение вакансий</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="workerNeedsChangeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Изменить роль</h3>
+                <button class="modal-close" onclick="closeModal('workerNeedsChangeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; line-height: 1.7; color: var(--text-gray);">Чтобы разместить вакансию, смените роль на Работодатель</p>
+                <button class="btn btn-primary" style="width: 100%;" onclick="openRoleSelectorModalFromWorker()">Сменить роль</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const JOBS = [
             {
@@ -1672,7 +1727,7 @@
                 city: 'Санкт-Петербург',
                 salary: 30000,
                 type: 'Сезонная, частичная занятость, на свежем воздухе',
-                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.'
+                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии по Санкт-Петербургу. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.'
             },
             {
                 id: 2,
@@ -1917,6 +1972,52 @@
             } else {
                 openProfile();
             }
+        }
+
+        function handleEmployerButtonClick() {
+            if (!STATE.currentUser) {
+                const registerRoleSelect = document.getElementById('registerRoleSelect');
+                if (registerRoleSelect) {
+                    registerRoleSelect.value = 'employer';
+                }
+                openModal('registerModal');
+            } else if (STATE.currentUser.role === 'employer') {
+                openModal('postJobModal');
+            } else {
+                openModal('workerNeedsChangeModal');
+            }
+        }
+
+        function openRoleSelectorModal() {
+            openModal('roleSelectorModal');
+        }
+
+        function openRoleSelectorModalFromWorker() {
+            closeModal('workerNeedsChangeModal');
+            openModal('roleSelectorModal');
+        }
+
+        function changeUserRole(newRole) {
+            if (!STATE.currentUser) return;
+            
+            STATE.currentUser.role = newRole;
+            
+            const userIndex = STATE.users.findIndex(u => u.email === STATE.currentUser.email);
+            if (userIndex !== -1) {
+                STATE.users[userIndex] = STATE.currentUser;
+            }
+            
+            saveUsers();
+            saveCurrentUser();
+            updateNavbar();
+            
+            closeModal('roleSelectorModal');
+            
+            if (document.getElementById('profilePage').classList.contains('active')) {
+                openProfile();
+            }
+            
+            showToast('Успешно', 'Роль изменена', 'success');
         }
 
         function togglePassword(inputId) {
