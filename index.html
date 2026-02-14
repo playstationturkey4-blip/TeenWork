@@ -118,6 +118,20 @@
             align-items: center;
         }
 
+        .nav-profile-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+        }
+
+        .nav-profile-wrapper:hover {
+            background: var(--light-gray);
+        }
+
         .user-avatar {
             width: 44px;
             height: 44px;
@@ -129,7 +143,6 @@
             justify-content: center;
             font-weight: 700;
             font-size: 16px;
-            cursor: pointer;
             transition: var(--transition);
             border: 2px solid transparent;
             overflow: hidden;
@@ -141,10 +154,16 @@
             object-fit: cover;
         }
 
-        .user-avatar:hover {
+        .nav-profile-wrapper:hover .user-avatar {
             border-color: var(--primary-blue);
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .nav-profile-text {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-dark);
         }
 
         .btn {
@@ -1141,6 +1160,46 @@
             color: var(--text-dark);
         }
 
+        .profile-section {
+            margin-bottom: 32px;
+        }
+
+        .profile-section h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .applied-jobs-list {
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+        }
+
+        .applied-job-item {
+            background: var(--white);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .applied-job-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .applied-job-title {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .applied-job-company {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 40px;
@@ -1207,6 +1266,10 @@
 
             .logo {
                 font-size: 24px;
+            }
+
+            .nav-profile-text {
+                display: none;
             }
         }
     </style>
@@ -1440,6 +1503,10 @@
                         <span class="profile-info-value" id="profileEmail"></span>
                     </div>
                     <div class="profile-info-item">
+                        <span class="profile-info-label">Роль:</span>
+                        <span class="profile-info-value" id="profileRole"></span>
+                    </div>
+                    <div class="profile-info-item">
                         <span class="profile-info-label">Дата регистрации:</span>
                         <span class="profile-info-value" id="profileDate"></span>
                     </div>
@@ -1448,6 +1515,20 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Сохранить изменения</button>
                 <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="logout()">Выйти из аккаунта</button>
             </form>
+
+            <div id="profileApplicationsSection" style="display: none;">
+                <div class="profile-section">
+                    <h3>Мои отклики</h3>
+                    <div class="applied-jobs-list" id="appliedJobsList"></div>
+                </div>
+            </div>
+
+            <div id="profileEmployerSection" style="display: none;">
+                <div class="profile-section">
+                    <h3>Мои размещенные вакансии</h3>
+                    <div class="applied-jobs-list" id="employerJobsList"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1500,6 +1581,15 @@
                         <span class="password-toggle" onclick="togglePassword('registerPassword')">👁️</span>
                         <div class="form-error">Пароль должен быть не менее 6 символов</div>
                     </div>
+                    <div class="form-group">
+                        <label>Я регистрируюсь как</label>
+                        <select name="role" required>
+                            <option value="">Выберите роль</option>
+                            <option value="worker">Я ищу работу</option>
+                            <option value="employer">Я работодатель</option>
+                        </select>
+                        <div class="form-error">Выберите роль</div>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Зарегистрироваться</button>
                 </form>
             </div>
@@ -1513,6 +1603,53 @@
                 <button class="modal-close" onclick="closeModal('applyModal')">&times;</button>
             </div>
             <div class="modal-body" id="applyModalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="postJobModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Разместить вакансию</h3>
+                <button class="modal-close" onclick="closeModal('postJobModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="postJobForm">
+                    <div class="form-group">
+                        <label>Название вакансии</label>
+                        <input type="text" name="title" required>
+                        <div class="form-error">Это поле обязательно</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Компания</label>
+                        <input type="text" name="company" required>
+                        <div class="form-error">Это поле обязательно</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Город</label>
+                        <select name="city" required>
+                            <option value="">Выберите город</option>
+                            <option value="Санкт-Петербург">Санкт-Петербург</option>
+                        </select>
+                        <div class="form-error">Это поле обязательно</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Зарплата (₽)</label>
+                        <input type="number" name="salary" required min="0">
+                        <div class="form-error">Введите корректную зарплату</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Тип работы</label>
+                        <input type="text" name="type" placeholder="Например: Частичная занятость, сменный график" required>
+                        <div class="form-error">Это поле обязательно</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea name="description" required></textarea>
+                        <div class="form-error">Это поле обязательно</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Разместить вакансию</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -1535,7 +1672,7 @@
                 city: 'Санкт-Петербург',
                 salary: 30000,
                 type: 'Сезонная, частичная занятость, на свежем воздухе',
-                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии по Санкт-Петербургу. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.'
+                description: 'Работа в весенне-летний период. Привлечение туристов на водные экскурсии. Консультирование клиентов по маршрутам. Работа на улице. Спецодежда предоставляется.'
             },
             {
                 id: 2,
@@ -1544,7 +1681,7 @@
                 city: 'Санкт-Петербург',
                 salary: 35000,
                 type: 'Постоянная, сменный график',
-                description: 'Прием заказов, расчет на кассе, выдача заказов. Работа круглый год. Бонусы для сотрудников.'
+                description: 'Прием заказов, расчет, выдача заказов, поддержание порядка. Бонусы для сотрудников.'
             },
             {
                 id: 3,
@@ -1553,7 +1690,7 @@
                 city: 'Санкт-Петербург',
                 salary: 40000,
                 type: 'Сменный график, торговля',
-                description: 'Продажа мороженого. Работа с товаром, расчет на кассе, поддержание чистоты.'
+                description: 'Продажа мороженого. Работа с товаром, расчет, поддержание чистоты.'
             },
             {
                 id: 4,
@@ -1580,7 +1717,7 @@
                 city: 'Санкт-Петербург',
                 salary: 14000,
                 type: 'Частичная занятость, временная',
-                description: 'Уборка территорий в парках. Работа на свежем воздухе. Подходит для подростков.'
+                description: 'Уборка территорий в парках. Работа на свежем воздухе.'
             }
         ];
 
@@ -1590,12 +1727,16 @@
             currentPage: 1,
             jobsPerPage: 6,
             currentUser: null,
-            users: []
+            users: [],
+            employerJobs: [],
+            appliedJobs: []
         };
 
         const STORAGE = {
             USERS: 'teenwork_users',
-            CURRENT_USER: 'teenwork_current_user'
+            CURRENT_USER: 'teenwork_current_user',
+            EMPLOYER_JOBS: 'teenwork_employer_jobs',
+            APPLIED_JOBS: 'teenwork_applied_jobs'
         };
 
         const INFO_CONTENT = {
@@ -1660,6 +1801,8 @@
             try {
                 const storedUsers = localStorage.getItem(STORAGE.USERS);
                 const storedUser = localStorage.getItem(STORAGE.CURRENT_USER);
+                const storedEmployerJobs = localStorage.getItem(STORAGE.EMPLOYER_JOBS);
+                const storedAppliedJobs = localStorage.getItem(STORAGE.APPLIED_JOBS);
 
                 if (storedUsers) {
                     STATE.users = JSON.parse(storedUsers);
@@ -1668,14 +1811,24 @@
                 if (storedUser) {
                     STATE.currentUser = JSON.parse(storedUser);
                 }
+
+                if (storedEmployerJobs) {
+                    STATE.employerJobs = JSON.parse(storedEmployerJobs);
+                }
+
+                if (storedAppliedJobs) {
+                    STATE.appliedJobs = JSON.parse(storedAppliedJobs);
+                }
             } catch (e) {
                 console.error('Storage error:', e);
                 localStorage.removeItem(STORAGE.USERS);
                 localStorage.removeItem(STORAGE.CURRENT_USER);
+                localStorage.removeItem(STORAGE.EMPLOYER_JOBS);
+                localStorage.removeItem(STORAGE.APPLIED_JOBS);
             }
 
-            STATE.jobs = [...JOBS];
-            STATE.filteredJobs = [...JOBS];
+            STATE.jobs = [...JOBS, ...STATE.employerJobs];
+            STATE.filteredJobs = [...STATE.jobs];
         }
 
         function saveUsers() {
@@ -1688,6 +1841,14 @@
             } else {
                 localStorage.removeItem(STORAGE.CURRENT_USER);
             }
+        }
+
+        function saveEmployerJobs() {
+            localStorage.setItem(STORAGE.EMPLOYER_JOBS, JSON.stringify(STATE.employerJobs));
+        }
+
+        function saveAppliedJobs() {
+            localStorage.setItem(STORAGE.APPLIED_JOBS, JSON.stringify(STATE.appliedJobs));
         }
 
         function showToast(title, message, type = 'success') {
@@ -1726,16 +1887,35 @@
                     ? `<img src="${STATE.currentUser.avatar}" alt="Avatar">` 
                     : initial;
                 
-                navActions.innerHTML = `
-                    <div class="user-avatar" onclick="openProfile()">
-                        ${avatarContent}
+                let navHTML = '';
+                
+                if (STATE.currentUser.role === 'employer') {
+                    navHTML += `<button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>`;
+                }
+                
+                navHTML += `
+                    <div class="nav-profile-wrapper" onclick="openProfile()">
+                        <div class="user-avatar">
+                            ${avatarContent}
+                        </div>
+                        <span class="nav-profile-text">Профиль</span>
                     </div>
                 `;
+                
+                navActions.innerHTML = navHTML;
             } else {
                 navActions.innerHTML = `
-                    <button class="btn btn-secondary" onclick="openModal('loginModal')">Войти</button>
+                    <button class="btn btn-secondary" onclick="handleProfileClick()">Профиль</button>
                     <button class="btn btn-secondary" onclick="openModal('registerModal')">Регистрация</button>
                 `;
+            }
+        }
+
+        function handleProfileClick() {
+            if (!STATE.currentUser) {
+                openModal('loginModal');
+            } else {
+                openProfile();
             }
         }
 
@@ -1745,7 +1925,10 @@
         }
 
         function openProfile() {
-            if (!STATE.currentUser) return;
+            if (!STATE.currentUser) {
+                openModal('loginModal');
+                return;
+            }
             
             const initial = STATE.currentUser.nickname ? STATE.currentUser.nickname[0].toUpperCase() : 'U';
             const avatarDisplay = document.getElementById('profileAvatarDisplay');
@@ -1758,12 +1941,65 @@
             
             document.getElementById('profileNickname').value = STATE.currentUser.nickname || '';
             document.getElementById('profileEmail').textContent = STATE.currentUser.email;
+            document.getElementById('profileRole').textContent = STATE.currentUser.role === 'worker' ? 'Соискатель' : 'Работодатель';
             
             const date = new Date(STATE.currentUser.createdAt);
             document.getElementById('profileDate').textContent = date.toLocaleDateString('ru-RU');
             
+            if (STATE.currentUser.role === 'worker') {
+                document.getElementById('profileApplicationsSection').style.display = 'block';
+                document.getElementById('profileEmployerSection').style.display = 'none';
+                renderAppliedJobs();
+            } else {
+                document.getElementById('profileApplicationsSection').style.display = 'none';
+                document.getElementById('profileEmployerSection').style.display = 'block';
+                renderEmployerJobs();
+            }
+            
             document.getElementById('profilePage').classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+
+        function renderAppliedJobs() {
+            const container = document.getElementById('appliedJobsList');
+            const userApplications = STATE.appliedJobs.filter(app => app.userEmail === STATE.currentUser.email);
+            
+            if (userApplications.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы пока не откликались на вакансии</p>';
+                return;
+            }
+            
+            container.innerHTML = userApplications.map(app => {
+                const job = STATE.jobs.find(j => j.id === app.jobId);
+                if (!job) return '';
+                return `
+                    <div class="applied-job-item">
+                        <div>
+                            <div class="applied-job-title">${job.title}</div>
+                            <div class="applied-job-company">${job.company}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderEmployerJobs() {
+            const container = document.getElementById('employerJobsList');
+            const userJobs = STATE.employerJobs.filter(job => job.employerEmail === STATE.currentUser.email);
+            
+            if (userJobs.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы еще не разместили ни одной вакансии</p>';
+                return;
+            }
+            
+            container.innerHTML = userJobs.map(job => `
+                <div class="applied-job-item">
+                    <div>
+                        <div class="applied-job-title">${job.title}</div>
+                        <div class="applied-job-company">${job.company} • ${job.salary.toLocaleString('ru-RU')} ₽</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function closeProfile() {
@@ -1812,6 +2048,7 @@
             const email = formData.get('email');
             const password = formData.get('password');
             const nickname = formData.get('nickname');
+            const role = formData.get('role');
 
             if (STATE.users.find(u => u.email === email)) {
                 showToast('Ошибка', 'Пользователь с таким email уже существует', 'error');
@@ -1824,10 +2061,17 @@
                 return;
             }
 
+            if (!role) {
+                const formGroup = e.target.querySelector('select[name="role"]').closest('.form-group');
+                formGroup.classList.add('error');
+                return;
+            }
+
             const newUser = {
                 email,
                 password,
                 nickname,
+                role,
                 avatar: null,
                 createdAt: Date.now()
             };
@@ -1886,6 +2130,39 @@
                 showToast('Успешно', 'Фото обновлено', 'success');
             };
             reader.readAsDataURL(file);
+        }
+
+        function handlePostJob(e) {
+            e.preventDefault();
+            
+            if (!validateForm(e.target)) {
+                showToast('Ошибка', 'Заполните все поля корректно', 'error');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            
+            const newJob = {
+                id: Date.now(),
+                title: formData.get('title'),
+                company: formData.get('company'),
+                city: formData.get('city'),
+                salary: parseInt(formData.get('salary')),
+                type: formData.get('type'),
+                description: formData.get('description'),
+                employerEmail: STATE.currentUser.email,
+                createdAt: Date.now()
+            };
+
+            STATE.employerJobs.push(newJob);
+            saveEmployerJobs();
+            
+            STATE.jobs = [...JOBS, ...STATE.employerJobs];
+            STATE.filteredJobs = [...STATE.jobs];
+            
+            closeModal('postJobModal');
+            renderJobs();
+            showToast('Успешно', 'Вакансия размещена', 'success');
         }
 
         function applyFilters() {
@@ -2082,6 +2359,9 @@
                 } else if (field.type === 'password' && field.value.length < 6) {
                     formGroup.classList.add('error');
                     isValid = false;
+                } else if (field.tagName === 'SELECT' && !field.value) {
+                    formGroup.classList.add('error');
+                    isValid = false;
                 }
             });
 
@@ -2097,8 +2377,17 @@
                 return;
             }
             
+            if (STATE.currentUser.role === 'employer') {
+                showToast('Внимание', 'Работодатели не могут откликаться на вакансии', 'warning');
+                return;
+            }
+            
             const job = STATE.jobs.find(j => j.id === jobId);
             if (!job) return;
+            
+            const alreadyApplied = STATE.appliedJobs.some(app => 
+                app.userEmail === STATE.currentUser.email && app.jobId === jobId
+            );
             
             const modalBody = document.getElementById('applyModalBody');
             modalBody.innerHTML = `
@@ -2112,12 +2401,29 @@
                     <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
                 </div>
                 <div style="text-align: center; padding: 20px;">
-                    <p style="margin-bottom: 16px;">Для отклика свяжитесь с работодателем напрямую</p>
+                    ${alreadyApplied 
+                        ? '<p style="margin-bottom: 16px; color: var(--success); font-weight: 600;">Вы уже откликнулись на эту вакансию</p>'
+                        : `<button class="btn btn-primary" onclick="applyToJob(${jobId})" style="margin-bottom: 12px;">Откликнуться</button>`
+                    }
                     <button class="btn btn-secondary" onclick="closeModal('applyModal')">Закрыть</button>
                 </div>
             `;
             
             openModal('applyModal');
+        }
+
+        function applyToJob(jobId) {
+            const application = {
+                userEmail: STATE.currentUser.email,
+                jobId: jobId,
+                appliedAt: Date.now()
+            };
+            
+            STATE.appliedJobs.push(application);
+            saveAppliedJobs();
+            
+            closeModal('applyModal');
+            showToast('Успешно', 'Вы откликнулись на вакансию', 'success');
         }
 
         function toggleFaq(element) {
@@ -2158,6 +2464,7 @@
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
             document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
+            document.getElementById('postJobForm').addEventListener('submit', handlePostJob);
 
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
