@@ -2626,6 +2626,9 @@ async function handlePostJob(e) {
   const db = getFirestore(app);
 
   window.db = db;
+  window.addDoc = addDoc;
+  window.collection = collection;
+
 const jobsCollection = collection(db, "jobs");
 
 async function uploadInitialJobs() {
