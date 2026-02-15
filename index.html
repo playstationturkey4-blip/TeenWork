@@ -2610,5 +2610,26 @@
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
+<!-- Firebase подключение -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC9l-LPIJl_51GC8FgdApYccycQjA7rNps",
+    authDomain: "teenwork-app-afaa6.firebaseapp.com",
+    projectId: "teenwork-app-afaa6",
+    storageBucket: "teenwork-app-afaa6.firebasestorage.app",
+    messagingSenderId: "657977585927",
+    appId: "1:657977585927:web:190719f2acf432fdaf15a2",
+    measurementId: "G-XWR4S2ZRN7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+</script>
+
 </body>
 </html>
