@@ -1786,6 +1786,9 @@
             employerJobs: [],
             appliedJobs: []
         };
+        window.STATE = STATE;
+        window.renderJobs = renderJobs;
+
 
         const STORAGE = {
             USERS: 'teenwork_users',
@@ -1882,9 +1885,8 @@
                 localStorage.removeItem(STORAGE.APPLIED_JOBS);
             }
 
-            STATE.jobs = [...JOBS, ...STATE.employerJobs];
-            STATE.filteredJobs = [...STATE.jobs];
-        }
+              
+      }
 
         function saveUsers() {
             localStorage.setItem(STORAGE.USERS, JSON.stringify(STATE.users));
@@ -2232,39 +2234,34 @@
             };
             reader.readAsDataURL(file);
         }
+async function handlePostJob(e) {
+    e.preventDefault();
 
-        function handlePostJob(e) {
-            e.preventDefault();
-            
-            if (!validateForm(e.target)) {
-                showToast('Ошибка', 'Заполните все поля корректно', 'error');
-                return;
-            }
+    if (!validateForm(e.target)) {
+        showToast('Ошибка', 'Заполните все поля корректно', 'error');
+        return;
+    }
 
-            const formData = new FormData(e.target);
-            
-            const newJob = {
-                id: Date.now(),
-                title: formData.get('title'),
-                company: formData.get('company'),
-                city: formData.get('city'),
-                salary: parseInt(formData.get('salary')),
-                type: formData.get('type'),
-                description: formData.get('description'),
-                employerEmail: STATE.currentUser.email,
-                createdAt: Date.now()
-            };
+    const formData = new FormData(e.target);
 
-            STATE.employerJobs.push(newJob);
-            saveEmployerJobs();
-            
-            STATE.jobs = [...JOBS, ...STATE.employerJobs];
-            STATE.filteredJobs = [...STATE.jobs];
-            
-            closeModal('postJobModal');
-            renderJobs();
-            showToast('Успешно', 'Вакансия размещена', 'success');
-        }
+    const newJob = {
+        title: formData.get('title'),
+        company: formData.get('company'),
+        city: formData.get('city'),
+        salary: parseInt(formData.get('salary')),
+        type: formData.get('type'),
+        description: formData.get('description'),
+        employerEmail: STATE.currentUser.email,
+        createdAt: Date.now()
+    };
+
+    await addDoc(collection(db, "jobs"), newJob);
+
+    closeModal('postJobModal');
+    showToast('Успешно', 'Вакансия размещена', 'success');
+
+    loadJobsFromFirestore();
+}
 
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -2604,7 +2601,6 @@
         function init() {
             initStorage();
             updateNavbar();
-            renderJobs();
             initEventListeners();
         }
 
@@ -2666,7 +2662,33 @@ async function uploadInitialJobs() {
   console.log("Вакансии успешно загружены в Firestore");
 }
 
-uploadInitialJobs();
+
+async function loadJobsFromFirestore() {
+    const snapshot = await getDocs(collection(db, "jobs"));
+    const jobs = [];
+
+    snapshot.forEach(doc => {
+        jobs.push({
+            id: doc.id,
+            ...doc.data()
+        });
+    });
+
+    if (window.STATE) {
+        window.STATE.jobs = jobs;
+        window.STATE.filteredJobs = [...jobs];
+        window.STATE.currentPage = 1;
+
+        if (window.renderJobs) {
+            window.renderJobs();
+        }
+    }
+
+    console.log("Вакансии загружены из Firestore:", jobs.length);
+}
+
+loadJobsFromFirestore();
+
 
 </script>
 
