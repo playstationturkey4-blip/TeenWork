@@ -2613,7 +2613,8 @@
 <!-- Firebase подключение -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
   const firebaseConfig = {
     apiKey: "AIzaSyC9l-LPIJl_51GC8FgdApYccycQjA7rNps",
@@ -2629,6 +2630,44 @@
   const db = getFirestore(app);
 
   window.db = db;
+const jobsCollection = collection(db, "jobs");
+
+async function uploadInitialJobs() {
+  const snapshot = await getDocs(jobsCollection);
+
+  if (!snapshot.empty) {
+    console.log("Вакансии уже есть в Firestore");
+    return;
+  }
+
+  const initialJobs = [
+    {
+      title: "Промоутер водных экскурсий",
+      company: "Нева Тревел",
+      city: "Санкт-Петербург",
+      salary: 30000,
+      type: "Сезонная",
+      description: "Работа в весенне-летний период."
+    },
+    {
+      title: "Кассир",
+      company: "Додо Пицца",
+      city: "Санкт-Петербург",
+      salary: 35000,
+      type: "Постоянная",
+      description: "Работа в ресторане быстрого питания."
+    }
+  ];
+
+  for (let job of initialJobs) {
+    await addDoc(jobsCollection, job);
+  }
+
+  console.log("Вакансии успешно загружены в Firestore");
+}
+
+uploadInitialJobs();
+
 </script>
 
 </body>
