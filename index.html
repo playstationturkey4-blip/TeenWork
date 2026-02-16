@@ -1268,6 +1268,84 @@
             transform: translateY(-1px);
         }
 
+        .job-stats {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+
+        .application-list-item {
+            background: var(--white);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+        }
+
+        .application-list-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .application-worker-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .application-worker-email {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+        }
+
+        .chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .chat-message.sent {
+            background: var(--primary-blue);
+            color: var(--white);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .chat-message.received {
+            background: var(--white);
+            color: var(--text-dark);
+            margin-right: auto;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-container input {
+            flex: 1;
+        }
+
+        .admin-panel-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: var(--white);
+            padding: 6px 14px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 40px;
@@ -1766,6 +1844,32 @@
         </div>
     </div>
 
+    <div class="modal" id="applicationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Отклики на вакансию</h3>
+                <button class="modal-close" onclick="closeModal('applicationsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="applicationsModalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="chatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="chatModalTitle">Чат</h3>
+                <button class="modal-close" onclick="closeModal('chatModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-container">
+                    <input type="text" class="input" id="chatInput" placeholder="Введите сообщение...">
+                    <button class="btn btn-primary" onclick="sendChatMessage()">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const JOBS = [
             {
@@ -1834,7 +1938,9 @@
             currentUser: null,
             users: [],
             employerJobs: [],
-            appliedJobs: []
+            appliedJobs: [],
+            currentChatId: null,
+            chatUnsubscribe: null
         };
         window.STATE = STATE;
         window.renderJobs = renderJobs;
@@ -1997,6 +2103,10 @@
                 
                 let navHTML = '';
                 
+                if (isAdmin()) {
+                    navHTML += `<div class="admin-panel-badge">ADMIN</div>`;
+                }
+                
                 if (STATE.currentUser.role === 'employer') {
                     navHTML += `<button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>`;
                 }
@@ -2114,46 +2224,237 @@
             document.body.style.overflow = 'hidden';
         }
 
-        function renderAppliedJobs() {
+        async function renderAppliedJobs() {
             const container = document.getElementById('appliedJobsList');
-            const userApplications = STATE.appliedJobs.filter(app => app.userEmail === STATE.currentUser.email);
             
-            if (userApplications.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы пока не откликались на вакансии</p>';
+            if (!window.db) {
+                container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Загрузка...</p>';
                 return;
             }
-            
-            container.innerHTML = userApplications.map(app => {
-                const job = STATE.jobs.find(j => j.id === app.jobId);
-                if (!job) return '';
-                return `
-                    <div class="applied-job-item">
-                        <div>
-                            <div class="applied-job-title">${job.title}</div>
-                            <div class="applied-job-company">${job.company}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+
+            try {
+                const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const applicationsRef = collection(window.db, 'applications');
+                const q = query(applicationsRef, where('workerId', '==', STATE.currentUser.uid || STATE.currentUser.email));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы пока не откликались на вакансии</p>';
+                    return;
+                }
+
+                let html = '';
+                for (const docSnap of snapshot.docs) {
+                    const app = docSnap.data();
+                    const job = STATE.jobs.find(j => j.id === app.jobId);
+                    if (job) {
+                        html += `
+                            <div class="applied-job-item">
+                                <div>
+                                    <div class="applied-job-title">${job.title}</div>
+                                    <div class="applied-job-company">${job.company}</div>
+                                </div>
+                                <button class="btn btn-small btn-primary" onclick="openChatFromWorker('${app.jobId}', '${app.employerId}')">Открыть чат</button>
+                            </div>
+                        `;
+                    }
+                }
+
+                container.innerHTML = html || '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Нет откликов</p>';
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Ошибка загрузки</p>';
+            }
         }
 
-        function renderEmployerJobs() {
+        async function renderEmployerJobs() {
             const container = document.getElementById('employerJobsList');
-            const userJobs = STATE.employerJobs.filter(job => job.employerEmail === STATE.currentUser.email);
+            const userJobs = STATE.jobs.filter(job => job.employerEmail === STATE.currentUser.email || job.employerId === (STATE.currentUser.uid || STATE.currentUser.email));
             
             if (userJobs.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы еще не разместили ни одной вакансии</p>';
                 return;
             }
-            
-            container.innerHTML = userJobs.map(job => `
-                <div class="applied-job-item">
-                    <div>
-                        <div class="applied-job-title">${job.title}</div>
-                        <div class="applied-job-company">${job.company} • ${job.salary.toLocaleString('ru-RU')} ₽</div>
+
+            let html = '';
+            for (const job of userJobs) {
+                let appCount = 0;
+                let viewCount = job.views || 0;
+
+                if (window.db) {
+                    try {
+                        const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                        const appsRef = collection(window.db, 'applications');
+                        const q = query(appsRef, where('jobId', '==', job.id));
+                        const snapshot = await getDocs(q);
+                        appCount = snapshot.size;
+                    } catch (e) {
+                        console.error('Error counting applications:', e);
+                    }
+                }
+
+                html += `
+                    <div class="applied-job-item">
+                        <div style="flex: 1;">
+                            <div class="applied-job-title">${job.title}</div>
+                            <div class="applied-job-company">${job.company} • ${job.salary.toLocaleString('ru-RU')} ₽</div>
+                            <div class="job-stats">
+                                👁️ Просмотров: ${viewCount} | 📩 Откликов: ${appCount}
+                            </div>
+                        </div>
+                        <button class="btn btn-small btn-primary" onclick="showApplications('${job.id}')">Отклики</button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        async function showApplications(jobId) {
+            if (!window.db) {
+                showToast('Ошибка', 'База данных недоступна', 'error');
+                return;
+            }
+
+            const job = STATE.jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            try {
+                const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const applicationsRef = collection(window.db, 'applications');
+                const q = query(applicationsRef, where('jobId', '==', jobId));
+                const snapshot = await getDocs(q);
+
+                const modalBody = document.getElementById('applicationsModalBody');
+
+                if (snapshot.empty) {
+                    modalBody.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Нет откликов на эту вакансию</p>';
+                } else {
+                    let html = '<div class="applied-jobs-list">';
+                    snapshot.forEach(docSnap => {
+                        const app = docSnap.data();
+                        html += `
+                            <div class="application-list-item">
+                                <div class="application-worker-name">${app.workerNickname || 'Соискатель'}</div>
+                                <div class="application-worker-email">${app.workerEmail}</div>
+                                ${app.message ? `<div style="margin-top: 8px; color: var(--text-gray); font-size: 14px;">${app.message}</div>` : ''}
+                                <div style="margin-top: 10px;">
+                                    <button class="btn btn-small btn-primary" onclick="openChatFromEmployer('${jobId}', '${app.workerId}')">Открыть чат</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    modalBody.innerHTML = html;
+                }
+
+                openModal('applicationsModal');
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                showToast('Ошибка', 'Не удалось загрузить отклики', 'error');
+            }
+        }
+
+        async function openChatFromWorker(jobId, employerId) {
+            openChat(jobId, employerId, STATE.currentUser.uid || STATE.currentUser.email);
+        }
+
+        async function openChatFromEmployer(jobId, workerId) {
+            openChat(jobId, STATE.currentUser.uid || STATE.currentUser.email, workerId);
+        }
+
+        async function openChat(jobId, employerId, workerId) {
+            if (!window.db) {
+                showToast('Ошибка', 'База данных недоступна', 'error');
+                return;
+            }
+
+            try {
+                const { collection, query, where, getDocs, addDoc, onSnapshot, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                
+                const chatsRef = collection(window.db, 'chats');
+                const q = query(chatsRef, 
+                    where('jobId', '==', jobId),
+                    where('employerId', '==', employerId),
+                    where('workerId', '==', workerId)
+                );
+                const snapshot = await getDocs(q);
+
+                let chatId;
+                if (snapshot.empty) {
+                    const newChat = await addDoc(chatsRef, {
+                        jobId: jobId,
+                        employerId: employerId,
+                        workerId: workerId,
+                        createdAt: Date.now()
+                    });
+                    chatId = newChat.id;
+                } else {
+                    chatId = snapshot.docs[0].id;
+                }
+
+                STATE.currentChatId = chatId;
+
+                const job = STATE.jobs.find(j => j.id === jobId);
+                document.getElementById('chatModalTitle').textContent = `Чат: ${job ? job.title : 'Вакансия'}`;
+
+                if (STATE.chatUnsubscribe) {
+                    STATE.chatUnsubscribe();
+                }
+
+                const messagesRef = collection(window.db, 'messages');
+                const messagesQuery = query(messagesRef, 
+                    where('chatId', '==', chatId),
+                    orderBy('createdAt', 'asc')
+                );
+
+                STATE.chatUnsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+                    const container = document.getElementById('chatMessages');
+                    let html = '';
+                    
+                    snapshot.forEach(docSnap => {
+                        const msg = docSnap.data();
+                        const isSent = msg.senderId === (STATE.currentUser.uid || STATE.currentUser.email);
+                        html += `
+                            <div class="chat-message ${isSent ? 'sent' : 'received'}">
+                                ${msg.text}
+                            </div>
+                        `;
+                    });
+
+                    container.innerHTML = html || '<p style="color: var(--text-gray); text-align: center;">Нет сообщений</p>';
+                    container.scrollTop = container.scrollHeight;
+                });
+
+                openModal('chatModal');
+            } catch (error) {
+                console.error('Error opening chat:', error);
+                showToast('Ошибка', 'Не удалось открыть чат', 'error');
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+
+            if (!text || !STATE.currentChatId || !window.db) return;
+
+            try {
+                const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const messagesRef = collection(window.db, 'messages');
+                
+                await addDoc(messagesRef, {
+                    chatId: STATE.currentChatId,
+                    senderId: STATE.currentUser.uid || STATE.currentUser.email,
+                    text: text,
+                    createdAt: Date.now()
+                });
+
+                input.value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showToast('Ошибка', 'Не удалось отправить сообщение', 'error');
+            }
         }
 
         function closeProfile() {
@@ -2162,6 +2463,10 @@
         }
 
         function logout() {
+            if (STATE.chatUnsubscribe) {
+                STATE.chatUnsubscribe();
+                STATE.chatUnsubscribe = null;
+            }
             STATE.currentUser = null;
             saveCurrentUser();
             updateNavbar();
@@ -2227,7 +2532,8 @@
                 nickname,
                 role,
                 avatar: null,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                uid: email
             };
 
             STATE.users.push(newUser);
@@ -2304,7 +2610,9 @@
                 type: formData.get('type'),
                 description: formData.get('description'),
                 employerEmail: STATE.currentUser.email,
+                employerId: STATE.currentUser.uid || STATE.currentUser.email,
                 isTop: false,
+                views: 0,
                 createdAt: Date.now()
             };
 
@@ -2560,6 +2868,12 @@
             const modal = document.getElementById(modalId);
             modal.classList.add('hiding');
             
+            if (modalId === 'chatModal' && STATE.chatUnsubscribe) {
+                STATE.chatUnsubscribe();
+                STATE.chatUnsubscribe = null;
+                STATE.currentChatId = null;
+            }
+            
             setTimeout(() => {
                 modal.classList.remove('active', 'hiding');
                 document.body.style.overflow = 'auto';
@@ -2603,7 +2917,7 @@
             return isValid;
         }
 
-        function openApplyModal(jobId, event) {
+        async function openApplyModal(jobId, event) {
             if (event) event.stopPropagation();
             
             if (!STATE.currentUser) {
@@ -2619,10 +2933,33 @@
             
             const job = STATE.jobs.find(j => j.id === jobId);
             if (!job) return;
-            
-            const alreadyApplied = STATE.appliedJobs.some(app => 
-                app.userEmail === STATE.currentUser.email && app.jobId === jobId
-            );
+
+            if (window.db) {
+                try {
+                    const { updateDoc, doc, increment } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    await updateDoc(doc(window.db, "jobs", jobId), {
+                        views: increment(1)
+                    });
+                } catch (error) {
+                    console.error('Error incrementing views:', error);
+                }
+            }
+
+            let alreadyApplied = false;
+            if (window.db) {
+                try {
+                    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    const appsRef = collection(window.db, 'applications');
+                    const q = query(appsRef, 
+                        where('jobId', '==', jobId),
+                        where('workerId', '==', STATE.currentUser.uid || STATE.currentUser.email)
+                    );
+                    const snapshot = await getDocs(q);
+                    alreadyApplied = !snapshot.empty;
+                } catch (error) {
+                    console.error('Error checking application:', error);
+                }
+            }
             
             const modalBody = document.getElementById('applyModalBody');
             modalBody.innerHTML = `
@@ -2638,7 +2975,10 @@
                 <div style="text-align: center; padding: 20px;">
                     ${alreadyApplied 
                         ? '<p style="margin-bottom: 16px; color: var(--success); font-weight: 600;">Вы уже откликнулись на эту вакансию</p>'
-                        : `<button class="btn btn-primary" onclick="applyToJob('${jobId}')" style="margin-bottom: 12px;">Откликнуться</button>`
+                        : `
+                            <textarea id="applicationMessage" class="input" placeholder="Сопроводительное сообщение (необязательно)" style="width: 100%; margin-bottom: 12px; min-height: 80px;"></textarea>
+                            <button class="btn btn-primary" onclick="applyToJob('${jobId}')" style="margin-bottom: 12px;">Откликнуться</button>
+                        `
                     }
                     <button class="btn btn-secondary" onclick="closeModal('applyModal')">Закрыть</button>
                 </div>
@@ -2647,18 +2987,38 @@
             openModal('applyModal');
         }
 
-        function applyToJob(jobId) {
-            const application = {
-                userEmail: STATE.currentUser.email,
-                jobId: jobId,
-                appliedAt: Date.now()
-            };
-            
-            STATE.appliedJobs.push(application);
-            saveAppliedJobs();
-            
-            closeModal('applyModal');
-            showToast('Успешно', 'Вы откликнулись на вакансию', 'success');
+        async function applyToJob(jobId) {
+            if (!window.db) {
+                showToast('Ошибка', 'База данных недоступна', 'error');
+                return;
+            }
+
+            const job = STATE.jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            const message = document.getElementById('applicationMessage')?.value || '';
+
+            try {
+                const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const applicationsRef = collection(window.db, 'applications');
+
+                await addDoc(applicationsRef, {
+                    jobId: jobId,
+                    workerId: STATE.currentUser.uid || STATE.currentUser.email,
+                    employerId: job.employerId || job.employerEmail,
+                    workerEmail: STATE.currentUser.email,
+                    workerNickname: STATE.currentUser.nickname || 'Соискатель',
+                    message: message,
+                    createdAt: Date.now(),
+                    status: 'new'
+                });
+
+                closeModal('applyModal');
+                showToast('Успешно', 'Вы откликнулись на вакансию', 'success');
+            } catch (error) {
+                console.error('Error applying to job:', error);
+                showToast('Ошибка', 'Не удалось откликнуться', 'error');
+            }
         }
 
         function toggleFaq(element) {
@@ -2700,6 +3060,12 @@
             document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
             document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
             document.getElementById('postJobForm').addEventListener('submit', handlePostJob);
+
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
 
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
@@ -2786,6 +3152,7 @@
         type: "Сезонная",
         description: "Работа в весенне-летний период.",
         isTop: false,
+        views: 0,
         createdAt: Date.now()
       },
       {
@@ -2796,6 +3163,7 @@
         type: "Постоянная",
         description: "Работа в ресторане быстрого питания.",
         isTop: false,
+        views: 0,
         createdAt: Date.now()
       }
     ];
