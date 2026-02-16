@@ -2363,6 +2363,7 @@
             openChat(jobId, STATE.currentUser.uid || STATE.currentUser.email, workerId);
         }
 
+        // CHAT FIX
         async function openChat(jobId, employerId, workerId) {
             if (!window.db) {
                 showToast('Ошибка', 'База данных недоступна', 'error');
@@ -2917,6 +2918,7 @@
             return isValid;
         }
 
+        // VIEW COUNTER FIX
         async function openApplyModal(jobId, event) {
             if (event) event.stopPropagation();
             
@@ -2936,10 +2938,22 @@
 
             if (window.db) {
                 try {
-                    const { updateDoc, doc, increment } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-                    await updateDoc(doc(window.db, "jobs", jobId), {
-                        views: increment(1)
-                    });
+                    const { updateDoc, doc, increment, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    const jobRef = doc(window.db, "jobs", jobId);
+                    const jobSnap = await getDoc(jobRef);
+                    
+                    if (jobSnap.exists()) {
+                        const jobData = jobSnap.data();
+                        if (typeof jobData.views === 'number') {
+                            await updateDoc(jobRef, {
+                                views: increment(1)
+                            });
+                        } else {
+                            await updateDoc(jobRef, {
+                                views: 1
+                            });
+                        }
+                    }
                 } catch (error) {
                     console.error('Error incrementing views:', error);
                 }
