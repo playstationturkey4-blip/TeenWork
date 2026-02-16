@@ -1312,12 +1312,14 @@
             border-radius: var(--radius-md);
             max-width: 70%;
             word-wrap: break-word;
+            display: block;
         }
 
         .chat-message.sent {
             background: var(--primary-blue);
             color: var(--white);
             margin-left: auto;
+            margin-right: 0;
             text-align: right;
         }
 
@@ -1325,6 +1327,7 @@
             background: var(--white);
             color: var(--text-dark);
             margin-right: auto;
+            margin-left: 0;
         }
 
         .chat-input-container {
@@ -2363,7 +2366,6 @@
             openChat(jobId, STATE.currentUser.uid || STATE.currentUser.email, workerId);
         }
 
-        // CHAT FIX
         async function openChat(jobId, employerId, workerId) {
             if (!window.db) {
                 showToast('Ошибка', 'База данных недоступна', 'error');
@@ -2373,6 +2375,11 @@
             try {
                 const { collection, query, where, getDocs, addDoc, onSnapshot, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
                 
+                if (STATE.chatUnsubscribe) {
+                    STATE.chatUnsubscribe();
+                    STATE.chatUnsubscribe = null;
+                }
+
                 const chatsRef = collection(window.db, 'chats');
                 const q = query(chatsRef, 
                     where('jobId', '==', jobId),
@@ -2394,14 +2401,15 @@
                     chatId = snapshot.docs[0].id;
                 }
 
+                if (!chatId) {
+                    showToast('Ошибка', 'Не удалось создать чат', 'error');
+                    return;
+                }
+
                 STATE.currentChatId = chatId;
 
                 const job = STATE.jobs.find(j => j.id === jobId);
                 document.getElementById('chatModalTitle').textContent = `Чат: ${job ? job.title : 'Вакансия'}`;
-
-                if (STATE.chatUnsubscribe) {
-                    STATE.chatUnsubscribe();
-                }
 
                 const messagesRef = collection(window.db, 'messages');
                 const messagesQuery = query(messagesRef, 
@@ -2409,22 +2417,22 @@
                     orderBy('createdAt', 'asc')
                 );
 
-                STATE.chatUnsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+                STATE.chatUnsubscribe = onSnapshot(messagesQuery, (messagesSnapshot) => {
                     const container = document.getElementById('chatMessages');
+                    if (!container) return;
+
                     let html = '';
                     
-                    snapshot.forEach(docSnap => {
+                    messagesSnapshot.forEach(docSnap => {
                         const msg = docSnap.data();
                         const isSent = msg.senderId === (STATE.currentUser.uid || STATE.currentUser.email);
-                        html += `
-                            <div class="chat-message ${isSent ? 'sent' : 'received'}">
-                                ${msg.text}
-                            </div>
-                        `;
+                        html += `<div class="chat-message ${isSent ? 'sent' : 'received'}">${msg.text}</div>`;
                     });
 
                     container.innerHTML = html || '<p style="color: var(--text-gray); text-align: center;">Нет сообщений</p>';
                     container.scrollTop = container.scrollHeight;
+                }, (error) => {
+                    console.error('Error in chat listener:', error);
                 });
 
                 openModal('chatModal');
@@ -2441,7 +2449,7 @@
             if (!text || !STATE.currentChatId || !window.db) return;
 
             try {
-                const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
                 const messagesRef = collection(window.db, 'messages');
                 
                 await addDoc(messagesRef, {
@@ -2918,7 +2926,6 @@
             return isValid;
         }
 
-        // VIEW COUNTER FIX
         async function openApplyModal(jobId, event) {
             if (event) event.stopPropagation();
             
