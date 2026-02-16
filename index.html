@@ -1220,6 +1220,54 @@
             background: var(--soft-blue);
         }
 
+        .admin-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: var(--white);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1.5px solid var(--border-gray);
+        }
+
+        .btn-admin {
+            flex: 1;
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 40px;
@@ -1776,6 +1824,8 @@
             }
         ];
 
+        const ADMIN_EMAIL = 'erorarun@gmail.com';
+
         const STATE = {
             jobs: [],
             filteredJobs: [],
@@ -1788,7 +1838,6 @@
         };
         window.STATE = STATE;
         window.renderJobs = renderJobs;
-
 
         const STORAGE = {
             USERS: 'teenwork_users',
@@ -1855,6 +1904,10 @@
             }
         };
 
+        function isAdmin() {
+            return STATE.currentUser && STATE.currentUser.email === ADMIN_EMAIL;
+        }
+
         function initStorage() {
             try {
                 const storedUsers = localStorage.getItem(STORAGE.USERS);
@@ -1884,9 +1937,7 @@
                 localStorage.removeItem(STORAGE.EMPLOYER_JOBS);
                 localStorage.removeItem(STORAGE.APPLIED_JOBS);
             }
-
-              
-      }
+        }
 
         function saveUsers() {
             localStorage.setItem(STORAGE.USERS, JSON.stringify(STATE.users));
@@ -2234,34 +2285,44 @@
             };
             reader.readAsDataURL(file);
         }
-async function handlePostJob(e) {
-    e.preventDefault();
 
-    if (!validateForm(e.target)) {
-        showToast('Ошибка', 'Заполните все поля корректно', 'error');
-        return;
-    }
+        async function handlePostJob(e) {
+            e.preventDefault();
 
-    const formData = new FormData(e.target);
+            if (!validateForm(e.target)) {
+                showToast('Ошибка', 'Заполните все поля корректно', 'error');
+                return;
+            }
 
-    const newJob = {
-        title: formData.get('title'),
-        company: formData.get('company'),
-        city: formData.get('city'),
-        salary: parseInt(formData.get('salary')),
-        type: formData.get('type'),
-        description: formData.get('description'),
-        employerEmail: STATE.currentUser.email,
-        createdAt: Date.now()
-    };
+            const formData = new FormData(e.target);
 
-    await addDoc(collection(db, "jobs"), newJob);
+            const newJob = {
+                title: formData.get('title'),
+                company: formData.get('company'),
+                city: formData.get('city'),
+                salary: parseInt(formData.get('salary')),
+                type: formData.get('type'),
+                description: formData.get('description'),
+                employerEmail: STATE.currentUser.email,
+                isTop: false,
+                createdAt: Date.now()
+            };
 
-    closeModal('postJobModal');
-    showToast('Успешно', 'Вакансия размещена', 'success');
+            try {
+                if (window.db && window.addDoc && window.collection) {
+                    await window.addDoc(window.collection(window.db, "jobs"), newJob);
+                }
+            } catch (error) {
+                console.error('Firestore error:', error);
+            }
 
-    loadJobsFromFirestore();
-}
+            closeModal('postJobModal');
+            showToast('Успешно', 'Вакансия размещена', 'success');
+
+            if (window.loadJobsFromFirestore) {
+                await window.loadJobsFromFirestore();
+            }
+        }
 
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -2295,6 +2356,9 @@ async function handlePostJob(e) {
             const sortValue = document.getElementById('sortFilter').value;
             
             STATE.filteredJobs.sort((a, b) => {
+                if (a.isTop && !b.isTop) return -1;
+                if (!a.isTop && b.isTop) return 1;
+                
                 if (sortValue === 'salary-desc') return b.salary - a.salary;
                 if (sortValue === 'salary-asc') return a.salary - b.salary;
                 return 0;
@@ -2336,26 +2400,99 @@ async function handlePostJob(e) {
             const endIndex = startIndex + STATE.jobsPerPage;
             const jobsToRender = STATE.filteredJobs.slice(startIndex, endIndex);
             
-            grid.innerHTML = jobsToRender.map(job => `
-                <div class="job-card" onclick="openApplyModal(${job.id})">
-                    <div class="job-header">
-                        <div class="job-title">${job.title}</div>
-                        <div class="job-company">${job.company}</div>
-                        <div class="job-location">📍 ${job.city}</div>
+            grid.innerHTML = jobsToRender.map(job => {
+                const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
+                const adminControls = isAdmin() ? `
+                    <div class="admin-controls">
+                        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">Удалить</button>
+                        <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
+                            ${job.isTop ? 'Снять TOP' : 'Сделать TOP'}
+                        </button>
                     </div>
-                    <div class="job-details">
-                        <div class="job-salary">${job.salary.toLocaleString('ru-RU')} ₽</div>
-                        <div class="job-tags">
-                            <span class="tag">${job.type}</span>
+                ` : '';
+                
+                return `
+                    <div class="job-card" onclick="openApplyModal('${job.id}')">
+                        ${adminBadge}
+                        <div class="job-header">
+                            <div class="job-title">${job.title}</div>
+                            <div class="job-company">${job.company}</div>
+                            <div class="job-location">📍 ${job.city}</div>
                         </div>
+                        <div class="job-details">
+                            <div class="job-salary">${job.salary.toLocaleString('ru-RU')} ₽</div>
+                            <div class="job-tags">
+                                <span class="tag">${job.type}</span>
+                            </div>
+                        </div>
+                        <div class="job-footer">
+                            <button class="btn btn-primary btn-apply" onclick="openApplyModal('${job.id}', event)">Откликнуться</button>
+                        </div>
+                        ${adminControls}
                     </div>
-                    <div class="job-footer">
-                        <button class="btn btn-primary btn-apply" onclick="openApplyModal(${job.id}, event)">Откликнуться</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             renderPagination();
+        }
+
+        async function deleteJob(jobId, event) {
+            if (event) event.stopPropagation();
+            
+            if (!isAdmin()) {
+                showToast('Ошибка', 'Только админ может удалять вакансии', 'error');
+                return;
+            }
+            
+            if (!confirm('Вы уверены, что хотите удалить эту вакансию?')) {
+                return;
+            }
+            
+            try {
+                if (window.db) {
+                    const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    await deleteDoc(doc(window.db, "jobs", jobId));
+                }
+                
+                showToast('Успешно', 'Вакансия удалена', 'success');
+                
+                if (window.loadJobsFromFirestore) {
+                    await window.loadJobsFromFirestore();
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showToast('Ошибка', 'Не удалось удалить вакансию', 'error');
+            }
+        }
+
+        async function toggleTopJob(jobId, event) {
+            if (event) event.stopPropagation();
+            
+            if (!isAdmin()) {
+                showToast('Ошибка', 'Только админ может управлять TOP-вакансиями', 'error');
+                return;
+            }
+            
+            try {
+                const job = STATE.jobs.find(j => j.id === jobId);
+                if (!job) return;
+                
+                if (window.db) {
+                    const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    await updateDoc(doc(window.db, "jobs", jobId), {
+                        isTop: !job.isTop
+                    });
+                }
+                
+                showToast('Успешно', job.isTop ? 'TOP снят' : 'Вакансия в TOP', 'success');
+                
+                if (window.loadJobsFromFirestore) {
+                    await window.loadJobsFromFirestore();
+                }
+            } catch (error) {
+                console.error('Toggle TOP error:', error);
+                showToast('Ошибка', 'Не удалось изменить статус', 'error');
+            }
         }
 
         function renderPagination() {
@@ -2501,7 +2638,7 @@ async function handlePostJob(e) {
                 <div style="text-align: center; padding: 20px;">
                     ${alreadyApplied 
                         ? '<p style="margin-bottom: 16px; color: var(--success); font-weight: 600;">Вы уже откликнулись на эту вакансию</p>'
-                        : `<button class="btn btn-primary" onclick="applyToJob(${jobId})" style="margin-bottom: 12px;">Откликнуться</button>`
+                        : `<button class="btn btn-primary" onclick="applyToJob('${jobId}')" style="margin-bottom: 12px;">Откликнуться</button>`
                     }
                     <button class="btn btn-secondary" onclick="closeModal('applyModal')">Закрыть</button>
                 </div>
@@ -2606,11 +2743,9 @@ async function handlePostJob(e) {
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
-<!-- Firebase подключение -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC9l-LPIJl_51GC8FgdApYccycQjA7rNps",
@@ -2628,71 +2763,78 @@ async function handlePostJob(e) {
   window.db = db;
   window.addDoc = addDoc;
   window.collection = collection;
+  window.deleteDoc = deleteDoc;
+  window.doc = doc;
+  window.updateDoc = updateDoc;
 
-const jobsCollection = collection(db, "jobs");
+  const jobsCollection = collection(db, "jobs");
 
-async function uploadInitialJobs() {
-  const snapshot = await getDocs(jobsCollection);
+  async function uploadInitialJobs() {
+    const snapshot = await getDocs(jobsCollection);
 
-  if (!snapshot.empty) {
-    console.log("Вакансии уже есть в Firestore");
-    return;
-  }
-
-  const initialJobs = [
-    {
-      title: "Промоутер водных экскурсий",
-      company: "Нева Тревел",
-      city: "Санкт-Петербург",
-      salary: 30000,
-      type: "Сезонная",
-      description: "Работа в весенне-летний период."
-    },
-    {
-      title: "Кассир",
-      company: "Додо Пицца",
-      city: "Санкт-Петербург",
-      salary: 35000,
-      type: "Постоянная",
-      description: "Работа в ресторане быстрого питания."
+    if (!snapshot.empty) {
+      console.log("Вакансии уже есть в Firestore");
+      return;
     }
-  ];
 
-  for (let job of initialJobs) {
-    await addDoc(jobsCollection, job);
+    const initialJobs = [
+      {
+        title: "Промоутер водных экскурсий",
+        company: "Нева Тревел",
+        city: "Санкт-Петербург",
+        salary: 30000,
+        type: "Сезонная",
+        description: "Работа в весенне-летний период.",
+        isTop: false,
+        createdAt: Date.now()
+      },
+      {
+        title: "Кассир",
+        company: "Додо Пицца",
+        city: "Санкт-Петербург",
+        salary: 35000,
+        type: "Постоянная",
+        description: "Работа в ресторане быстрого питания.",
+        isTop: false,
+        createdAt: Date.now()
+      }
+    ];
+
+    for (let job of initialJobs) {
+      await addDoc(jobsCollection, job);
+    }
+
+    console.log("Вакансии успешно загружены в Firestore");
   }
 
-  console.log("Вакансии успешно загружены в Firestore");
-}
-
-
-async function loadJobsFromFirestore() {
+  async function loadJobsFromFirestore() {
     const snapshot = await getDocs(collection(db, "jobs"));
     const jobs = [];
 
-    snapshot.forEach(doc => {
-        jobs.push({
-            id: doc.id,
-            ...doc.data()
-        });
+    snapshot.forEach(docSnap => {
+      jobs.push({
+        id: docSnap.id,
+        ...docSnap.data()
+      });
     });
 
     if (window.STATE) {
-        window.STATE.jobs = jobs;
-        window.STATE.filteredJobs = [...jobs];
-        window.STATE.currentPage = 1;
+      window.STATE.jobs = jobs;
+      window.STATE.filteredJobs = [...jobs];
+      window.STATE.currentPage = 1;
 
-        if (window.renderJobs) {
-            window.renderJobs();
-        }
+      if (window.renderJobs) {
+        window.renderJobs();
+      }
     }
 
     console.log("Вакансии загружены из Firestore:", jobs.length);
-}
+  }
 
-loadJobsFromFirestore();
-
-
+  window.loadJobsFromFirestore = loadJobsFromFirestore;
+  
+  uploadInitialJobs();
+  loadJobsFromFirestore();
 </script>
 
 </body>
