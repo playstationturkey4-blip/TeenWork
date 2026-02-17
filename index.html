@@ -1297,6 +1297,10 @@
             margin-bottom: 8px;
         }
 
+        /* ==============================
+           CHAT UI ENHANCEMENT
+           Improved chat appearance while preserving existing logic
+        ============================== */
         .chat-messages {
             max-height: 400px;
             overflow-y: auto;
@@ -1304,6 +1308,7 @@
             padding: 16px;
             background: var(--light-gray);
             border-radius: var(--radius-md);
+            scroll-behavior: smooth;
         }
 
         .chat-message {
@@ -1313,14 +1318,19 @@
             max-width: 70%;
             word-wrap: break-word;
             display: block;
+            /* Enhanced: slightly smoother rendering */
+            line-height: 1.5;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .chat-message.sent {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
             color: var(--white);
             margin-left: auto;
             margin-right: 0;
             text-align: right;
+            border-bottom-right-radius: 4px;
         }
 
         .chat-message.received {
@@ -1328,15 +1338,104 @@
             color: var(--text-dark);
             margin-right: auto;
             margin-left: 0;
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* NEW: Chat image message styling */
+        .chat-message-image {
+            max-width: 220px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: block;
+        }
+
+        .chat-message-image:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        /* NEW: Chat audio message styling */
+        .chat-message-audio {
+            max-width: 260px;
+            width: 100%;
+            height: 36px;
+            border-radius: 20px;
+            outline: none;
+            accent-color: var(--primary-blue);
+        }
+
+        .chat-message.sent .chat-message-audio {
+            /* Keep audio in sent bubble */
         }
 
         .chat-input-container {
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         .chat-input-container input {
             flex: 1;
+        }
+
+        /* NEW: Media buttons in chat toolbar */
+        .chat-media-toolbar {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .chat-media-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-gray);
+            background: var(--white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .chat-media-btn:hover {
+            background: var(--soft-blue);
+            border-color: var(--primary-blue);
+            transform: scale(1.08);
+        }
+
+        .chat-media-btn.recording {
+            background: #fee2e2;
+            border-color: var(--error);
+            animation: recordPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        /* Hidden file input for image upload */
+        #chatImageInput {
+            display: none;
+        }
+
+        /* Upload progress indicator */
+        .chat-upload-indicator {
+            font-size: 12px;
+            color: var(--text-gray);
+            padding: 4px 8px;
+            background: var(--light-gray);
+            border-radius: var(--radius-sm);
+            display: none;
+        }
+
+        .chat-upload-indicator.visible {
+            display: block;
         }
 
         .admin-panel-badge {
@@ -1857,6 +1956,7 @@
         </div>
     </div>
 
+    <!-- CHAT MODAL: Enhanced with media toolbar but existing logic untouched -->
     <div class="modal" id="chatModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1865,8 +1965,18 @@
             </div>
             <div class="modal-body">
                 <div class="chat-messages" id="chatMessages"></div>
+                <!-- Upload progress indicator (hidden by default) -->
+                <div class="chat-upload-indicator" id="chatUploadIndicator">⏳ Загрузка файла...</div>
                 <div class="chat-input-container">
+                    <!-- Hidden file input for image uploads -->
+                    <input type="file" id="chatImageInput" accept="image/*">
+                    <!-- NEW: Image upload button -->
+                    <button class="chat-media-btn" onclick="triggerChatImageUpload()" title="Отправить изображение">🖼️</button>
+                    <!-- NEW: Voice message button -->
+                    <button class="chat-media-btn" id="voiceRecordBtn" onclick="toggleVoiceRecording()" title="Голосовое сообщение">🎙️</button>
+                    <!-- Existing text input (unchanged) -->
                     <input type="text" class="input" id="chatInput" placeholder="Введите сообщение...">
+                    <!-- Existing send button (unchanged) -->
                     <button class="btn btn-primary" onclick="sendChatMessage()">Отправить</button>
                 </div>
             </div>
@@ -1931,7 +2041,19 @@
             }
         ];
 
-        const ADMIN_EMAIL = 'erorarun@gmail.com';
+        // ==============================
+        // ADMIN EXTENSION
+        // Added second admin email alongside the original.
+        // Original ADMIN_EMAIL const is preserved; new ADMIN_EMAILS array
+        // is used by the updated isAdmin() function below.
+        // ==============================
+        const ADMIN_EMAIL = 'erorarun@gmail.com'; // original — keep untouched
+
+        // NEW: Array of all admin emails (original + second admin)
+        const ADMIN_EMAILS = [
+            'erorarun@gmail.com',
+            'skurkomaksim833@gmail.com'
+        ];
 
         const STATE = {
             jobs: [],
@@ -2013,8 +2135,10 @@
             }
         };
 
+        // ADMIN EXTENSION: isAdmin() now checks ADMIN_EMAILS array
+        // Both original admin and new second admin are granted access.
         function isAdmin() {
-            return STATE.currentUser && STATE.currentUser.email === ADMIN_EMAIL;
+            return STATE.currentUser && ADMIN_EMAILS.includes(STATE.currentUser.email);
         }
 
         function initStorage() {
@@ -2417,6 +2541,8 @@
                     orderBy('createdAt', 'asc')
                 );
 
+                // CHAT UI ENHANCEMENT: Extended onSnapshot rendering to support image/audio messages.
+                // Original text message logic is fully preserved; new branches handle imageUrl/audioUrl.
                 STATE.chatUnsubscribe = onSnapshot(messagesQuery, (messagesSnapshot) => {
                     const container = document.getElementById('chatMessages');
                     if (!container) return;
@@ -2426,7 +2552,37 @@
                     messagesSnapshot.forEach(docSnap => {
                         const msg = docSnap.data();
                         const isSent = msg.senderId === (STATE.currentUser.uid || STATE.currentUser.email);
-                        html += `<div class="chat-message ${isSent ? 'sent' : 'received'}">${msg.text}</div>`;
+                        const alignClass = isSent ? 'sent' : 'received';
+
+                        // IMAGE MESSAGE LOGIC: render image if imageUrl present
+                        if (msg.imageUrl) {
+                            html += `
+                                <div class="chat-message ${alignClass}">
+                                    <img
+                                        class="chat-message-image"
+                                        src="${msg.imageUrl}"
+                                        alt="Изображение"
+                                        onclick="window.open('${msg.imageUrl}', '_blank')"
+                                    />
+                                </div>`;
+                        }
+                        // VOICE MESSAGE LOGIC: render audio player if audioUrl present
+                        else if (msg.audioUrl) {
+                            html += `
+                                <div class="chat-message ${alignClass}">
+                                    🎙️
+                                    <audio
+                                        class="chat-message-audio"
+                                        controls
+                                        src="${msg.audioUrl}"
+                                        preload="metadata"
+                                    ></audio>
+                                </div>`;
+                        }
+                        // Original text message logic — unchanged
+                        else {
+                            html += `<div class="chat-message ${alignClass}">${msg.text}</div>`;
+                        }
                     });
 
                     container.innerHTML = html || '<p style="color: var(--text-gray); text-align: center;">Нет сообщений</p>';
@@ -3088,6 +3244,9 @@
                 }
             });
 
+            // IMAGE MESSAGE LOGIC: bind file input change to upload handler
+            document.getElementById('chatImageInput').addEventListener('change', handleChatImageSelected);
+
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -3129,6 +3288,207 @@
         }
 
         document.addEventListener('DOMContentLoaded', init);
+
+        // ==============================
+        // STORAGE EXTENSION
+        // Firebase Storage SDK loaded dynamically when needed.
+        // getStorage, ref, uploadBytes, getDownloadURL imported on demand.
+        // Does NOT modify Firebase config block.
+        // ==============================
+
+        /**
+         * IMAGE MESSAGE LOGIC
+         * Triggered when user clicks the image button in chat toolbar.
+         * Opens the hidden file input.
+         */
+        function triggerChatImageUpload() {
+            if (!STATE.currentChatId) {
+                showToast('Ошибка', 'Сначала откройте чат', 'error');
+                return;
+            }
+            document.getElementById('chatImageInput').click();
+        }
+
+        /**
+         * IMAGE MESSAGE LOGIC
+         * Handles selected image file → uploads to Firebase Storage → saves imageUrl to Firestore messages.
+         */
+        async function handleChatImageSelected(e) {
+            const file = e.target.files[0];
+            // Reset input so same file can be re-selected
+            e.target.value = '';
+
+            if (!file || !STATE.currentChatId || !window.db) return;
+
+            // Only allow image files
+            if (!file.type.startsWith('image/')) {
+                showToast('Ошибка', 'Выберите изображение', 'error');
+                return;
+            }
+
+            // Max 5 MB check
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Ошибка', 'Размер изображения не должен превышать 5 МБ', 'error');
+                return;
+            }
+
+            const indicator = document.getElementById('chatUploadIndicator');
+            if (indicator) indicator.classList.add('visible');
+
+            try {
+                // Dynamically import Firebase Storage SDK (does not touch config)
+                const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js');
+                const storage = getStorage();
+
+                // Upload to a unique path inside chat-images/
+                const filePath = `chat-images/${STATE.currentChatId}/${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, filePath);
+                await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                // Save imageUrl message to Firestore (messages collection — unchanged)
+                const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const messagesRef = collection(window.db, 'messages');
+                await addDoc(messagesRef, {
+                    chatId: STATE.currentChatId,
+                    senderId: STATE.currentUser.uid || STATE.currentUser.email,
+                    imageUrl: downloadURL, // NEW field — onSnapshot renders <img>
+                    text: '',              // kept for schema consistency
+                    createdAt: Date.now()
+                });
+
+            } catch (error) {
+                console.error('Image upload error:', error);
+                showToast('Ошибка', 'Не удалось загрузить изображение', 'error');
+            } finally {
+                if (indicator) indicator.classList.remove('visible');
+            }
+        }
+
+        // ==============================
+        // VOICE MESSAGE LOGIC
+        // MediaRecorder API records audio in the browser.
+        // Recorded blob uploaded to Firebase Storage as audio/webm.
+        // audioUrl saved to Firestore messages → onSnapshot renders <audio controls>.
+        // ==============================
+
+        // State for voice recording (isolated, does not affect existing STATE)
+        const VOICE_STATE = {
+            mediaRecorder: null,
+            audioChunks: [],
+            isRecording: false,
+            stream: null
+        };
+
+        /**
+         * VOICE MESSAGE LOGIC
+         * Toggle recording on/off when user clicks the microphone button.
+         */
+        async function toggleVoiceRecording() {
+            if (!STATE.currentChatId) {
+                showToast('Ошибка', 'Сначала откройте чат', 'error');
+                return;
+            }
+
+            if (VOICE_STATE.isRecording) {
+                // Stop recording
+                VOICE_STATE.mediaRecorder.stop();
+            } else {
+                // Start recording
+                try {
+                    VOICE_STATE.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    VOICE_STATE.audioChunks = [];
+                    VOICE_STATE.mediaRecorder = new MediaRecorder(VOICE_STATE.stream);
+
+                    VOICE_STATE.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            VOICE_STATE.audioChunks.push(event.data);
+                        }
+                    };
+
+                    VOICE_STATE.mediaRecorder.onstop = handleVoiceRecordingStop;
+
+                    VOICE_STATE.mediaRecorder.start();
+                    VOICE_STATE.isRecording = true;
+
+                    // Visual feedback: button turns red/pulsing
+                    const btn = document.getElementById('voiceRecordBtn');
+                    if (btn) {
+                        btn.classList.add('recording');
+                        btn.textContent = '⏹️';
+                        btn.title = 'Остановить запись';
+                    }
+
+                } catch (err) {
+                    console.error('Microphone error:', err);
+                    showToast('Ошибка', 'Нет доступа к микрофону', 'error');
+                }
+            }
+        }
+
+        /**
+         * VOICE MESSAGE LOGIC
+         * Called when recording stops. Uploads audio blob to Firebase Storage,
+         * then saves audioUrl to Firestore messages.
+         */
+        async function handleVoiceRecordingStop() {
+            VOICE_STATE.isRecording = false;
+
+            // Reset button appearance
+            const btn = document.getElementById('voiceRecordBtn');
+            if (btn) {
+                btn.classList.remove('recording');
+                btn.textContent = '🎙️';
+                btn.title = 'Голосовое сообщение';
+            }
+
+            // Stop all microphone tracks to release the device
+            if (VOICE_STATE.stream) {
+                VOICE_STATE.stream.getTracks().forEach(track => track.stop());
+                VOICE_STATE.stream = null;
+            }
+
+            if (VOICE_STATE.audioChunks.length === 0) return;
+
+            const audioBlob = new Blob(VOICE_STATE.audioChunks, { type: 'audio/webm' });
+
+            // Minimum duration guard (< 0.5 KB is likely empty)
+            if (audioBlob.size < 512) {
+                showToast('Внимание', 'Запись слишком короткая', 'warning');
+                return;
+            }
+
+            const indicator = document.getElementById('chatUploadIndicator');
+            if (indicator) indicator.classList.add('visible');
+
+            try {
+                // Dynamically import Firebase Storage SDK
+                const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js');
+                const storage = getStorage();
+
+                const filePath = `chat-audio/${STATE.currentChatId}/${Date.now()}.webm`;
+                const storageRef = ref(storage, filePath);
+                await uploadBytes(storageRef, audioBlob);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                // Save audioUrl message to Firestore (messages collection — unchanged)
+                const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const messagesRef = collection(window.db, 'messages');
+                await addDoc(messagesRef, {
+                    chatId: STATE.currentChatId,
+                    senderId: STATE.currentUser.uid || STATE.currentUser.email,
+                    audioUrl: downloadURL, // NEW field — onSnapshot renders <audio controls>
+                    text: '',              // kept for schema consistency
+                    createdAt: Date.now()
+                });
+
+            } catch (error) {
+                console.error('Audio upload error:', error);
+                showToast('Ошибка', 'Не удалось загрузить голосовое сообщение', 'error');
+            } finally {
+                if (indicator) indicator.classList.remove('visible');
+            }
+        }
     </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
