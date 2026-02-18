@@ -3584,5 +3584,513 @@
   loadJobsFromFirestore();
 </script>
 
+
+<!-- ================= UX FILTER SYSTEM ================= -->
+<!-- Active filter chips container injected below filters-grid -->
+<style>
+/* ================= UX FILTER SYSTEM ================= */
+.filter-chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    min-height: 0;
+    transition: min-height 0.3s ease;
+}
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    border: 1.5px solid rgba(37,99,235,0.25);
+    border-radius: 24px;
+    padding: 5px 14px 5px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    animation: chipPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    user-select: none;
+}
+.filter-chip:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: scale(1.04);
+}
+.filter-chip-remove {
+    font-size: 14px;
+    font-weight: 800;
+    opacity: 0.7;
+    line-height: 1;
+    transition: opacity 0.15s ease;
+}
+.filter-chip:hover .filter-chip-remove {
+    opacity: 1;
+}
+@keyframes chipPop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ================= CARD ANIMATIONS ================= */
+.job-card.is-new::before {
+    content: 'NEW';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    z-index: 2;
+    animation: newBadgePulse 2.4s ease-in-out infinite;
+}
+@keyframes newBadgePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+}
+.job-card.is-top-glow {
+    box-shadow: var(--shadow-sm), 0 0 0 2px rgba(245,158,11,0.3), 0 8px 30px rgba(245,158,11,0.12);
+}
+.job-card.is-top-glow:hover {
+    box-shadow: 0 20px 50px rgba(37,99,235,0.13), 0 0 0 2px rgba(245,158,11,0.4), 0 12px 40px rgba(245,158,11,0.18);
+}
+.job-salary-animated {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+}
+.job-card:hover .job-salary-animated {
+    transform: scale(1.06);
+    filter: brightness(1.15);
+}
+
+/* ================= MODAL ENHANCEMENTS ================= */
+.modal-share-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--border-gray);
+    flex-wrap: wrap;
+}
+.btn-share {
+    flex: 1;
+    min-width: 120px;
+    padding: 9px 14px;
+    font-size: 13px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border-gray);
+    background: var(--white);
+    color: var(--text-dark);
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btn-share:hover {
+    background: var(--soft-blue);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    transform: translateY(-2px);
+}
+.similar-jobs-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--border-gray);
+}
+.similar-jobs-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+.similar-job-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--light-gray);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-right: 8px;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+}
+.similar-job-chip:hover {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    transform: translateY(-2px);
+}
+
+/* ================= UI MICRO INTERACTIONS ================= */
+/* Button ripple */
+.btn-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transform: scale(0);
+    animation: rippleAnim 0.55s linear;
+    pointer-events: none;
+}
+@keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+}
+/* Loading skeleton */
+.skeleton-card {
+    background: var(--white);
+    padding: 26px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 2px solid transparent;
+    overflow: hidden;
+    position: relative;
+}
+.skeleton-line {
+    border-radius: 6px;
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+/* Filter dropdown animated open/close */
+.select {
+    cursor: pointer;
+}
+/* Soft shadow transition on filter section on interaction */
+.filters-section {
+    transition: box-shadow 0.4s ease, transform 0.3s ease;
+}
+/* Save/restore filter indicator */
+.filter-restored-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 8px;
+    animation: fadeIn 0.5s ease;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+</style>
+
+<script>
+// ================= UX FILTER SYSTEM =================
+// Extended filter UX: chips, localStorage persistence, auto-apply.
+// Does NOT modify applyFilters(), applySorting(), resetFilters(), or any filter algorithm.
+
+const FILTER_STORAGE_KEY = 'teenwork_filters_v1';
+
+const FILTER_LABELS = {
+    search:  { id: 'searchInput',  label: 'Поиск',     type: 'input'  },
+    city:    { id: 'cityFilter',   label: 'Город',     type: 'select' },
+    type:    { id: 'typeFilter',   label: 'Тип',       type: 'select' },
+    salary:  { id: 'salaryFilter', label: 'Зарплата',  type: 'select' },
+};
+
+// Inject chip container into DOM after filters-grid
+function initFilterChipsContainer() {
+    const filterSection = document.querySelector('.filters-section');
+    if (!filterSection) return;
+    const actionsRow = filterSection.querySelector('.filter-actions');
+    if (!actionsRow) return;
+    const chipsRow = document.createElement('div');
+    chipsRow.className = 'filter-chips-row';
+    chipsRow.id = 'filterChipsRow';
+    filterSection.insertBefore(chipsRow, actionsRow);
+}
+
+// Render active filter chips based on current filter inputs
+function renderFilterChips() {
+    const chipsRow = document.getElementById('filterChipsRow');
+    if (!chipsRow) return;
+    chipsRow.innerHTML = '';
+    let chipIndex = 0;
+    Object.entries(FILTER_LABELS).forEach(([key, meta]) => {
+        const el = document.getElementById(meta.id);
+        if (!el) return;
+        const val = el.value;
+        if (!val) return;
+        const label = meta.type === 'select'
+            ? (el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : val)
+            : val;
+        const chip = document.createElement('span');
+        chip.className = 'filter-chip';
+        chip.style.animationDelay = (chipIndex * 40) + 'ms';
+        chip.innerHTML = `${meta.label}: <strong>${label}</strong> <span class="filter-chip-remove">×</span>`;
+        chip.addEventListener('click', () => {
+            el.value = '';
+            applyFilters();
+        });
+        chipsRow.appendChild(chip);
+        chipIndex++;
+    });
+}
+
+// Save current filter values to localStorage
+function saveFiltersToStorage() {
+    const state = {};
+    Object.values(FILTER_LABELS).forEach(meta => {
+        const el = document.getElementById(meta.id);
+        if (el) state[meta.id] = el.value;
+    });
+    const sortEl = document.getElementById('sortFilter');
+    if (sortEl) state['sortFilter'] = sortEl.value;
+    try { localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// Restore filter values from localStorage
+function restoreFiltersFromStorage() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(FILTER_STORAGE_KEY) || 'null');
+        if (!saved) return false;
+        let any = false;
+        Object.values(FILTER_LABELS).forEach(meta => {
+            const el = document.getElementById(meta.id);
+            if (el && saved[meta.id] !== undefined && saved[meta.id] !== '') {
+                el.value = saved[meta.id];
+                any = true;
+            }
+        });
+        const sortEl = document.getElementById('sortFilter');
+        if (sortEl && saved['sortFilter']) sortEl.value = saved['sortFilter'];
+        return any;
+    } catch(e) { return false; }
+}
+
+// Show "filters restored" badge briefly
+function showRestoredBadge() {
+    const jobCount = document.getElementById('jobCount');
+    if (!jobCount) return;
+    const badge = document.createElement('span');
+    badge.className = 'filter-restored-badge';
+    badge.textContent = '↩ Фильтры восстановлены';
+    jobCount.parentNode.insertBefore(badge, jobCount.nextSibling);
+    setTimeout(() => { badge.style.opacity = '0'; setTimeout(() => badge.remove(), 500); }, 3000);
+}
+
+// Patch applyFilters to also run chip render + save
+const _origApplyFilters = applyFilters;
+window.applyFilters = function() {
+    _origApplyFilters();
+    renderFilterChips();
+    saveFiltersToStorage();
+};
+
+// Patch resetFilters to clear chips + storage
+const _origResetFilters = resetFilters;
+window.resetFilters = function() {
+    _origResetFilters();
+    renderFilterChips();
+    try { localStorage.removeItem(FILTER_STORAGE_KEY); } catch(e) {}
+};
+
+// ================= CARD ANIMATIONS =================
+// Extend renderJobs to apply NEW badge + TOP glow + stagger + salary animation class.
+const _origRenderJobs = window.renderJobs || renderJobs;
+window.renderJobs = function() {
+    _origRenderJobs();
+    extendJobCards();
+};
+
+function extendJobCards() {
+    const now = Date.now();
+    const ONE_DAY = 86400000;
+    document.querySelectorAll('.job-card').forEach((card, idx) => {
+        // Stagger animation delay (overrides CSS nth-child)
+        card.style.animationDelay = (idx * 55) + 'ms';
+
+        // Find corresponding job from STATE
+        const jobId = card.getAttribute('onclick') && card.getAttribute('onclick').match(/'([^']+)'/);
+        if (!jobId) return;
+        const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId[1]);
+        if (!job) return;
+
+        // NEW badge for jobs created in last 24h
+        if (job.createdAt && (now - job.createdAt) < ONE_DAY) {
+            card.classList.add('is-new');
+        }
+
+        // TOP glow
+        if (job.isTop) {
+            card.classList.add('is-top-glow');
+        }
+
+        // Salary animated highlight
+        const salaryEl = card.querySelector('.job-salary');
+        if (salaryEl) salaryEl.classList.add('job-salary-animated');
+    });
+}
+
+// Loading skeleton — shown while jobs are loading
+function showJobSkeletons(count = 6) {
+    const grid = document.getElementById('jobsGrid');
+    if (!grid) return;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+        <div class="skeleton-card">
+            <div class="skeleton-line" style="height:22px;width:70%;margin-bottom:12px;"></div>
+            <div class="skeleton-line" style="height:14px;width:45%;margin-bottom:8px;"></div>
+            <div class="skeleton-line" style="height:14px;width:35%;margin-bottom:20px;"></div>
+            <div class="skeleton-line" style="height:28px;width:55%;margin-bottom:14px;"></div>
+            <div class="skeleton-line" style="height:34px;width:40%;border-radius:24px;margin-bottom:22px;"></div>
+            <div style="display:flex;justify-content:flex-end;">
+                <div class="skeleton-line" style="height:36px;width:120px;border-radius:12px;"></div>
+            </div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+}
+
+// Patch loadJobsFromFirestore to show skeletons while loading
+if (window.loadJobsFromFirestore) {
+    const _origLoad = window.loadJobsFromFirestore;
+    window.loadJobsFromFirestore = async function() {
+        showJobSkeletons(6);
+        await _origLoad();
+        extendJobCards();
+    };
+} else {
+    // If not yet defined, patch via observer
+    const observer = setInterval(() => {
+        if (window.loadJobsFromFirestore) {
+            const _origLoad = window.loadJobsFromFirestore;
+            window.loadJobsFromFirestore = async function() {
+                showJobSkeletons(6);
+                await _origLoad();
+                extendJobCards();
+            };
+            clearInterval(observer);
+        }
+    }, 200);
+}
+
+// ================= MODAL ENHANCEMENTS =================
+// Extend applyModal to inject share bar + similar jobs.
+// Does NOT alter existing modal HTML or logic.
+
+const _origOpenApplyModal = window.openApplyModal || openApplyModal;
+window.openApplyModal = async function(jobId, event) {
+    await _origOpenApplyModal(jobId, event);
+    // After the original renders, inject share + similar sections
+    setTimeout(() => injectModalEnhancements(jobId), 80);
+};
+
+function injectModalEnhancements(jobId) {
+    const modalBody = document.getElementById('applyModalBody');
+    if (!modalBody) return;
+
+    // Avoid double-inject
+    if (modalBody.querySelector('.modal-share-bar')) return;
+
+    const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+    if (!job) return;
+
+    // Share bar
+    const shareBar = document.createElement('div');
+    shareBar.className = 'modal-share-bar';
+    shareBar.innerHTML = `
+        <button class="btn-share" onclick="copyJobLink('${jobId}')">📋 Скопировать ссылку</button>
+        <button class="btn-share" onclick="shareJob('${jobId}')">↗ Поделиться</button>
+    `;
+    modalBody.appendChild(shareBar);
+
+    // Similar jobs (same type keyword, max 3, exclude self)
+    const typeKeyword = job.type ? job.type.split(',')[0].trim() : '';
+    const similar = window.STATE.jobs
+        .filter(j => j.id !== jobId && j.type && j.type.includes(typeKeyword) && typeKeyword)
+        .slice(0, 3);
+
+    if (similar.length > 0) {
+        const simSection = document.createElement('div');
+        simSection.className = 'similar-jobs-section';
+        simSection.innerHTML = `<div class="similar-jobs-title">Похожие вакансии</div>` +
+            similar.map(s => `
+                <span class="similar-job-chip" onclick="closeModal('applyModal');setTimeout(()=>openApplyModal('${s.id}'),320)">
+                    ${s.title} — ${s.salary.toLocaleString('ru-RU')} ₽
+                </span>
+            `).join('');
+        modalBody.appendChild(simSection);
+    }
+}
+
+function copyJobLink(jobId) {
+    const url = window.location.href.split('?')[0] + '?job=' + jobId;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => showToast('Ссылка скопирована', url.slice(0, 60) + '...', 'success'));
+    } else {
+        showToast('Ссылка', url, 'success');
+    }
+}
+
+function shareJob(jobId) {
+    const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+    const title = job ? job.title : 'Вакансия на TeenWork';
+    const url = window.location.href.split('?')[0] + '?job=' + jobId;
+    if (navigator.share) {
+        navigator.share({ title, url }).catch(() => {});
+    } else {
+        copyJobLink(jobId);
+    }
+}
+
+// ================= UI MICRO INTERACTIONS =================
+// Button ripple effect (hardware-accelerated, does not rewrite btn CSS)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn, .btn-primary, .btn-secondary, .btn-share, .btn-clear-filters');
+    if (!btn) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'btn-ripple';
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px;`;
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+}, true);
+
+// ================= INIT EXTENSIONS =================
+document.addEventListener('DOMContentLoaded', function() {
+    // Inject chip row into filter section
+    initFilterChipsContainer();
+
+    // Restore saved filters and auto-apply if any were saved
+    const wasRestored = restoreFiltersFromStorage();
+    if (wasRestored) {
+        // Give Firestore a moment to load before applying restored filters
+        const tryRestore = setInterval(() => {
+            if (window.STATE && window.STATE.jobs.length > 0) {
+                applyFilters();
+                showRestoredBadge();
+                clearInterval(tryRestore);
+            }
+        }, 300);
+        // Timeout guard
+        setTimeout(() => clearInterval(tryRestore), 8000);
+    }
+
+    // Show skeletons immediately while waiting for Firebase
+    showJobSkeletons(6);
+});
+</script>
 </body>
 </html>
