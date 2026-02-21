@@ -1762,7 +1762,16 @@
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Сохранить изменения</button>
                 <button type="button" class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;" onclick="openRoleSelectorModal()">Изменить роль</button>
-                <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="logout()">Выйти из аккаунта</button>
+  <div id="extra-profile-buttons" style="margin: 15px 0;">
+    <button id="btn-edit-resume" onclick="openResumeModal()" style="width:100%; padding:10px; background:#f0f0f0; border:1px solid #ccc; border-radius:5px; cursor:pointer; margin-bottom:10px; display:none;">
+        📄 Заполнить мою анкету
+    </button>
+    
+    <button id="btn-edit-company" onclick="openCompanyModal()" style="width:100%; padding:10px; background:#e3f2fd; border:1px solid #90caf9; border-radius:5px; cursor:pointer; margin-bottom:10px; display:none;">
+        🏢 Редактировать описание компании
+    </button>
+</div>              
+<button type="button" class="btn btn-secondary" style="width: 100%;" onclick="logout()">Выйти из аккаунта</button>
             </form>
 
             <div id="profileApplicationsSection" style="display: none;">
@@ -5790,7 +5799,116 @@ window.openProfile = function() {
     _origOpenProfileForFavs();
     setTimeout(renderFavoritesInProfile, 100);
 };
+  <div id="resume-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('resume-modal').style.display='none'">&times;</span>
+        <h2>📝 Моя анкета</h2>
+        <p style="color:#666; font-size:0.9em;">Заполни, чтобы работодатель узнал о тебе больше.</p>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px;"><b>О себе и увлечения:</b></label>
+            <textarea id="resume-about" style="width:100%; height:80px; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Пример: Ответственный, быстро учусь..."></textarea>
+        </div>
 
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px;"><b>Навыки:</b></label>
+            <input type="text" id="resume-skills" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Пример: Английский, Монтаж видео...">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px;"><b>Телефон для связи:</b></label>
+            <input type="text" id="resume-contact" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="+7 (999) ...">
+        </div>
+
+        <button onclick="saveResumeData()" style="background-color:#4CAF50; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; width:100%;">Сохранить анкету</button>
+    </div>
+</div>
+
+<div id="company-desc-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('company-desc-modal').style.display='none'">&times;</span>
+        <h2>🏢 Описание моей компании</h2>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px;"><b>Название компании:</b></label>
+            <input type="text" id="company-name-edit" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px;"><b>О нас:</b></label>
+            <textarea id="company-about-edit" style="width:100%; height:100px; padding:10px; border:1px solid #ccc; border-radius:5px;" placeholder="Чем вы занимаетесь?"></textarea>
+        </div>
+
+        <button onclick="saveCompanyData()" style="background-color:#007bff; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; width:100%;">Сохранить описание</button>
+    </div>
+</div>
+/* ========================================== */
+/* НОВЫЙ ФУНКЦИОНАЛ: АНКЕТЫ И КОМПАНИИ */
+
+// 1. Открытие модалок
+function openResumeModal() {
+    document.getElementById('resume-modal').style.display = 'block';
+    // Загружаем сохраненные данные, если есть
+    const data = JSON.parse(localStorage.getItem('myResume') || '{}');
+    if(data.about) document.getElementById('resume-about').value = data.about;
+    if(data.skills) document.getElementById('resume-skills').value = data.skills;
+    if(data.contact) document.getElementById('resume-contact').value = data.contact;
+}
+
+function openCompanyModal() {
+    document.getElementById('company-desc-modal').style.display = 'block';
+    const data = JSON.parse(localStorage.getItem('myCompany') || '{}');
+    if(data.name) document.getElementById('company-name-edit').value = data.name;
+    if(data.about) document.getElementById('company-about-edit').value = data.about;
+}
+
+// 2. Сохранение данных
+function saveResumeData() {
+    const resume = {
+        about: document.getElementById('resume-about').value,
+        skills: document.getElementById('resume-skills').value,
+        contact: document.getElementById('resume-contact').value
+    };
+    localStorage.setItem('myResume', JSON.stringify(resume));
+    alert('✅ Анкета сохранена!');
+    document.getElementById('resume-modal').style.display = 'none';
+}
+
+function saveCompanyData() {
+    const company = {
+        name: document.getElementById('company-name-edit').value,
+        about: document.getElementById('company-about-edit').value
+    };
+    localStorage.setItem('myCompany', JSON.stringify(company));
+    alert('✅ Описание компании сохранено!');
+    document.getElementById('company-desc-modal').style.display = 'none';
+}
+
+// 3. Главная магия: Показываем нужную кнопку в зависимости от роли
+// Эту функцию мы будем вызывать каждый раз, когда открывается профиль
+function updateProfileView() {
+    // Получаем роль (предполагаю, что у тебя роль хранится так, или мы определим её по классу)
+    // ВАЖНО: Проверь, как у тебя сохраняется роль. Обычно это localStorage.getItem('role')
+    // Если не знаешь, оставь этот код, он универсальный:
+    
+    const userRole = localStorage.getItem('currentUserRole'); // Или 'role' - как у тебя в коде
+    const btnResume = document.getElementById('btn-edit-resume');
+    const btnCompany = document.getElementById('btn-edit-company');
+
+    if (userRole === 'employer') { // Если работодатель
+        if(btnResume) btnResume.style.display = 'none';
+        if(btnCompany) btnCompany.style.display = 'block';
+    } else { // Если соискатель (по умолчанию)
+        if(btnResume) btnResume.style.display = 'block';
+        if(btnCompany) btnCompany.style.display = 'none';
+    }
+}
+
+// Добавляем проверку кнопок при загрузке страницы
+document.addEventListener('DOMContentLoaded', updateProfileView);
+// И добавляем проверку кнопок при клике на кнопку открытия профиля (чтобы обновилось, если роль сменили)
+// Найди в своем коде кнопку открытия профиля и добавь туда onclick="updateProfileView()"
+/* ========================================== */
 </script>
 </body>
 </html>
