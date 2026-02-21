@@ -5542,6 +5542,255 @@ document.addEventListener('keydown', function(e) {
     }
 });
 </script>
+<style>
+/* ================= FAVORITES SYSTEM — CSS ================= */
 
+/* The Heart Button */
+.btn-like-floating {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid var(--border-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #cbd5e1; /* Gray by default */
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.btn-like-floating:hover {
+    transform: scale(1.15);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #fda4af;
+}
+
+/* Active State (Red Heart) */
+.btn-like-floating.active {
+    color: #ef4444;
+    border-color: #fee2e2;
+    background: #fef2f2;
+}
+
+.btn-like-floating.active:hover {
+    transform: scale(0.95); /* Press effect */
+}
+
+/* Animation for clicking */
+@keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+.btn-like-floating.popping i {
+    animation: heartPop 0.3s ease;
+}
+
+/* Favorites Section in Profile */
+.favorites-section {
+    margin-top: 32px;
+    animation: fadeInUp 0.5s ease;
+}
+
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+/* Mini Job Card for Profile */
+.fav-mini-card {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    position: relative;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.fav-mini-card:hover {
+    border-color: var(--primary-blue);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.fav-remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #ef4444;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.fav-remove-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+</style>
+
+<script>
+// ================= FAVORITES SYSTEM — JS =================
+
+const FAV_STORAGE_KEY = 'teenwork_favorites_v1';
+
+// 1. STATE MANAGEMENT
+// Initialize favorites from LocalStorage
+window.STATE.favorites = JSON.parse(localStorage.getItem(FAV_STORAGE_KEY) || '[]');
+
+function saveFavorites() {
+    localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(window.STATE.favorites));
+}
+
+// 2. TOGGLE FUNCTION
+function toggleLike(jobId, btnElement) {
+    if (window.event) window.event.stopPropagation();
+    
+    const index = window.STATE.favorites.indexOf(jobId);
+    const isLiked = index !== -1;
+
+    if (isLiked) {
+        // Remove
+        window.STATE.favorites.splice(index, 1);
+        if (btnElement) {
+            btnElement.classList.remove('active');
+            btnElement.innerHTML = '♥'; // Heart outline char
+        }
+        if (window.showToast) showToast('Убрано', 'Вакансия удалена из избранного', 'success');
+    } else {
+        // Add
+        window.STATE.favorites.push(jobId);
+        if (btnElement) {
+            btnElement.classList.add('active', 'popping');
+            setTimeout(() => btnElement.classList.remove('popping'), 300);
+            btnElement.innerHTML = '❤️'; // Filled heart char
+        }
+        if (window.showToast) showToast('Сохранено', 'Вакансия добавлена в избранное', 'success');
+    }
+    
+    saveFavorites();
+    
+    // If we are in the profile page, refresh the list immediately
+    const profilePage = document.getElementById('profilePage');
+    if (profilePage && profilePage.classList.contains('active')) {
+        renderFavoritesInProfile();
+    }
+}
+
+// 3. INJECT HEARTS INTO CARDS (PATCH RENDER)
+const _origRenderForLikes = window.renderJobs;
+window.renderJobs = function() {
+    // Run all previous render logic (including design patches)
+    _origRenderForLikes();
+
+    const grid = document.getElementById('jobsGrid');
+    if (!grid) return;
+
+    // Find all rendered cards
+    const cards = grid.querySelectorAll('.job-card');
+    
+    cards.forEach(card => {
+        // Prevent double injection
+        if (card.querySelector('.btn-like-floating')) return;
+
+        // Extract ID from onclick="openApplyModal('ID')"
+        const onclickAttr = card.getAttribute('onclick');
+        if (!onclickAttr) return;
+        const match = onclickAttr.match(/openApplyModal\(['"]([^'"]+)['"]\)/);
+        if (!match) return;
+        const jobId = match[1];
+
+        const isLiked = window.STATE.favorites.includes(jobId);
+        
+        // Check if there is a TOP badge to avoid overlap
+        const hasTopBadge = card.querySelector('.admin-badge');
+        
+        const btn = document.createElement('div');
+        btn.className = `btn-like-floating ${isLiked ? 'active' : ''}`;
+        btn.innerHTML = isLiked ? '❤️' : '♥';
+        btn.onclick = (e) => toggleLike(jobId, btn);
+        
+        // Adjust position if TOP badge exists
+        if (hasTopBadge) {
+            btn.style.top = '54px'; // Move down below the badge
+        }
+
+        card.appendChild(btn);
+    });
+};
+
+// 4. PROFILE SECTION RENDER
+function renderFavoritesInProfile() {
+    const profileBody = document.querySelector('.profile-body');
+    if (!profileBody) return;
+
+    // Remove existing section if present
+    const existing = document.getElementById('profileFavoritesSection');
+    if (existing) existing.remove();
+
+    // If no favorites, don't show empty section (or show placeholder)
+    if (window.STATE.favorites.length === 0) return;
+
+    const section = document.createElement('div');
+    section.id = 'profileFavoritesSection';
+    section.className = 'favorites-section';
+    
+    let html = `
+        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">
+            💙 Избранные вакансии
+        </h3>
+        <div class="favorites-grid">
+    `;
+
+    window.STATE.favorites.forEach(favId => {
+        const job = window.STATE.jobs.find(j => j.id == favId); // Loose equality for string/number ids
+        if (job) {
+            html += `
+                <div class="fav-mini-card" onclick="openApplyModal('${job.id}')">
+                    <button class="fav-remove-btn" onclick="toggleLike('${job.id}'); event.stopPropagation();" title="Удалить">✕</button>
+                    <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px; padding-right: 20px;">${job.title}</div>
+                    <div style="font-size: 13px; color: var(--text-gray); margin-bottom: 8px;">${job.company}</div>
+                    <div style="font-weight: 700; color: var(--primary-blue); font-size: 14px;">${job.salary.toLocaleString('ru-RU')} ₽</div>
+                </div>
+            `;
+        }
+    });
+
+    html += `</div>`;
+    section.innerHTML = html;
+
+    // Insert after the info section but before role-specific sections
+    const infoSection = document.querySelector('.profile-info');
+    if (infoSection && infoSection.nextSibling) {
+        infoSection.parentNode.insertBefore(section, infoSection.nextSibling);
+    } else {
+        profileBody.appendChild(section);
+    }
+}
+
+// Patch openProfile to render favorites
+const _origOpenProfileForFavs = window.openProfile;
+window.openProfile = function() {
+    _origOpenProfileForFavs();
+    setTimeout(renderFavoritesInProfile, 100);
+};
+
+</script>
 </body>
 </html>
