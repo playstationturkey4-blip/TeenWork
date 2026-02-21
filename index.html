@@ -5542,6 +5542,824 @@ document.addEventListener('keydown', function(e) {
     }
 });
 </script>
+
+<!-- ================= EMPLOYER DESCRIPTION ================= -->
+<!-- Feature 1: Employer company description
+     - Textarea "Описание компании" in profile form for employer accounts
+     - Saves to Firestore users/{userId} as field: description
+     - Displayed in employer profile page
+     - Displayed in job card apply modal under company info
+     Zero changes to existing code. Additive only.
+-->
+<style>
+/* ================= EMPLOYER DESCRIPTION — CSS ================= */
+
+.employer-description-block {
+    background: var(--light-gray);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    border: 1.5px solid var(--border-gray);
+}
+
+.employer-description-block-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.employer-description-block-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-dark);
+    font-weight: 500;
+    white-space: pre-wrap;
+}
+
+.employer-description-edit-group {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--border-gray);
+    display: none; /* shown only for employer */
+}
+
+.employer-description-edit-group.visible {
+    display: block;
+}
+
+.employer-description-edit-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+}
+
+.employer-description-edit-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: var(--transition);
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.employer-description-edit-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.employer-description-save-btn {
+    margin-top: 10px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.employer-description-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+}
+
+/* In apply modal */
+.job-modal-employer-desc {
+    background: linear-gradient(135deg, rgba(239,246,255,0.8), rgba(219,234,254,0.4));
+    border: 1px solid rgba(37,99,235,0.12);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.job-modal-employer-desc-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--primary-blue);
+    margin-bottom: 6px;
+    opacity: 0.85;
+}
+
+.job-modal-employer-desc-text {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-dark);
+    font-weight: 500;
+    white-space: pre-wrap;
+}
+</style>
+
+<script>
+// ================= EMPLOYER DESCRIPTION — JS =================
+
+// ------------------------------------------------------------------
+// Load employer description from Firestore users/{userId}
+// ------------------------------------------------------------------
+async function _loadEmployerDescription(employerId) {
+    if (!window.db || !employerId) return null;
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const snap = await getDoc(doc(window.db, 'users', employerId));
+        if (snap.exists()) return snap.data().description || null;
+        return null;
+    } catch (e) {
+        console.warn('[employer-desc] load error:', e);
+        return null;
+    }
+}
+
+// ------------------------------------------------------------------
+// Save employer description to Firestore users/{userId}
+// ------------------------------------------------------------------
+async function _saveEmployerDescription() {
+    if (!window.STATE || !window.STATE.currentUser) return;
+    if (window.STATE.currentUser.role !== 'employer') return;
+
+    const textarea = document.getElementById('employerDescTextarea');
+    if (!textarea) return;
+    const desc = textarea.value.trim();
+
+    if (!window.db) {
+        showToast('Ошибка', 'База данных недоступна', 'error');
+        return;
+    }
+
+    const userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    try {
+        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await setDoc(doc(window.db, 'users', userId), { description: desc }, { merge: true });
+
+        // Also cache locally
+        window.STATE.currentUser.description = desc;
+
+        showToast('Успешно', 'Описание компании сохранено', 'success');
+
+        // Refresh the display block
+        const displayEl = document.getElementById('employerDescDisplay');
+        if (displayEl) {
+            if (desc) {
+                displayEl.parentElement.style.display = '';
+                displayEl.textContent = desc;
+            } else {
+                displayEl.parentElement.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error('[employer-desc] save error:', e);
+        showToast('Ошибка', 'Не удалось сохранить описание', 'error');
+    }
+}
+
+// ------------------------------------------------------------------
+// Inject description UI into the employer profile page
+// ------------------------------------------------------------------
+async function _injectEmployerDescriptionUI() {
+    if (!window.STATE || !window.STATE.currentUser) return;
+    if (window.STATE.currentUser.role !== 'employer') return;
+
+    const profileBody = document.querySelector('.profile-body');
+    if (!profileBody) return;
+
+    // Remove old block if present
+    const old = document.getElementById('employerDescBlock');
+    if (old) old.remove();
+
+    const userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    const existingDesc = await _loadEmployerDescription(userId);
+
+    const block = document.createElement('div');
+    block.id = 'employerDescBlock';
+    block.innerHTML = `
+        <!-- Display block -->
+        <div id="employerDescDisplayWrapper" style="${existingDesc ? '' : 'display:none'}">
+            <div class="employer-description-block">
+                <div class="employer-description-block-label">Описание компании</div>
+                <div class="employer-description-block-text" id="employerDescDisplay">${existingDesc || ''}</div>
+            </div>
+        </div>
+        <!-- Edit block -->
+        <div class="employer-description-edit-group visible">
+            <label for="employerDescTextarea">Описание компании</label>
+            <textarea id="employerDescTextarea" placeholder="Расскажите о вашей компании, чем занимаетесь, какие условия предлагаете...">${existingDesc || ''}</textarea>
+            <button class="employer-description-save-btn" onclick="_saveEmployerDescription()">Сохранить описание</button>
+        </div>
+    `;
+
+    // Insert after the profile-info block
+    const profileInfo = profileBody.querySelector('.profile-info');
+    if (profileInfo && profileInfo.nextSibling) {
+        profileInfo.parentNode.insertBefore(block, profileInfo.nextSibling);
+    } else if (profileInfo) {
+        profileInfo.parentNode.appendChild(block);
+    } else {
+        profileBody.appendChild(block);
+    }
+}
+
+// ------------------------------------------------------------------
+// Patch openProfile to inject employer description UI
+// ------------------------------------------------------------------
+const _origOpenProfileForDesc = window.openProfile || openProfile;
+window.openProfile = function() {
+    _origOpenProfileForDesc();
+    setTimeout(() => {
+        if (window.STATE && window.STATE.currentUser && window.STATE.currentUser.role === 'employer') {
+            _injectEmployerDescriptionUI();
+        }
+    }, 150);
+};
+
+// ------------------------------------------------------------------
+// Patch openApplyModal to show employer description inside job modal
+// ------------------------------------------------------------------
+const _origOpenApplyModalForDesc = window.openApplyModal || openApplyModal;
+window.openApplyModal = async function(jobId, event) {
+    await _origOpenApplyModalForDesc(jobId, event);
+
+    // After modal opens, inject employer description if available
+    const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+    if (!job) return;
+
+    const employerId = job.employerId || job.employerEmail;
+    if (!employerId) return;
+
+    // Load async and inject into the modal body
+    try {
+        const desc = await _loadEmployerDescription(employerId);
+        if (!desc) return;
+
+        const modalBody = document.getElementById('applyModalBody');
+        if (!modalBody) return;
+
+        // Find the company/city line to inject after it
+        const companyEl = modalBody.querySelector('p[style*="text-gray"]');
+        if (companyEl) {
+            const descBlock = document.createElement('div');
+            descBlock.className = 'job-modal-employer-desc';
+            descBlock.innerHTML = `
+                <div class="job-modal-employer-desc-label">О компании</div>
+                <div class="job-modal-employer-desc-text">${desc}</div>
+            `;
+            companyEl.insertAdjacentElement('afterend', descBlock);
+        }
+    } catch (e) {
+        // Silent — non-critical feature
+    }
+};
+</script>
+
+<!-- ================= RESUME SYSTEM ================= -->
+<!-- Feature 2: Worker resume
+     - "Моё резюме" button in worker profile
+     - Opens modal with resume form (name, age, city, skills, about)
+     - Saves to Firestore users/{userId} as nested object: resume{}
+     - Loaded and shown when editing
+     Zero changes to existing code. Additive only.
+-->
+<style>
+/* ================= RESUME SYSTEM — CSS ================= */
+
+.resume-profile-btn {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 11px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    background: transparent;
+    color: var(--primary-blue);
+    border: 1.5px solid var(--primary-blue);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.resume-profile-btn:hover {
+    background: var(--soft-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.15);
+}
+
+/* Resume view inside modal */
+.resume-view-section {
+    margin-bottom: 20px;
+}
+
+.resume-view-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-gray);
+    gap: 16px;
+}
+
+.resume-view-row:last-child {
+    border-bottom: none;
+}
+
+.resume-view-label {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-gray);
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.resume-view-value {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-dark);
+    line-height: 1.6;
+    text-align: right;
+    flex: 1;
+}
+
+.resume-skills-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.resume-skill-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.resume-empty-notice {
+    text-align: center;
+    color: var(--text-gray);
+    padding: 32px 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.resume-empty-notice .emoji {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+/* Form inside resume modal */
+.resume-form-hint {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    padding: 12px;
+    background: var(--soft-blue);
+    border-radius: var(--radius-sm);
+}
+</style>
+
+<!-- Resume edit modal -->
+<div class="modal" id="resumeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Моё резюме</h3>
+            <button class="modal-close" onclick="closeModal('resumeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="resume-form-hint">
+                Заполните резюме, чтобы работодатели могли узнать о вас больше
+            </div>
+            <form id="resumeForm">
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" id="resumeName" placeholder="Как вас зовут?">
+                </div>
+                <div class="form-group">
+                    <label>Возраст</label>
+                    <input type="number" id="resumeAge" placeholder="14-18" min="14" max="18">
+                </div>
+                <div class="form-group">
+                    <label>Город</label>
+                    <input type="text" id="resumeCity" placeholder="Ваш город">
+                </div>
+                <div class="form-group">
+                    <label>Навыки</label>
+                    <input type="text" id="resumeSkills" placeholder="Например: ответственность, работа с кассой, ПК...">
+                </div>
+                <div class="form-group">
+                    <label>О себе</label>
+                    <textarea id="resumeAbout" placeholder="Расскажите о себе, своём опыте, целях..." style="min-height: 90px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 4px;">Сохранить резюме</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================= RESUME SYSTEM — JS =================
+
+// ------------------------------------------------------------------
+// Load resume from Firestore users/{userId}
+// ------------------------------------------------------------------
+async function _loadWorkerResume(userId) {
+    if (!window.db || !userId) return null;
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const snap = await getDoc(doc(window.db, 'users', userId));
+        if (snap.exists()) return snap.data().resume || null;
+        return null;
+    } catch (e) {
+        console.warn('[resume] load error:', e);
+        return null;
+    }
+}
+
+// ------------------------------------------------------------------
+// Save resume to Firestore users/{userId}
+// ------------------------------------------------------------------
+async function _handleResumeSave(e) {
+    e.preventDefault();
+    if (!window.STATE || !window.STATE.currentUser) return;
+
+    const resume = {
+        name: (document.getElementById('resumeName')?.value || '').trim(),
+        age: (document.getElementById('resumeAge')?.value || '').trim(),
+        city: (document.getElementById('resumeCity')?.value || '').trim(),
+        skills: (document.getElementById('resumeSkills')?.value || '').trim(),
+        about: (document.getElementById('resumeAbout')?.value || '').trim(),
+        updatedAt: Date.now()
+    };
+
+    if (!window.db) {
+        showToast('Ошибка', 'База данных недоступна', 'error');
+        return;
+    }
+
+    const userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    try {
+        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await setDoc(doc(window.db, 'users', userId), { resume }, { merge: true });
+
+        // Cache in memory
+        window.STATE.currentUser.resume = resume;
+
+        showToast('Успешно', 'Резюме сохранено', 'success');
+        closeModal('resumeModal');
+    } catch (err) {
+        console.error('[resume] save error:', err);
+        showToast('Ошибка', 'Не удалось сохранить резюме', 'error');
+    }
+}
+
+// ------------------------------------------------------------------
+// Open resume modal for editing (worker self-edit)
+// ------------------------------------------------------------------
+async function openResumeModal() {
+    if (!window.STATE || !window.STATE.currentUser) {
+        openModal('loginModal');
+        return;
+    }
+    if (window.STATE.currentUser.role !== 'worker') return;
+
+    const userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    const resume = await _loadWorkerResume(userId);
+
+    // Populate form
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+    setVal('resumeName', resume?.name);
+    setVal('resumeAge', resume?.age);
+    setVal('resumeCity', resume?.city);
+    setVal('resumeSkills', resume?.skills);
+    setVal('resumeAbout', resume?.about);
+
+    openModal('resumeModal');
+}
+
+// ------------------------------------------------------------------
+// Bind resume form on DOMContentLoaded
+// ------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('resumeForm');
+    if (form) form.addEventListener('submit', _handleResumeSave);
+});
+
+// ------------------------------------------------------------------
+// Inject "Моё резюме" button into worker profile page
+// ------------------------------------------------------------------
+function _injectResumeButtonInProfile() {
+    if (!window.STATE || !window.STATE.currentUser) return;
+    if (window.STATE.currentUser.role !== 'worker') return;
+
+    const profileBody = document.querySelector('.profile-body');
+    if (!profileBody) return;
+
+    // Avoid double injection
+    if (document.getElementById('resumeProfileBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'resumeProfileBtn';
+    btn.className = 'resume-profile-btn';
+    btn.innerHTML = '📄 Моё резюме';
+    btn.onclick = openResumeModal;
+
+    // Insert after the profileForm submit button group — find the last btn-secondary in profileForm
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.insertAdjacentElement('afterend', btn);
+    } else {
+        profileBody.insertBefore(btn, profileBody.firstChild);
+    }
+}
+
+// ------------------------------------------------------------------
+// Patch openProfile to inject resume button for workers
+// ------------------------------------------------------------------
+const _origOpenProfileForResume = window.openProfile || openProfile;
+window.openProfile = function() {
+    _origOpenProfileForResume();
+    setTimeout(() => {
+        if (window.STATE && window.STATE.currentUser && window.STATE.currentUser.role === 'worker') {
+            _injectResumeButtonInProfile();
+        }
+    }, 150);
+};
+</script>
+
+<!-- ================= RESUME VIEW UI ================= -->
+<!-- Feature 3: Employers can view worker resumes
+     - "Смотреть резюме" button in applications list
+     - "Смотреть резюме" button in chat modal (when employer views)
+     - Opens read-only resume view modal
+     - Only employers see these buttons; workers do not
+     Zero changes to existing code. Additive only.
+-->
+<style>
+/* ================= RESUME VIEW UI — CSS ================= */
+
+/* Button shown to employers */
+.btn-view-resume {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    border: 1.5px solid rgba(37,99,235,0.25);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-view-resume:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(37,99,235,0.2);
+}
+
+/* Resume view modal content */
+.resume-view-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1.5px solid var(--border-gray);
+}
+
+.resume-view-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.resume-view-name-block {
+    flex: 1;
+}
+
+.resume-view-worker-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+}
+
+.resume-view-worker-meta {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+</style>
+
+<!-- Resume view modal (read-only, for employers) -->
+<div class="modal" id="resumeViewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Резюме соискателя</h3>
+            <button class="modal-close" onclick="closeModal('resumeViewModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="resumeViewModalBody">
+            <div class="resume-empty-notice">
+                <span class="emoji">📄</span>
+                Загрузка...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================= RESUME VIEW UI — JS =================
+
+// ------------------------------------------------------------------
+// Open resume view modal for a given workerId (employers only)
+// ------------------------------------------------------------------
+async function viewWorkerResume(workerId, workerName) {
+    // Guard: only employers (and admins) can view
+    if (!window.STATE || !window.STATE.currentUser) return;
+    const role = window.STATE.currentUser.role;
+    const isAdminUser = window.ADMIN_EMAILS && window.ADMIN_EMAILS.includes(window.STATE.currentUser.email);
+    if (role !== 'employer' && !isAdminUser) {
+        showToast('Доступ закрыт', 'Только работодатели могут просматривать резюме', 'warning');
+        return;
+    }
+
+    const body = document.getElementById('resumeViewModalBody');
+    if (body) body.innerHTML = '<div class="resume-empty-notice"><span class="emoji">⏳</span>Загрузка...</div>';
+
+    openModal('resumeViewModal');
+
+    const resume = await _loadWorkerResume(workerId);
+
+    if (!resume || (!resume.name && !resume.age && !resume.city && !resume.skills && !resume.about)) {
+        body.innerHTML = `
+            <div class="resume-empty-notice">
+                <span class="emoji">📄</span>
+                Соискатель ещё не заполнил резюме
+            </div>
+        `;
+        return;
+    }
+
+    const initial = (workerName || 'С')[0].toUpperCase();
+    const skillTags = resume.skills
+        ? resume.skills.split(/[,;]+/).map(s => s.trim()).filter(Boolean)
+            .map(s => `<span class="resume-skill-tag">${s}</span>`).join('')
+        : '';
+
+    body.innerHTML = `
+        <div class="resume-view-header">
+            <div class="resume-view-avatar">${initial}</div>
+            <div class="resume-view-name-block">
+                <div class="resume-view-worker-name">${resume.name || workerName || 'Соискатель'}</div>
+                <div class="resume-view-worker-meta">
+                    ${resume.age ? resume.age + ' лет' : ''}
+                    ${resume.age && resume.city ? ' · ' : ''}
+                    ${resume.city || ''}
+                </div>
+            </div>
+        </div>
+        <div class="resume-view-section">
+            ${resume.skills ? `
+            <div class="resume-view-row">
+                <div class="resume-view-label">Навыки</div>
+                <div class="resume-view-value">
+                    <div class="resume-skills-wrap">${skillTags}</div>
+                </div>
+            </div>` : ''}
+            ${resume.about ? `
+            <div class="resume-view-row">
+                <div class="resume-view-label">О себе</div>
+                <div class="resume-view-value" style="white-space:pre-wrap;">${resume.about}</div>
+            </div>` : ''}
+            ${resume.age ? `
+            <div class="resume-view-row">
+                <div class="resume-view-label">Возраст</div>
+                <div class="resume-view-value">${resume.age} лет</div>
+            </div>` : ''}
+            ${resume.city ? `
+            <div class="resume-view-row">
+                <div class="resume-view-label">Город</div>
+                <div class="resume-view-value">${resume.city}</div>
+            </div>` : ''}
+        </div>
+    `;
+}
+
+// ------------------------------------------------------------------
+// PATCH showApplications: Add "Смотреть резюме" button per applicant
+// ------------------------------------------------------------------
+const _origShowApplications = window.showApplications || showApplications;
+window.showApplications = async function(jobId) {
+    await _origShowApplications(jobId);
+
+    // After the original renders, inject resume view buttons
+    // Only if current user is employer
+    if (!window.STATE || !window.STATE.currentUser) return;
+    if (window.STATE.currentUser.role !== 'employer') return;
+
+    const modalBody = document.getElementById('applicationsModalBody');
+    if (!modalBody) return;
+
+    const appItems = modalBody.querySelectorAll('.application-list-item');
+    appItems.forEach(item => {
+        // Avoid double injection
+        if (item.querySelector('.btn-view-resume')) return;
+
+        // Find workerId from the existing "Открыть чат" button onclick
+        const chatBtn = item.querySelector('.btn-small.btn-primary');
+        if (!chatBtn) return;
+        const onclickStr = chatBtn.getAttribute('onclick') || '';
+        // openChatFromEmployer('jobId', 'workerId')
+        const match = onclickStr.match(/openChatFromEmployer\(['"][^'"]+['"],\s*['"]([^'"]+)['"]\)/);
+        if (!match) return;
+        const workerId = match[1];
+
+        const workerNameEl = item.querySelector('.application-worker-name');
+        const workerName = workerNameEl ? workerNameEl.textContent.trim() : 'Соискатель';
+
+        const resumeBtn = document.createElement('button');
+        resumeBtn.className = 'btn-view-resume';
+        resumeBtn.innerHTML = '📄 Смотреть резюме';
+        resumeBtn.onclick = () => viewWorkerResume(workerId, workerName);
+
+        // Insert the button in the controls div (next to chat button)
+        const controlsDiv = chatBtn.parentElement;
+        if (controlsDiv) {
+            controlsDiv.appendChild(resumeBtn);
+        }
+    });
+};
+
+// ------------------------------------------------------------------
+// PATCH openChat: Inject "Смотреть резюме" link in chat modal header
+// for employer viewing a worker's chat
+// ------------------------------------------------------------------
+const _origOpenChatForResume = window.openChat || openChat;
+window.openChat = async function(jobId, employerId, workerId) {
+    await _origOpenChatForResume(jobId, employerId, workerId);
+
+    if (!window.STATE || !window.STATE.currentUser) return;
+    if (window.STATE.currentUser.role !== 'employer') return;
+
+    const currentUserId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    // Determine who the "other" user is
+    const otherUserId = (currentUserId === employerId) ? workerId : employerId;
+    if (!otherUserId || otherUserId === currentUserId) return;
+
+    setTimeout(() => {
+        const chatHeader = document.querySelector('#chatModal .modal-header');
+        if (!chatHeader || chatHeader.querySelector('.btn-view-resume')) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn-view-resume';
+        btn.innerHTML = '📄 Резюме';
+        btn.onclick = () => viewWorkerResume(otherUserId, 'Соискатель');
+        btn.style.marginLeft = 'auto';
+        btn.style.marginRight = '8px';
+        btn.style.flexShrink = '0';
+
+        // Insert before the close button
+        const closeBtn = chatHeader.querySelector('.modal-close');
+        if (closeBtn) chatHeader.insertBefore(btn, closeBtn);
+        else chatHeader.appendChild(btn);
+    }, 200);
+};
+</script>
 <style>
 /* ================= FAVORITES SYSTEM — CSS ================= */
 
@@ -5591,7 +6409,7 @@ document.addEventListener('keydown', function(e) {
     100% { transform: scale(1); }
 }
 
-.btn-like-floating.popping i {
+.btn-like-floating.popping {
     animation: heartPop 0.3s ease;
 }
 
@@ -5661,7 +6479,7 @@ function saveFavorites() {
 // 2. TOGGLE FUNCTION
 function toggleLike(jobId, btnElement) {
     if (window.event) window.event.stopPropagation();
-    
+
     const index = window.STATE.favorites.indexOf(jobId);
     const isLiked = index !== -1;
 
@@ -5670,7 +6488,7 @@ function toggleLike(jobId, btnElement) {
         window.STATE.favorites.splice(index, 1);
         if (btnElement) {
             btnElement.classList.remove('active');
-            btnElement.innerHTML = '♥'; // Heart outline char
+            btnElement.innerHTML = '♥';
         }
         if (window.showToast) showToast('Убрано', 'Вакансия удалена из избранного', 'success');
     } else {
@@ -5679,13 +6497,13 @@ function toggleLike(jobId, btnElement) {
         if (btnElement) {
             btnElement.classList.add('active', 'popping');
             setTimeout(() => btnElement.classList.remove('popping'), 300);
-            btnElement.innerHTML = '❤️'; // Filled heart char
+            btnElement.innerHTML = '❤️';
         }
         if (window.showToast) showToast('Сохранено', 'Вакансия добавлена в избранное', 'success');
     }
-    
+
     saveFavorites();
-    
+
     // If we are in the profile page, refresh the list immediately
     const profilePage = document.getElementById('profilePage');
     if (profilePage && profilePage.classList.contains('active')) {
@@ -5696,20 +6514,16 @@ function toggleLike(jobId, btnElement) {
 // 3. INJECT HEARTS INTO CARDS (PATCH RENDER)
 const _origRenderForLikes = window.renderJobs;
 window.renderJobs = function() {
-    // Run all previous render logic (including design patches)
     _origRenderForLikes();
 
     const grid = document.getElementById('jobsGrid');
     if (!grid) return;
 
-    // Find all rendered cards
     const cards = grid.querySelectorAll('.job-card');
-    
+
     cards.forEach(card => {
-        // Prevent double injection
         if (card.querySelector('.btn-like-floating')) return;
 
-        // Extract ID from onclick="openApplyModal('ID')"
         const onclickAttr = card.getAttribute('onclick');
         if (!onclickAttr) return;
         const match = onclickAttr.match(/openApplyModal\(['"]([^'"]+)['"]\)/);
@@ -5717,18 +6531,16 @@ window.renderJobs = function() {
         const jobId = match[1];
 
         const isLiked = window.STATE.favorites.includes(jobId);
-        
-        // Check if there is a TOP badge to avoid overlap
+
         const hasTopBadge = card.querySelector('.admin-badge');
-        
+
         const btn = document.createElement('div');
         btn.className = `btn-like-floating ${isLiked ? 'active' : ''}`;
         btn.innerHTML = isLiked ? '❤️' : '♥';
-        btn.onclick = (e) => toggleLike(jobId, btn);
-        
-        // Adjust position if TOP badge exists
+        btn.onclick = (e) => { e.stopPropagation(); toggleLike(jobId, btn); };
+
         if (hasTopBadge) {
-            btn.style.top = '54px'; // Move down below the badge
+            btn.style.top = '54px';
         }
 
         card.appendChild(btn);
@@ -5740,17 +6552,15 @@ function renderFavoritesInProfile() {
     const profileBody = document.querySelector('.profile-body');
     if (!profileBody) return;
 
-    // Remove existing section if present
     const existing = document.getElementById('profileFavoritesSection');
     if (existing) existing.remove();
 
-    // If no favorites, don't show empty section (or show placeholder)
     if (window.STATE.favorites.length === 0) return;
 
     const section = document.createElement('div');
     section.id = 'profileFavoritesSection';
     section.className = 'favorites-section';
-    
+
     let html = `
         <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">
             💙 Избранные вакансии
@@ -5759,11 +6569,11 @@ function renderFavoritesInProfile() {
     `;
 
     window.STATE.favorites.forEach(favId => {
-        const job = window.STATE.jobs.find(j => j.id == favId); // Loose equality for string/number ids
+        const job = window.STATE.jobs.find(j => j.id == favId);
         if (job) {
             html += `
                 <div class="fav-mini-card" onclick="openApplyModal('${job.id}')">
-                    <button class="fav-remove-btn" onclick="toggleLike('${job.id}'); event.stopPropagation();" title="Удалить">✕</button>
+                    <button class="fav-remove-btn" onclick="toggleLike('${job.id}', null); event.stopPropagation();" title="Удалить">✕</button>
                     <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px; padding-right: 20px;">${job.title}</div>
                     <div style="font-size: 13px; color: var(--text-gray); margin-bottom: 8px;">${job.company}</div>
                     <div style="font-weight: 700; color: var(--primary-blue); font-size: 14px;">${job.salary.toLocaleString('ru-RU')} ₽</div>
@@ -5775,7 +6585,6 @@ function renderFavoritesInProfile() {
     html += `</div>`;
     section.innerHTML = html;
 
-    // Insert after the info section but before role-specific sections
     const infoSection = document.querySelector('.profile-info');
     if (infoSection && infoSection.nextSibling) {
         infoSection.parentNode.insertBefore(section, infoSection.nextSibling);
@@ -5790,7 +6599,7 @@ window.openProfile = function() {
     _origOpenProfileForFavs();
     setTimeout(renderFavoritesInProfile, 100);
 };
-
 </script>
+
 </body>
 </html>
