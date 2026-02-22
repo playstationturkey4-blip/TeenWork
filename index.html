@@ -8705,5 +8705,705 @@ async function _updateModerationBadge() {
 }
 </script>
 
+
+<!-- ================= BOTTOM NAVIGATION BAR ================= -->
+<nav class="bottom-nav" id="bottomNav">
+    <button class="bottom-nav-item active" id="bnav-home" onclick="switchBottomTab('home')">
+        <span class="bottom-nav-icon">🏠</span>
+        <span class="bottom-nav-label">Главная</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-favorites" onclick="switchBottomTab('favorites')">
+        <span class="bottom-nav-icon">❤️</span>
+        <span class="bottom-nav-label">Избранное</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-profile" onclick="switchBottomTab('profile')">
+        <span class="bottom-nav-icon">👤</span>
+        <span class="bottom-nav-label">Профиль</span>
+    </button>
+</nav>
+
+<!-- FAVORITES SCREEN -->
+<div class="bottom-tab-screen" id="bscreen-favorites">
+    <div class="bscreen-inner">
+        <div class="bscreen-header">
+            <h2>Избранное</h2>
+        </div>
+        <div id="bfavoritesContent"></div>
+    </div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div class="bottom-tab-screen" id="bscreen-profile">
+    <div class="bscreen-inner">
+        <div class="bscreen-header">
+            <h2>Профиль</h2>
+        </div>
+        <div id="bprofileContent"></div>
+    </div>
+</div>
+
+<style>
+/* ================= BOTTOM NAVIGATION BAR CSS ================= */
+
+.bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid var(--border-gray);
+        z-index: 1200;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        padding: 0 8px;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    body {
+        padding-bottom: 68px;
+    }
+
+    .profile-page {
+        z-index: 1300 !important;
+    }
+
+    .modal {
+        z-index: 2000 !important;
+    }
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 4px;
+    border-radius: 12px;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+.bottom-nav-item:active {
+    transform: scale(0.92);
+}
+
+.bottom-nav-icon {
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: block;
+}
+
+.bottom-nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-gray);
+    letter-spacing: 0.2px;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+}
+
+.bottom-nav-item.active .bottom-nav-label {
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    transform: translateY(-2px) scale(1.15);
+}
+
+.bottom-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--primary-blue);
+    animation: navDotPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes navDotPop {
+    from { transform: translateX(-50%) scale(0); opacity: 0; }
+    to   { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+.bottom-nav-item.active {
+    background: rgba(37, 99, 235, 0.07);
+}
+
+.bottom-tab-screen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    background: var(--light-gray);
+    z-index: 1100;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-tab-screen.bscreen-visible {
+    display: block;
+}
+
+.bottom-tab-screen.bscreen-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bscreen-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 0 80px 0;
+}
+
+.bscreen-header {
+    background: linear-gradient(135deg, #1e40af 0%, var(--primary-blue) 60%, var(--blue-light) 100%);
+    color: var(--white);
+    padding: 48px 24px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.bscreen-header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: var(--white) !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--white) !important;
+}
+
+.bfav-empty {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text-gray);
+}
+
+.bfav-empty-icon {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 20px;
+    opacity: 0.5;
+    animation: bfavFloat 3s ease-in-out infinite;
+}
+
+@keyframes bfavFloat {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+}
+
+.bfav-empty-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.bfav-empty-sub {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.bfav-empty-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.bfav-empty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+}
+
+.bfav-grid {
+    padding: 20px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.bfav-card {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
+.bfav-card:hover {
+    border-color: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.bfav-card-title {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    line-height: 1.3;
+    padding-right: 20px;
+}
+
+.bfav-card-company {
+    font-size: 11px;
+    color: var(--text-gray);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.bfav-card-salary {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--primary-blue);
+}
+
+.bfav-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+    color: #ef4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.bfav-remove:hover {
+    opacity: 1;
+}
+
+.bprofile-card {
+    margin: 20px 16px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--border-gray);
+    text-align: center;
+}
+
+.bprofile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 auto 16px;
+    overflow: hidden;
+    border: 3px solid var(--white);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+}
+
+.bprofile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bprofile-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-dark);
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.bprofile-email {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.bprofile-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+}
+
+.bprofile-edit-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.bprofile-edit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+}
+
+.bprofile-login-prompt {
+    text-align: center;
+    padding: 60px 24px;
+}
+
+.bprofile-login-icon {
+    font-size: 60px;
+    display: block;
+    margin-bottom: 20px;
+    opacity: 0.6;
+}
+
+.bprofile-login-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.bprofile-login-sub {
+    font-size: 14px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.bprofile-action-list {
+    margin: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bprofile-action-item {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    width: 100%;
+    text-align: left;
+}
+
+.bprofile-action-item:hover {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+    transform: translateX(3px);
+}
+
+.bprofile-action-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bprofile-action-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-gray);
+    border-radius: var(--radius-sm);
+}
+
+.bprofile-action-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.bprofile-action-arrow {
+    color: var(--text-gray);
+    font-size: 16px;
+}
+
+.bprofile-logout-btn {
+    margin: 16px;
+    width: calc(100% - 32px);
+    padding: 13px;
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1.5px solid #fca5a5;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.bprofile-logout-btn:hover {
+    background: #dc2626;
+    color: #fff;
+}
+
+@media (min-width: 769px) {
+    .bottom-tab-screen {
+        display: none !important;
+    }
+}
+</style>
+
+<script>
+// ================= BOTTOM NAVIGATION BAR JS =================
+
+(function initBottomNav() {
+    var _currentTab = 'home';
+
+    function switchBottomTab(tab) {
+        if (_currentTab === tab) return;
+
+        var oldBtn = document.getElementById('bnav-' + _currentTab);
+        if (oldBtn) oldBtn.classList.remove('active');
+
+        if (_currentTab !== 'home') {
+            var oldScreen = document.getElementById('bscreen-' + _currentTab);
+            if (oldScreen) {
+                oldScreen.classList.remove('bscreen-active');
+                setTimeout(function() { oldScreen.classList.remove('bscreen-visible'); }, 280);
+            }
+        }
+
+        _currentTab = tab;
+
+        var newBtn = document.getElementById('bnav-' + tab);
+        if (newBtn) newBtn.classList.add('active');
+
+        if (tab === 'home') {
+            ['favorites', 'profile'].forEach(function(s) {
+                var sc = document.getElementById('bscreen-' + s);
+                if (sc) {
+                    sc.classList.remove('bscreen-active');
+                    setTimeout(function() { sc.classList.remove('bscreen-visible'); }, 280);
+                }
+            });
+        } else {
+            var screen = document.getElementById('bscreen-' + tab);
+            if (screen) {
+                screen.classList.add('bscreen-visible');
+                if (tab === 'favorites') _renderBFavorites();
+                if (tab === 'profile')   _renderBProfile();
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        screen.classList.add('bscreen-active');
+                    });
+                });
+            }
+        }
+    }
+
+    window.switchBottomTab = switchBottomTab;
+
+    function _renderBFavorites() {
+        var container = document.getElementById('bfavoritesContent');
+        if (!container) return;
+
+        var favs = (window.STATE && window.STATE.favorites) ? window.STATE.favorites : [];
+        var jobs = (window.STATE && window.STATE.jobs) ? window.STATE.jobs : [];
+
+        var favJobs = favs.map(function(id) {
+            return jobs.find(function(j) { return j.id == id; });
+        }).filter(Boolean);
+
+        if (favJobs.length === 0) {
+            container.innerHTML = '<div class="bfav-empty">' +
+                '<span class="bfav-empty-icon">🤍</span>' +
+                '<div class="bfav-empty-title">Избранного пока нет</div>' +
+                '<div class="bfav-empty-sub">У вас пока нет избранных вакансий.<br>Нажмите ❤️ на карточке, чтобы сохранить.</div>' +
+                '<button class="bfav-empty-btn" onclick="switchBottomTab(\'home\')">Найти вакансии</button>' +
+                '</div>';
+            return;
+        }
+
+        var html = '<div class="bfav-grid">';
+        favJobs.forEach(function(job) {
+            html += '<div class="bfav-card" onclick="openApplyModal(\'' + job.id + '\')">' +
+                '<button class="bfav-remove" onclick="event.stopPropagation();_bfavRemove(\'' + job.id + '\')">✕</button>' +
+                '<div class="bfav-card-title">' + job.title + '</div>' +
+                '<div class="bfav-card-company">' + job.company + '</div>' +
+                '<div class="bfav-card-salary">' + (job.salary || 0).toLocaleString('ru-RU') + ' ₽</div>' +
+                '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    window._bfavRemove = function(jobId) {
+        if (!window.STATE || !window.STATE.favorites) return;
+        var idx = window.STATE.favorites.indexOf(jobId);
+        if (idx !== -1) window.STATE.favorites.splice(idx, 1);
+        try { localStorage.setItem('teenwork_favorites_v1', JSON.stringify(window.STATE.favorites)); } catch(e) {}
+        if (window.showToast) showToast('Убрано', 'Вакансия удалена из избранного', 'success');
+        _renderBFavorites();
+        if (window.renderJobs) window.renderJobs();
+    };
+
+    function _renderBProfile() {
+        var container = document.getElementById('bprofileContent');
+        if (!container) return;
+
+        if (!window.STATE || !window.STATE.currentUser) {
+            container.innerHTML = '<div class="bprofile-login-prompt">' +
+                '<span class="bprofile-login-icon">👤</span>' +
+                '<div class="bprofile-login-title">Войдите в аккаунт</div>' +
+                '<div class="bprofile-login-sub">Чтобы видеть профиль,<br>войдите в аккаунт</div>' +
+                '<button class="bprofile-edit-btn" style="max-width:220px;margin:0 auto;" onclick="openModal(\'loginModal\')">' +
+                '🔑 Войти</button>' +
+                '</div>';
+            return;
+        }
+
+        var user = window.STATE.currentUser;
+        var initial = (user.nickname || 'U')[0].toUpperCase();
+        var avatarHTML = user.avatar
+            ? '<img src="' + user.avatar + '" alt="Avatar">'
+            : initial;
+        var roleEmoji = user.role === 'employer' ? '💼' : '🎯';
+        var roleLabel = user.role === 'employer' ? '💼 Работодатель' : '🎯 Соискатель';
+
+        var html = '<div class="bprofile-card">' +
+            '<div class="bprofile-avatar">' + avatarHTML + '</div>' +
+            '<div class="bprofile-name">' + (user.nickname || 'Пользователь') + '</div>' +
+            '<div class="bprofile-email">' + (user.email || '') + '</div>' +
+            '<div class="bprofile-role-badge">' + roleLabel + '</div><br>' +
+            '<button class="bprofile-edit-btn" onclick="openProfile()">✏️ Редактировать профиль</button>' +
+            '</div>';
+
+        html += '<div class="bprofile-action-list">';
+
+        if (user.role === 'worker') {
+            html += '<button class="bprofile-action-item" onclick="openProfile()">' +
+                '<div class="bprofile-action-left"><div class="bprofile-action-icon">📋</div>' +
+                '<div class="bprofile-action-text">Мои отклики</div></div>' +
+                '<div class="bprofile-action-arrow">›</div></button>';
+
+            html += '<button class="bprofile-action-item" onclick="openResumeModal && openResumeModal()">' +
+                '<div class="bprofile-action-left"><div class="bprofile-action-icon">📄</div>' +
+                '<div class="bprofile-action-text">Моё резюме</div></div>' +
+                '<div class="bprofile-action-arrow">›</div></button>';
+        }
+
+        if (user.role === 'employer') {
+            html += '<button class="bprofile-action-item" onclick="openModal(\'postJobModal\')">' +
+                '<div class="bprofile-action-left"><div class="bprofile-action-icon">➕</div>' +
+                '<div class="bprofile-action-text">Разместить вакансию</div></div>' +
+                '<div class="bprofile-action-arrow">›</div></button>';
+
+            html += '<button class="bprofile-action-item" onclick="openProfile()">' +
+                '<div class="bprofile-action-left"><div class="bprofile-action-icon">📊</div>' +
+                '<div class="bprofile-action-text">Мои вакансии</div></div>' +
+                '<div class="bprofile-action-arrow">›</div></button>';
+        }
+
+        html += '<button class="bprofile-action-item" onclick="openRoleSelectorModal()">' +
+            '<div class="bprofile-action-left"><div class="bprofile-action-icon">🔄</div>' +
+            '<div class="bprofile-action-text">Изменить роль</div></div>' +
+            '<div class="bprofile-action-arrow">›</div></button>';
+
+        html += '</div>';
+        html += '<button class="bprofile-logout-btn" onclick="logout()">Выйти из аккаунта</button>';
+
+        container.innerHTML = html;
+    }
+
+    var _origUpdateNavbar_bn = window.updateNavbar;
+    window.updateNavbar = function() {
+        if (_origUpdateNavbar_bn) _origUpdateNavbar_bn();
+        if (_currentTab === 'profile') _renderBProfile();
+        if (_currentTab === 'favorites') _renderBFavorites();
+    };
+
+    var _origLogout_bn = window.logout;
+    window.logout = function() {
+        if (_origLogout_bn) _origLogout_bn();
+        switchBottomTab('home');
+    };
+
+    var _origToggleLike_bn = window.toggleLike;
+    if (_origToggleLike_bn) {
+        window.toggleLike = function(jobId, btnElement) {
+            _origToggleLike_bn(jobId, btnElement);
+            if (_currentTab === 'favorites') {
+                setTimeout(_renderBFavorites, 100);
+            }
+        };
+    }
+
+    function _checkMobile() {
+        var nav = document.getElementById('bottomNav');
+        if (!nav) return;
+        nav.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    }
+
+    window.addEventListener('resize', _checkMobile);
+    document.addEventListener('DOMContentLoaded', _checkMobile);
+    setTimeout(_checkMobile, 100);
+
+})();
+</script>
+
 </body>
 </html>
