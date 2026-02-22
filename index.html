@@ -6601,5 +6601,1065 @@ window.openProfile = function() {
 };
 </script>
 
+<!-- ================= APPLICATION STATUS EXTENSION ================= -->
+<!-- Feature 1: Application Status System
+     New field: status = "sent" | "viewed" | "accepted" | "rejected" | "archived_hired" | "archived_not_hired"
+     - When worker applies → status = "sent" (patched applyToJob)
+     - When employer opens applications → mark unviewed as "viewed" (patched showApplications)
+     - Employer can Accept/Reject per application (new buttons in showApplications)
+     - Worker profile: shows status badge per application; rejected → archive; accepted → hired/not-hired buttons
+     Zero changes to existing functions. All additive patches.
+-->
+<style>
+/* ================= APPLICATION STATUS EXTENSION — CSS ================= */
+
+.app-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.app-status-sent {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.app-status-viewed {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.app-status-accepted {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.app-status-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.app-status-archived {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Employer accept/reject button pair */
+.app-decision-btns {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-accept-app {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1.5px solid #86efac;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.btn-accept-app:hover {
+    background: #16a34a;
+    color: #fff;
+    border-color: #16a34a;
+}
+
+.btn-reject-app {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1.5px solid #fca5a5;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.btn-reject-app:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+}
+
+/* Worker "hired / not hired" outcome buttons */
+.btn-hired {
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1.5px solid #86efac;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.btn-hired:hover {
+    background: #16a34a;
+    color: #fff;
+}
+
+.btn-not-hired {
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1.5px solid #cbd5e1;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.btn-not-hired:hover {
+    background: #64748b;
+    color: #fff;
+}
+
+/* Archive section in worker profile */
+.app-archive-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--border-gray);
+}
+
+.app-archive-section h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.applied-job-item.archived-item {
+    opacity: 0.65;
+    background: var(--light-gray);
+}
+</style>
+
+<script>
+// ================= APPLICATION STATUS EXTENSION — JS =================
+
+// ------------------------------------------------------------------
+// Helpers: update application status in Firestore
+// ------------------------------------------------------------------
+async function _updateAppStatus(docId, newStatus) {
+    if (!window.db || !docId) return;
+    try {
+        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await updateDoc(doc(window.db, 'applications', docId), {
+            status: newStatus,
+            [`statusUpdatedAt_${newStatus}`]: Date.now()
+        });
+    } catch (e) {
+        console.warn('[app-status] updateAppStatus error:', e);
+    }
+}
+
+// ------------------------------------------------------------------
+// Employer: Accept / Reject application (called from showApplications UI)
+// ------------------------------------------------------------------
+async function _employerDecideApp(docId, decision) {
+    if (!['accepted', 'rejected'].includes(decision)) return;
+    await _updateAppStatus(docId, decision);
+    showToast(
+        decision === 'accepted' ? 'Принято' : 'Отклонено',
+        decision === 'accepted' ? 'Отклик принят' : 'Отклик отклонён',
+        decision === 'accepted' ? 'success' : 'warning'
+    );
+    // Re-render the applications modal after decision
+    const badge = document.querySelector(`[data-appdoc="${docId}"] .app-status-badge`);
+    if (badge) {
+        badge.className = `app-status-badge app-status-${decision}`;
+        badge.textContent = decision === 'accepted' ? '✔ Принято' : '✕ Отклонено';
+    }
+    const btns = document.querySelector(`[data-appdoc="${docId}"] .app-decision-btns`);
+    if (btns) btns.remove();
+}
+
+// ------------------------------------------------------------------
+// Worker: "Устроился" / "Не устроился" outcome
+// ------------------------------------------------------------------
+async function _workerHiredOutcome(docId, hired) {
+    const newStatus = hired ? 'archived_hired' : 'archived_not_hired';
+    await _updateAppStatus(docId, newStatus);
+    showToast(
+        hired ? 'Поздравляем!' : 'Понятно',
+        hired ? 'Отмечено — вы устроились!' : 'Отклик перемещён в архив',
+        'success'
+    );
+    // Refresh the applications view
+    if (window.renderAppliedJobs) window.renderAppliedJobs();
+}
+
+// ------------------------------------------------------------------
+// STATUS label helper
+// ------------------------------------------------------------------
+function _appStatusLabel(status) {
+    const map = {
+        sent: { text: '📤 Отправлено', cls: 'app-status-sent' },
+        new:  { text: '📤 Отправлено', cls: 'app-status-sent' },
+        viewed: { text: '👁️ Просмотрено', cls: 'app-status-viewed' },
+        accepted: { text: '✔ Принято', cls: 'app-status-accepted' },
+        rejected: { text: '✕ Отклонено', cls: 'app-status-rejected' },
+        archived_hired: { text: '🎉 Устроился', cls: 'app-status-archived' },
+        archived_not_hired: { text: '📁 Архив', cls: 'app-status-archived' }
+    };
+    return map[status] || map['sent'];
+}
+
+// ------------------------------------------------------------------
+// PATCH applyToJob: set status = "sent"
+// ------------------------------------------------------------------
+const _origApplyToJob_status = window.applyToJob || applyToJob;
+window.applyToJob = async function(jobId) {
+    if (!window.db) {
+        showToast('Ошибка', 'База данных недоступна', 'error');
+        return;
+    }
+    const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+    if (!job) return;
+    const message = document.getElementById('applicationMessage')?.value || '';
+    try {
+        const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await addDoc(collection(window.db, 'applications'), {
+            jobId: jobId,
+            workerId: window.STATE.currentUser.uid || window.STATE.currentUser.email,
+            employerId: job.employerId || job.employerEmail,
+            workerEmail: window.STATE.currentUser.email,
+            workerNickname: window.STATE.currentUser.nickname || 'Соискатель',
+            message: message,
+            createdAt: Date.now(),
+            status: 'sent'
+        });
+        closeModal('applyModal');
+        showToast('Успешно', 'Вы откликнулись на вакансию', 'success');
+    } catch (error) {
+        console.error('Error applying to job:', error);
+        showToast('Ошибка', 'Не удалось откликнуться', 'error');
+    }
+};
+
+// ------------------------------------------------------------------
+// PATCH showApplications: mark viewed + add Accept/Reject buttons
+// ------------------------------------------------------------------
+const _origShowApplications_status = window.showApplications || showApplications;
+window.showApplications = async function(jobId) {
+    await _origShowApplications_status(jobId);
+
+    if (!window.db) return;
+    try {
+        const { collection, query, where, getDocs, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const q = query(collection(window.db, 'applications'), where('jobId', '==', jobId));
+        const snapshot = await getDocs(q);
+
+        const modalBody = document.getElementById('applicationsModalBody');
+        if (!modalBody) return;
+
+        const appItems = modalBody.querySelectorAll('.application-list-item');
+        const docs = [];
+        snapshot.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+        // Mark as viewed and inject UI
+        for (const appDoc of docs) {
+            // Mark as viewed if not already decided
+            if (!appDoc.status || appDoc.status === 'sent' || appDoc.status === 'new') {
+                try {
+                    await updateDoc(doc(window.db, 'applications', appDoc.id), {
+                        status: 'viewed',
+                        statusUpdatedAt_viewed: Date.now()
+                    });
+                    appDoc.status = 'viewed';
+                } catch (e) { /* silent */ }
+            }
+
+            // Find the matching DOM item by email/name
+            appItems.forEach(item => {
+                if (item.dataset.appdoc) return; // already processed
+                const emailEl = item.querySelector('.application-worker-email');
+                if (emailEl && emailEl.textContent.trim() === appDoc.workerEmail) {
+                    item.dataset.appdoc = appDoc.id;
+
+                    // Inject status badge at top of item
+                    const { text, cls } = _appStatusLabel(appDoc.status || 'viewed');
+                    const badge = document.createElement('span');
+                    badge.className = `app-status-badge ${cls}`;
+                    badge.textContent = text;
+                    const nameEl = item.querySelector('.application-worker-name');
+                    if (nameEl) {
+                        nameEl.style.display = 'flex';
+                        nameEl.style.alignItems = 'center';
+                        nameEl.style.justifyContent = 'space-between';
+                        nameEl.appendChild(badge);
+                    }
+
+                    // Inject Accept/Reject buttons if not yet decided
+                    const neutral = ['sent', 'new', 'viewed'].includes(appDoc.status || 'viewed');
+                    if (neutral) {
+                        const decisionDiv = document.createElement('div');
+                        decisionDiv.className = 'app-decision-btns';
+                        decisionDiv.innerHTML = `
+                            <button class="btn-accept-app" onclick="_employerDecideApp('${appDoc.id}', 'accepted')">✔ Принять</button>
+                            <button class="btn-reject-app" onclick="_employerDecideApp('${appDoc.id}', 'rejected')">✕ Отклонить</button>
+                        `;
+                        const controlsDiv = item.querySelector('[style*="margin-top: 10px"]') || item;
+                        controlsDiv.appendChild(decisionDiv);
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('[app-status] showApplications patch error:', e);
+    }
+};
+
+// ------------------------------------------------------------------
+// PATCH renderAppliedJobs: show status + hired/not-hired + archive
+// ------------------------------------------------------------------
+const _origRenderAppliedJobs_status = window.renderAppliedJobs || renderAppliedJobs;
+window.renderAppliedJobs = async function() {
+    const container = document.getElementById('appliedJobsList');
+    if (!container) return;
+
+    if (!window.db) {
+        await _origRenderAppliedJobs_status();
+        return;
+    }
+
+    try {
+        const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const q = query(
+            collection(window.db, 'applications'),
+            where('workerId', '==', window.STATE.currentUser.uid || window.STATE.currentUser.email)
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы пока не откликались на вакансии</p>';
+            return;
+        }
+
+        const active = [];
+        const archived = [];
+
+        snapshot.forEach(docSnap => {
+            const app = { id: docSnap.id, ...docSnap.data() };
+            const status = app.status || 'sent';
+            if (status === 'archived_hired' || status === 'archived_not_hired' || status === 'rejected') {
+                archived.push(app);
+            } else {
+                active.push(app);
+            }
+        });
+
+        function buildItem(app, isArchived) {
+            const job = window.STATE.jobs.find(j => j.id === app.jobId);
+            if (!job) return '';
+            const status = app.status || 'sent';
+            const { text, cls } = _appStatusLabel(status);
+
+            let extraHTML = '';
+            if (status === 'accepted') {
+                extraHTML = `
+                    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                        <button class="btn-hired" onclick="_workerHiredOutcome('${app.id}', true)">🎉 Устроился</button>
+                        <button class="btn-not-hired" onclick="_workerHiredOutcome('${app.id}', false)">Не устроился</button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="applied-job-item ${isArchived ? 'archived-item' : ''}">
+                    <div style="flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                            <div class="applied-job-title">${job.title}</div>
+                            <span class="app-status-badge ${cls}">${text}</span>
+                        </div>
+                        <div class="applied-job-company">${job.company}</div>
+                        ${extraHTML}
+                    </div>
+                    ${!isArchived ? `<button class="btn btn-small btn-primary" style="margin-left:12px;flex-shrink:0;" onclick="openChatFromWorker('${app.jobId}', '${app.employerId}')">Открыть чат</button>` : ''}
+                </div>
+            `;
+        }
+
+        let html = active.map(a => buildItem(a, false)).join('');
+
+        if (archived.length > 0) {
+            html += `
+                <div class="app-archive-section">
+                    <h4>📁 Архив откликов</h4>
+                    ${archived.map(a => buildItem(a, true)).join('')}
+                </div>
+            `;
+        }
+
+        container.innerHTML = html || '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Нет откликов</p>';
+    } catch (error) {
+        console.error('[app-status] renderAppliedJobs error:', error);
+        await _origRenderAppliedJobs_status();
+    }
+};
+</script>
+
+<!-- ================= VERIFIED BADGE ================= -->
+<!-- Feature 2: Verified employer badge
+     New optional Firestore field on job document: verified = true/false
+     If true: show "✔ Проверен" badge on job card (small, clean, next to company name)
+     Also show in apply modal header.
+     Admin can toggle verified status per vacancy (new button in admin controls).
+     Zero structural changes. Additive CSS + JS patches only.
+-->
+<style>
+/* ================= VERIFIED BADGE — CSS ================= */
+
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+    border: 1px solid rgba(21,128,61,0.2);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    vertical-align: middle;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+.verified-badge-check {
+    font-size: 10px;
+    font-weight: 900;
+}
+
+/* In apply modal */
+.apply-modal-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+    border: 1px solid rgba(21,128,61,0.22);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Admin toggle verified btn */
+.btn-verify-toggle {
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid rgba(21,128,61,0.3);
+    background: #dcfce7;
+    color: #15803d;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.btn-verify-toggle:hover {
+    background: #15803d;
+    color: #fff;
+    border-color: #15803d;
+}
+
+.btn-verify-toggle.unverify {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #cbd5e1;
+}
+
+.btn-verify-toggle.unverify:hover {
+    background: #64748b;
+    color: #fff;
+    border-color: #64748b;
+}
+</style>
+
+<script>
+// ================= VERIFIED BADGE — JS =================
+
+// ------------------------------------------------------------------
+// PATCH renderJobs: inject verified badge on cards + admin verify btn
+// ------------------------------------------------------------------
+(function patchRenderJobsForVerified() {
+    const _origRender = window.renderJobs;
+    if (!_origRender) return;
+
+    window.renderJobs = function() {
+        _origRender();
+
+        const grid = document.getElementById('jobsGrid');
+        if (!grid) return;
+
+        grid.querySelectorAll('.job-card').forEach(card => {
+            if (card.querySelector('.verified-badge')) return;
+
+            const onclickAttr = card.getAttribute('onclick') || '';
+            const match = onclickAttr.match(/openApplyModal\(['"]([^'"]+)['"]\)/);
+            if (!match) return;
+            const jobId = match[1];
+            const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            // Add verified badge next to company name
+            if (job.verified) {
+                const companyEl = card.querySelector('.job-company');
+                if (companyEl && !companyEl.querySelector('.verified-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'verified-badge';
+                    badge.innerHTML = '<span class="verified-badge-check">✔</span> Проверен';
+                    companyEl.appendChild(badge);
+                }
+            }
+
+            // Admin: add "Verify / Unverify" button in admin controls
+            if (window.isAdmin && window.isAdmin()) {
+                const adminControls = card.querySelector('.admin-controls');
+                if (adminControls && !adminControls.querySelector('.btn-verify-toggle')) {
+                    const verifyBtn = document.createElement('button');
+                    verifyBtn.className = `btn btn-admin btn-verify-toggle ${job.verified ? 'unverify' : ''}`;
+                    verifyBtn.textContent = job.verified ? '✕ Снять верификацию' : '✔ Верифицировать';
+                    verifyBtn.onclick = (e) => { e.stopPropagation(); _toggleVerified(jobId, !!job.verified); };
+                    adminControls.appendChild(verifyBtn);
+                }
+            }
+        });
+    };
+})();
+
+// ------------------------------------------------------------------
+// Admin: toggle verified field on Firestore job
+// ------------------------------------------------------------------
+async function _toggleVerified(jobId, currentVerified) {
+    if (!window.db) {
+        showToast('Ошибка', 'База данных недоступна', 'error');
+        return;
+    }
+    try {
+        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await updateDoc(doc(window.db, 'jobs', jobId), {
+            verified: !currentVerified
+        });
+        showToast('Успешно', currentVerified ? 'Верификация снята' : 'Работодатель верифицирован', 'success');
+        if (window.loadJobsFromFirestore) await window.loadJobsFromFirestore();
+    } catch (e) {
+        console.error('[verified] toggleVerified error:', e);
+        showToast('Ошибка', 'Не удалось изменить статус', 'error');
+    }
+}
+
+// ------------------------------------------------------------------
+// PATCH openApplyModal: show verified badge in modal header
+// ------------------------------------------------------------------
+const _origOpenApplyModal_verified = window.openApplyModal || openApplyModal;
+window.openApplyModal = async function(jobId, event) {
+    await _origOpenApplyModal_verified(jobId, event);
+
+    const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+    if (!job || !job.verified) return;
+
+    // Find the company line in the modal and append badge
+    const modalBody = document.getElementById('applyModalBody');
+    if (!modalBody) return;
+    const companyEl = modalBody.querySelector('p[style*="text-gray"]');
+    if (companyEl && !companyEl.querySelector('.apply-modal-verified-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'apply-modal-verified-badge';
+        badge.innerHTML = '✔ Проверен';
+        companyEl.appendChild(badge);
+    }
+};
+</script>
+
+<!-- ================= EMPTY STATES UI ================= -->
+<!-- Feature 3: Enhanced empty states
+     - No jobs → friendly icon + "Вакансии не найдены" + subtext
+     - No applications (employer) → friendly message
+     - No employer jobs → friendly message
+     All are additive overrides of existing empty state strings. Zero logic changes.
+-->
+<style>
+/* ================= EMPTY STATES UI — CSS ================= */
+
+/* Enhanced empty state container */
+.empty-state-enhanced {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-gray);
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1.5px dashed var(--border-gray);
+    animation: fadeInUp 0.5s ease;
+}
+
+.empty-state-enhanced .ese-icon {
+    font-size: 60px;
+    display: block;
+    margin-bottom: 20px;
+    opacity: 0.7;
+    animation: iconBounce 2s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+}
+
+.empty-state-enhanced .ese-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.empty-state-enhanced .ese-sub {
+    font-size: 15px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.empty-state-enhanced .ese-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 22px;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid rgba(37,99,235,0.2);
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.empty-state-enhanced .ese-action:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37,99,235,0.2);
+}
+
+/* Profile list empty state */
+.profile-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    border: 1.5px dashed var(--border-gray);
+}
+
+.profile-empty-state .pes-icon {
+    font-size: 44px;
+    display: block;
+    margin-bottom: 14px;
+    opacity: 0.65;
+}
+
+.profile-empty-state .pes-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.profile-empty-state .pes-sub {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+    line-height: 1.6;
+}
+</style>
+
+<script>
+// ================= EMPTY STATES UI — JS =================
+
+// ------------------------------------------------------------------
+// PATCH renderJobs: replace default empty state with enhanced version
+// ------------------------------------------------------------------
+(function patchRenderJobsEmptyState() {
+    const _origRender = window.renderJobs;
+    if (!_origRender) return;
+
+    window.renderJobs = function() {
+        _origRender();
+
+        const grid = document.getElementById('jobsGrid');
+        if (!grid) return;
+
+        // Check if the original rendered an .empty-state
+        const oldEmpty = grid.querySelector('.empty-state');
+        if (oldEmpty && window.STATE && window.STATE.filteredJobs.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state-enhanced" style="grid-column: 1 / -1;">
+                    <span class="ese-icon">🔍</span>
+                    <div class="ese-title">Вакансии не найдены</div>
+                    <div class="ese-sub">По вашему запросу ничего не найдено.<br>Попробуйте изменить фильтры или поисковый запрос.</div>
+                    <button class="ese-action" onclick="resetFilters()">↩ Сбросить фильтры</button>
+                </div>
+            `;
+        }
+    };
+})();
+
+// ------------------------------------------------------------------
+// PATCH renderAppliedJobs: enhanced empty state for worker
+// Already patched above in app-status — we override the empty message
+// We add a friendly icon-based empty state if no applications found.
+// This runs on DOMContentLoaded as a MutationObserver on the container.
+// ------------------------------------------------------------------
+(function watchAppliedJobsEmpty() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('appliedJobsList');
+        if (!container) return;
+
+        const obs = new MutationObserver(() => {
+            if (container.innerHTML.trim().includes('пока не откликались')) {
+                container.innerHTML = `
+                    <div class="profile-empty-state">
+                        <span class="pes-icon">📋</span>
+                        <div class="pes-title">Откликов пока нет</div>
+                        <div class="pes-sub">Вы ещё не откликались на вакансии.<br>Найдите подходящую работу и отправьте отклик!</div>
+                    </div>
+                `;
+            }
+        });
+        obs.observe(container, { childList: true, subtree: true });
+    });
+})();
+
+// ------------------------------------------------------------------
+// PATCH renderEmployerJobs: enhanced empty state for employer
+// ------------------------------------------------------------------
+const _origRenderEmployerJobs_empty = window.renderEmployerJobs || renderEmployerJobs;
+window.renderEmployerJobs = async function() {
+    await _origRenderEmployerJobs_empty();
+
+    const container = document.getElementById('employerJobsList');
+    if (!container) return;
+
+    if (container.innerHTML.includes('не разместили ни одной')) {
+        container.innerHTML = `
+            <div class="profile-empty-state">
+                <span class="pes-icon">📢</span>
+                <div class="pes-title">Вакансий ещё нет</div>
+                <div class="pes-sub">Разместите первую вакансию, чтобы начать<br>получать отклики от соискателей.</div>
+            </div>
+        `;
+    }
+};
+
+// ------------------------------------------------------------------
+// PATCH showApplications: enhanced empty state when no applications
+// ------------------------------------------------------------------
+const _origShowApplications_empty = window.showApplications || showApplications;
+window.showApplications = async function(jobId) {
+    await _origShowApplications_empty(jobId);
+
+    const modalBody = document.getElementById('applicationsModalBody');
+    if (!modalBody) return;
+    if (modalBody.innerHTML.includes('Нет откликов на эту вакансию')) {
+        modalBody.innerHTML = `
+            <div class="profile-empty-state">
+                <span class="pes-icon">📭</span>
+                <div class="pes-title">Откликов пока нет</div>
+                <div class="pes-sub">Соискатели ещё не откликались на эту вакансию.<br>Возможно, стоит обновить описание или зарплату.</div>
+            </div>
+        `;
+    }
+};
+</script>
+
+<!-- ================= NEW SORT LOGIC ================= -->
+<!-- Feature 4: Sort by date (newest first)
+     Adds "Сначала новые" option to existing #sortFilter dropdown.
+     Patches applySorting() to handle new "date-desc" sort value.
+     No existing sort options removed.
+-->
+<style>
+/* ================= NEW SORT LOGIC — CSS ================= */
+/* No extra CSS needed — uses existing .select styling */
+.sort-new-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #eff6ff;
+    color: var(--primary-blue);
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+</style>
+
+<script>
+// ================= NEW SORT LOGIC — JS =================
+
+// ------------------------------------------------------------------
+// Inject "Сначала новые" option into the sort dropdown
+// ------------------------------------------------------------------
+(function injectDateSortOption() {
+    function addOption() {
+        const sortFilter = document.getElementById('sortFilter');
+        if (!sortFilter) return;
+        // Avoid duplicate
+        if (sortFilter.querySelector('option[value="date-desc"]')) return;
+        const opt = document.createElement('option');
+        opt.value = 'date-desc';
+        opt.textContent = '🕐 Сначала новые';
+        sortFilter.appendChild(opt);
+    }
+
+    document.addEventListener('DOMContentLoaded', addOption);
+    // Also try immediately in case DOM is ready
+    setTimeout(addOption, 50);
+})();
+
+// ------------------------------------------------------------------
+// PATCH applySorting: add date-desc handling
+// ------------------------------------------------------------------
+const _origApplySorting_date = window.applySorting || applySorting;
+window.applySorting = function() {
+    const sortValue = document.getElementById('sortFilter')?.value;
+
+    if (sortValue === 'date-desc') {
+        // Sort by createdAt descending (newest first), keep top jobs first
+        window.STATE.filteredJobs.sort((a, b) => {
+            if (a.isTop && !b.isTop) return -1;
+            if (!a.isTop && b.isTop) return 1;
+            // Newest first
+            const aTime = a.createdAt || 0;
+            const bTime = b.createdAt || 0;
+            return bTime - aTime;
+        });
+        return;
+    }
+
+    // For all other sort values, delegate to original
+    _origApplySorting_date();
+};
+</script>
+
+<!-- ================= EXPERIENCE FILTER ================= -->
+<!-- Feature 5: "Без опыта" filter
+     Adds a checkbox "Без опыта" to the filters section.
+     Patches applyFilters() to filter jobs matching:
+       - job.type or job.description or job.title contains "без опыта" (case-insensitive)
+       - OR job.noExperience === true (explicit field)
+     resetFilters() clears the checkbox.
+     No existing filter inputs modified.
+-->
+<style>
+/* ================= EXPERIENCE FILTER — CSS ================= */
+
+.no-exp-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: var(--light-gray);
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border-gray);
+    transition: var(--transition);
+    cursor: pointer;
+    user-select: none;
+}
+
+.no-exp-filter-row:hover {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+}
+
+.no-exp-filter-row.active {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+}
+
+.no-exp-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    accent-color: var(--primary-blue);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.no-exp-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    cursor: pointer;
+    flex: 1;
+}
+
+.no-exp-sublabel {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.no-exp-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+</style>
+
+<script>
+// ================= EXPERIENCE FILTER — JS =================
+
+// ------------------------------------------------------------------
+// Inject "Без опыта" checkbox into the filters section
+// ------------------------------------------------------------------
+(function injectNoExpFilter() {
+    function addNoExpFilter() {
+        const filtersSection = document.querySelector('.filters-section');
+        if (!filtersSection || document.getElementById('noExpFilterRow')) return;
+
+        const row = document.createElement('div');
+        row.className = 'no-exp-filter-row';
+        row.id = 'noExpFilterRow';
+        row.innerHTML = `
+            <input type="checkbox" class="no-exp-checkbox" id="noExpCheckbox">
+            <label class="no-exp-label" for="noExpCheckbox">
+                Без опыта работы
+                <span class="no-exp-sublabel"> — подходит для новичков</span>
+            </label>
+            <span class="no-exp-tag">🌱 Начинающим</span>
+        `;
+
+        // Toggle active class on click for visual feedback
+        row.addEventListener('click', function(e) {
+            if (e.target.id !== 'noExpCheckbox') {
+                const cb = document.getElementById('noExpCheckbox');
+                if (cb) cb.checked = !cb.checked;
+            }
+            row.classList.toggle('active', document.getElementById('noExpCheckbox')?.checked);
+            // Trigger filter
+            if (window.applyFilters) window.applyFilters();
+        });
+
+        // Insert between filters-grid and filter-actions
+        const actionsRow = filtersSection.querySelector('.filter-actions');
+        const chipsRow = filtersSection.querySelector('#filterChipsRow');
+        const insertBefore = chipsRow || actionsRow;
+        if (insertBefore) {
+            filtersSection.insertBefore(row, insertBefore);
+        } else {
+            filtersSection.appendChild(row);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', addNoExpFilter);
+    setTimeout(addNoExpFilter, 80);
+})();
+
+// ------------------------------------------------------------------
+// PATCH applyFilters: add noExperience filtering
+// ------------------------------------------------------------------
+const _origApplyFilters_noexp = window.applyFilters || applyFilters;
+window.applyFilters = function() {
+    // Call original first
+    _origApplyFilters_noexp();
+
+    // Then apply no-experience filter on top of filteredJobs
+    const noExpCb = document.getElementById('noExpCheckbox');
+    if (!noExpCb || !noExpCb.checked) return;
+
+    const keyword = 'без опыта';
+    window.STATE.filteredJobs = window.STATE.filteredJobs.filter(job => {
+        if (job.noExperience === true) return true;
+        const haystack = [
+            job.title || '',
+            job.description || '',
+            job.type || '',
+            job.requirements || ''
+        ].join(' ').toLowerCase();
+        return haystack.includes(keyword);
+    });
+
+    // Re-render after additional filtering
+    if (window.renderJobs) {
+        window.STATE.currentPage = 1;
+        window.renderJobs();
+    }
+
+    // Update chips row label for noExp
+    const chipsRow = document.getElementById('filterChipsRow');
+    if (chipsRow && noExpCb.checked && !chipsRow.querySelector('#noExpChip')) {
+        const chip = document.createElement('span');
+        chip.className = 'filter-chip';
+        chip.id = 'noExpChip';
+        chip.innerHTML = `🌱 Без опыта <span class="filter-chip-remove">×</span>`;
+        chip.addEventListener('click', () => {
+            const cb = document.getElementById('noExpCheckbox');
+            if (cb) cb.checked = false;
+            const row = document.getElementById('noExpFilterRow');
+            if (row) row.classList.remove('active');
+            chip.remove();
+            if (window.applyFilters) window.applyFilters();
+        });
+        chipsRow.appendChild(chip);
+    }
+};
+
+// ------------------------------------------------------------------
+// PATCH resetFilters: clear the noExp checkbox
+// ------------------------------------------------------------------
+const _origResetFilters_noexp = window.resetFilters || resetFilters;
+window.resetFilters = function() {
+    const noExpCb = document.getElementById('noExpCheckbox');
+    if (noExpCb) noExpCb.checked = false;
+    const row = document.getElementById('noExpFilterRow');
+    if (row) row.classList.remove('active');
+    // Remove chip if exists
+    const chip = document.getElementById('noExpChip');
+    if (chip) chip.remove();
+    _origResetFilters_noexp();
+};
+</script>
+
 </body>
 </html>
