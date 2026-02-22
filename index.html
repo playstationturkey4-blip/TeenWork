@@ -2232,8 +2232,13 @@
                 
                 if (isAdmin()) {
                     navHTML += `<div class="admin-panel-badge">ADMIN</div>`;
+                    navHTML += `<button id="moderationNavBtn" class="btn btn-warning btn-small" onclick="openModerationPanel()" style="position:relative;">
+  ⚠️ Модерация
+  <span id="moderationNavBadge" style="position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #fff;"></span>
+</button>`;
                 }
                 
+                if (isAdmin()) setTimeout(_updateModerationBadge, 500);
                 if (STATE.currentUser.role === 'employer') {
                     navHTML += `<button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>`;
                 }
@@ -2777,6 +2782,7 @@
                 employerEmail: STATE.currentUser.email,
                 employerId: STATE.currentUser.uid || STATE.currentUser.email,
                 isTop: false,
+                status: "pending",
                 views: 0,
                 createdAt: Date.now()
             };
@@ -3561,10 +3567,10 @@
     const jobs = [];
 
     snapshot.forEach(docSnap => {
-      jobs.push({
-        id: docSnap.id,
-        ...docSnap.data()
-      });
+      const data = docSnap.data();
+      if (!data.status || data.status === "approved") {
+        jobs.push({ id: docSnap.id, ...data });
+      }
     });
 
     if (window.STATE) {
@@ -8566,6 +8572,138 @@ if (_origInjectBar) {
 console.log('[TeenWork] Notification + Activity system v1.0 loaded');
 </script>
 
+
+
+<!-- МОДЕРАЦИЯ ВАКАНСИЙ -->
+<style>
+.moderation-job-item {
+  background: var(--light-gray);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--border-gray);
+}
+.moderation-job-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.moderation-job-meta { font-size: 13px; color: var(--text-gray); margin-bottom: 10px; }
+.moderation-btns { display: flex; gap: 8px; }
+.btn-approve {
+  padding: 7px 16px; font-size: 12px; font-weight: 700;
+  background: #dcfce7; color: #16a34a;
+  border: 1.5px solid #86efac; border-radius: var(--radius-sm);
+  cursor: pointer; font-family: inherit; transition: var(--transition);
+}
+.btn-approve:hover { background: #16a34a; color: #fff; }
+.btn-decline {
+  padding: 7px 16px; font-size: 12px; font-weight: 700;
+  background: #fee2e2; color: #dc2626;
+  border: 1.5px solid #fca5a5; border-radius: var(--radius-sm);
+  cursor: pointer; font-family: inherit; transition: var(--transition);
+}
+.btn-decline:hover { background: #dc2626; color: #fff; }
+</style>
+
+<div class="modal" id="moderationModal">
+  <div class="modal-content" style="max-width:640px;">
+    <div class="modal-header">
+      <h3>⚠️ Вакансии на модерации</h3>
+      <button class="modal-close" onclick="closeModal('moderationModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="moderationModalBody">
+      <p style="color:var(--text-gray);text-align:center;padding:20px;">Загрузка...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+async function openModerationPanel() {
+  if (!isAdmin()) return;
+  openModal('moderationModal');
+  const body = document.getElementById('moderationModalBody');
+  body.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Загрузка...</p>';
+
+  if (!window.db) {
+    body.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">База данных недоступна</p>';
+    return;
+  }
+
+  try {
+    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const q = query(collection(window.db, 'jobs'), where('status', '==', 'pending'));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      body.innerHTML = '<div class="profile-empty-state"><span class="pes-icon">✅</span><div class="pes-title">Нет вакансий на модерации</div><div class="pes-sub">Все вакансии проверены</div></div>';
+      return;
+    }
+
+    let html = '';
+    snap.forEach(docSnap => {
+      const job = { id: docSnap.id, ...docSnap.data() };
+      html += `
+        <div class="moderation-job-item" id="modItem_${job.id}">
+          <div class="moderation-job-title">${job.title}</div>
+          <div class="moderation-job-meta">${job.company} · ${job.city} · ${(job.salary||0).toLocaleString('ru-RU')} ₽</div>
+          <div style="font-size:13px;color:var(--text-gray);margin-bottom:10px;line-height:1.5;">${(job.description||'').slice(0,150)}${(job.description||'').length>150?'…':''}</div>
+          <div class="moderation-btns">
+            <button class="btn-approve" onclick="_approveJob('${job.id}')">✔ Одобрить</button>
+            <button class="btn-decline" onclick="_declineJob('${job.id}')">✕ Отклонить</button>
+          </div>
+        </div>
+      `;
+    });
+    body.innerHTML = html;
+  } catch (e) {
+    console.error('[moderation] ошибка:', e);
+    body.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Ошибка загрузки</p>';
+  }
+}
+
+async function _approveJob(jobId) {
+  if (!window.db) return;
+  try {
+    const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    await updateDoc(doc(window.db, 'jobs', jobId), { status: 'approved' });
+    document.getElementById('modItem_' + jobId)?.remove();
+    showToast('Одобрено', 'Вакансия опубликована', 'success');
+    if (window.loadJobsFromFirestore) await window.loadJobsFromFirestore();
+    _checkModerationEmpty();
+  } catch (e) {
+    showToast('Ошибка', 'Не удалось одобрить', 'error');
+  }
+}
+
+async function _declineJob(jobId) {
+  if (!confirm('Удалить эту вакансию?')) return;
+  if (!window.db) return;
+  try {
+    const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    await deleteDoc(doc(window.db, 'jobs', jobId));
+    document.getElementById('modItem_' + jobId)?.remove();
+    showToast('Отклонено', 'Вакансия удалена', 'success');
+    _checkModerationEmpty();
+  } catch (e) {
+    showToast('Ошибка', 'Не удалось удалить', 'error');
+  }
+}
+
+function _checkModerationEmpty() {
+  const body = document.getElementById('moderationModalBody');
+  if (body && body.querySelectorAll('.moderation-job-item').length === 0) {
+    body.innerHTML = '<div class="profile-empty-state"><span class="pes-icon">✅</span><div class="pes-title">Всё проверено</div><div class="pes-sub">Новых вакансий на модерации нет</div></div>';
+  }
+  _updateModerationBadge();
+}
+
+async function _updateModerationBadge() {
+  if (!isAdmin() || !window.db) return;
+  try {
+    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const snap = await getDocs(query(collection(window.db, 'jobs'), where('status', '==', 'pending')));
+    const badge = document.getElementById('moderationNavBadge');
+    if (badge) badge.textContent = snap.size > 0 ? snap.size : '';
+  } catch (e) {}
+}
+</script>
 
 </body>
 </html>
