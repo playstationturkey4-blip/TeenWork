@@ -7661,5 +7661,911 @@ window.resetFilters = function() {
 };
 </script>
 
+
+
+<!-- ================= NOTIFICATIONS SYSTEM ================= -->
+<!-- TASK: Full notification system + activity enhancements
+     - Firestore collection: notifications (userId, type, text, isRead, createdAt)
+     - Triggers: apply->employer, accept/reject->worker, new message->receiver, viewed->worker
+     - Navbar bell icon with red unread badge
+     - Notifications dropdown modal (realtime onSnapshot)
+     - Chat activity: unread counter, last message preview
+     - Enhanced lastSeen with activity events
+     - Visual improvements throughout
+     Zero breaking changes. Additive only.
+-->
+<style>
+/* ================= NOTIFICATIONS SYSTEM CSS ================= */
+
+.notif-bell-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-gray);
+    background: var(--white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+    animation: bellAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes bellAppear {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.notif-bell-btn:hover {
+    background: var(--soft-blue);
+    border-color: var(--primary-blue);
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(37,99,235,0.15);
+}
+
+.notif-bell-btn.has-unread {
+    animation: bellShake 0.5s ease;
+}
+
+@keyframes bellShake {
+    0%, 100% { transform: rotate(0deg); }
+    20%  { transform: rotate(-12deg); }
+    40%  { transform: rotate(12deg); }
+    60%  { transform: rotate(-8deg); }
+    80%  { transform: rotate(8deg); }
+}
+
+.notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--white);
+    pointer-events: none;
+    animation: badgePop2 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop2 {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.notif-badge.notif-hidden {
+    display: none;
+}
+
+@keyframes badgeFlash2 {
+    0%   { background: #fbbf24; transform: scale(1.3); }
+    100% { background: #ef4444; transform: scale(1); }
+}
+
+.notif-badge.flash {
+    animation: badgeFlash2 0.3s ease;
+}
+
+.notif-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2500;
+    background: transparent;
+}
+
+.notif-modal-overlay.active {
+    display: block;
+}
+
+.notif-dropdown {
+    position: fixed;
+    top: 76px;
+    right: 24px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 2501;
+    overflow: hidden;
+    animation: notifDropIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1.5px solid var(--border-gray);
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes notifDropIn {
+    from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.notif-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1.5px solid var(--border-gray);
+    flex-shrink: 0;
+}
+
+.notif-dropdown-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-dark);
+    letter-spacing: -0.3px;
+}
+
+.notif-mark-all-btn {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.notif-mark-all-btn:hover {
+    background: var(--soft-blue);
+}
+
+.notif-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.notif-list::-webkit-scrollbar { width: 4px; }
+.notif-list::-webkit-scrollbar-track { background: transparent; }
+.notif-list::-webkit-scrollbar-thumb { background: var(--border-gray); border-radius: 4px; }
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: background 0.18s ease;
+    border-bottom: 1px solid var(--border-gray);
+    position: relative;
+    animation: notifSlideIn2 0.3s ease backwards;
+}
+
+@keyframes notifSlideIn2 {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.notif-item:last-child { border-bottom: none; }
+
+.notif-item:hover {
+    background: var(--light-gray);
+}
+
+.notif-item.unread {
+    background: linear-gradient(90deg, rgba(239,246,255,0.8) 0%, rgba(255,255,255,0) 100%);
+}
+
+.notif-item.unread:hover {
+    background: linear-gradient(90deg, rgba(219,234,254,0.7) 0%, rgba(239,246,255,0.3) 100%);
+}
+
+.notif-unread-dot {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-blue);
+}
+
+.notif-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.notif-icon-application { background: #eff6ff; }
+.notif-icon-message     { background: #f0fdf4; }
+.notif-icon-status      { background: #fff7ed; }
+.notif-icon-system      { background: #f8fafc; }
+
+.notif-content {
+    flex: 1;
+    min-width: 0;
+    padding-right: 18px;
+}
+
+.notif-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+    line-height: 1.5;
+    margin-bottom: 3px;
+}
+
+.notif-item.unread .notif-text { font-weight: 700; }
+
+.notif-time {
+    font-size: 11px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.notif-empty {
+    padding: 52px 24px;
+    text-align: center;
+    color: var(--text-gray);
+}
+
+.notif-empty-icon {
+    font-size: 44px;
+    display: block;
+    margin-bottom: 14px;
+    opacity: 0.55;
+}
+
+.notif-empty-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+}
+
+.notif-empty-sub {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ---- Chat Activity CSS ---- */
+.chat-unread-badge2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 9px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 0 3px;
+    margin-left: 5px;
+    vertical-align: middle;
+    animation: badgePop2 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.chat-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 3px;
+}
+
+.chat-preview-text {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+}
+
+.chat-preview-text.unread-preview {
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.chat-preview-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    background: var(--primary-blue);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 0 3px;
+    flex-shrink: 0;
+}
+
+.applied-job-item.has-unread-chat {
+    border-left: 3px solid var(--primary-blue);
+    background: linear-gradient(90deg, rgba(239,246,255,0.6) 0%, rgba(255,255,255,0) 100%);
+}
+
+/* New message divider */
+.new-message-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.new-message-divider::before,
+.new-message-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(37,99,235,0.22);
+}
+
+.new-message-divider-text {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    white-space: nowrap;
+    background: var(--soft-blue);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* Avatar notif ring */
+@keyframes avatarNotifRing {
+    0%   { box-shadow: 0 0 0 0px rgba(239,68,68,0.4); }
+    50%  { box-shadow: 0 0 0 5px rgba(239,68,68,0.1); }
+    100% { box-shadow: 0 0 0 0px rgba(239,68,68,0); }
+}
+
+.user-avatar.notif-ring {
+    animation: avatarNotifRing 0.8s ease;
+}
+
+/* Enhanced presence color */
+.presence-text-online.activity-fresh { color: #15803d !important; }
+.presence-dot-online.activity-dot    { background: #15803d !important; }
+
+@media (max-width: 480px) {
+    .notif-dropdown { right: 12px; left: 12px; width: auto; top: 70px; }
+}
+</style>
+
+<script>
+// ================= NOTIFICATIONS SYSTEM JS =================
+
+const _NOTIF_STATE = {
+    unsubscribe: null,
+    count: 0,
+    items: [],
+    lastSentTs: {},
+    activityTimer: null
+};
+
+function _notifTimeAgo(ts) {
+    if (!ts) return '';
+    const diff = Date.now() - ts;
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return 'только что';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min + ' мин назад';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + ' ч назад';
+    return Math.floor(hr / 24) + ' д назад';
+}
+
+function _notifIcon(type) {
+    return { application: '📩', message: '💬', status: '✅', system: '🔔' }[type] || '🔔';
+}
+
+function _notifIconClass(type) {
+    return 'notif-icon-' + (type || 'system');
+}
+
+async function _createNotification(userId, type, text, dedupKey) {
+    if (!window.db || !userId) return;
+    const dk = type + '_' + (dedupKey || text);
+    const now = Date.now();
+    if (_NOTIF_STATE.lastSentTs[dk] && now - _NOTIF_STATE.lastSentTs[dk] < 30000) return;
+    _NOTIF_STATE.lastSentTs[dk] = now;
+    try {
+        const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await addDoc(collection(window.db, 'notifications'), {
+            userId: userId, type: type, text: text, isRead: false, createdAt: now
+        });
+    } catch (e) { console.warn('[notif] create error:', e); }
+}
+
+async function _markNotifRead(docId) {
+    if (!window.db || !docId) return;
+    try {
+        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await updateDoc(doc(window.db, 'notifications', docId), { isRead: true });
+    } catch (e) { console.warn('[notif] markRead error:', e); }
+}
+
+async function _markAllNotifRead() {
+    if (!window.db || !window.STATE || !window.STATE.currentUser) return;
+    const userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    if (!userId) return;
+    try {
+        const { collection, query, where, getDocs, doc, writeBatch } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const q = query(collection(window.db, 'notifications'), where('userId', '==', userId), where('isRead', '==', false));
+        const snap = await getDocs(q);
+        const batch = writeBatch(window.db);
+        snap.forEach(d => batch.update(doc(window.db, 'notifications', d.id), { isRead: true }));
+        await batch.commit();
+        _NOTIF_STATE.items.forEach(i => { i.isRead = true; });
+        _renderNotifDropdown(_NOTIF_STATE.items);
+        _updateNotifBadge(0);
+    } catch (e) { console.warn('[notif] markAll error:', e); }
+}
+
+function _renderNotifDropdown(items) {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    if (!items || items.length === 0) {
+        list.innerHTML = '<div class="notif-empty"><span class="notif-empty-icon">🔔</span><div class="notif-empty-text">Уведомлений нет</div><div class="notif-empty-sub">Новые уведомления появятся здесь</div></div>';
+        return;
+    }
+    const sorted = [...items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    list.innerHTML = sorted.map(function(item, i) {
+        return '<div class="notif-item ' + (!item.isRead ? 'unread' : '') + '" style="animation-delay:' + (i * 30) + 'ms" onclick="_handleNotifClick(\'' + item.id + '\', this)">' +
+            '<div class="notif-icon-wrap ' + _notifIconClass(item.type) + '">' + _notifIcon(item.type) + '</div>' +
+            '<div class="notif-content"><div class="notif-text">' + item.text + '</div><div class="notif-time">' + _notifTimeAgo(item.createdAt) + '</div></div>' +
+            (!item.isRead ? '<div class="notif-unread-dot"></div>' : '') +
+            '</div>';
+    }).join('');
+}
+
+function _handleNotifClick(docId, el) {
+    if (!docId) return;
+    _markNotifRead(docId);
+    if (el) {
+        el.classList.remove('unread');
+        var dot = el.querySelector('.notif-unread-dot');
+        if (dot) dot.remove();
+    }
+    _NOTIF_STATE.count = Math.max(0, _NOTIF_STATE.count - 1);
+    _updateNotifBadge(_NOTIF_STATE.count);
+}
+
+function _updateNotifBadge(count) {
+    var prev = _NOTIF_STATE.count;
+    _NOTIF_STATE.count = count;
+    var badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.classList.remove('notif-hidden');
+        if (count > prev) {
+            badge.classList.remove('flash');
+            void badge.offsetWidth;
+            badge.classList.add('flash');
+            setTimeout(function() { badge.classList.remove('flash'); }, 350);
+        }
+        var btn = document.getElementById('notifBellBtn');
+        if (btn) {
+            btn.classList.add('has-unread');
+            clearTimeout(btn._shakeTimer);
+            btn._shakeTimer = setTimeout(function() { btn.classList.remove('has-unread'); }, 600);
+        }
+        var avatar = document.querySelector('.user-avatar');
+        if (avatar) {
+            avatar.classList.add('notif-ring');
+            clearTimeout(avatar._ringTimer);
+            avatar._ringTimer = setTimeout(function() { avatar.classList.remove('notif-ring'); }, 900);
+        }
+    } else {
+        badge.classList.add('notif-hidden');
+    }
+}
+
+async function _startNotifListener() {
+    if (!window.db || !window.STATE || !window.STATE.currentUser) return;
+    if (_NOTIF_STATE.unsubscribe) { _NOTIF_STATE.unsubscribe(); _NOTIF_STATE.unsubscribe = null; }
+    var userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    if (!userId) return;
+    try {
+        const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        var q = query(collection(window.db, 'notifications'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+        _NOTIF_STATE.unsubscribe = onSnapshot(q, function(snap) {
+            var items = [];
+            var unread = 0;
+            snap.forEach(function(d) {
+                var data = Object.assign({ id: d.id }, d.data());
+                items.push(data);
+                if (!data.isRead) unread++;
+            });
+            _NOTIF_STATE.items = items;
+            _updateNotifBadge(unread);
+            var overlay = document.getElementById('notifOverlay');
+            if (overlay && overlay.classList.contains('active')) _renderNotifDropdown(items);
+        }, function(err) { console.warn('[notif] listener error:', err); });
+    } catch (e) { console.warn('[notif] startListener error:', e); }
+}
+
+function _stopNotifListener() {
+    if (_NOTIF_STATE.unsubscribe) { _NOTIF_STATE.unsubscribe(); _NOTIF_STATE.unsubscribe = null; }
+}
+
+function _toggleNotifDropdown() {
+    var overlay = document.getElementById('notifOverlay');
+    if (!overlay) return;
+    if (overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+    } else {
+        overlay.classList.add('active');
+        _renderNotifDropdown(_NOTIF_STATE.items);
+    }
+}
+
+function _injectNotifBell() {
+    if (document.getElementById('notifBellBtn')) return;
+    var bell = document.createElement('div');
+    bell.id = 'notifBellBtn';
+    bell.className = 'notif-bell-btn';
+    bell.title = 'Уведомления';
+    bell.innerHTML = '🔔<span class="notif-badge notif-hidden" id="notifBadge">0</span>';
+    bell.onclick = function(e) { e.stopPropagation(); _toggleNotifDropdown(); };
+    var navActions = document.getElementById('navActions');
+    if (!navActions) return;
+    var profileWrapper = navActions.querySelector('.nav-profile-wrapper');
+    if (profileWrapper) navActions.insertBefore(bell, profileWrapper);
+    else navActions.appendChild(bell);
+}
+
+function _injectNotifOverlay() {
+    if (document.getElementById('notifOverlay')) return;
+    var overlay = document.createElement('div');
+    overlay.className = 'notif-modal-overlay';
+    overlay.id = 'notifOverlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.classList.remove('active'); };
+    overlay.innerHTML = '<div class="notif-dropdown" id="notifDropdown"><div class="notif-dropdown-header"><div class="notif-dropdown-title">🔔 Уведомления</div><button class="notif-mark-all-btn" onclick="_markAllNotifRead()">Всё прочитано</button></div><div class="notif-list" id="notifList"><div class="notif-empty"><span class="notif-empty-icon">🔔</span><div class="notif-empty-text">Уведомлений нет</div><div class="notif-empty-sub">Новые уведомления появятся здесь</div></div></div></div>';
+    document.body.appendChild(overlay);
+}
+
+// Patch updateNavbar to inject bell
+var _origUpdateNavbar_n = window.updateNavbar || updateNavbar;
+window.updateNavbar = function() {
+    _origUpdateNavbar_n();
+    if (window.STATE && window.STATE.currentUser) {
+        setTimeout(function() { _injectNotifBell(); _startNotifListener(); }, 60);
+    }
+};
+
+// Patch logout
+var _origLogout_n = window.logout || logout;
+window.logout = function() {
+    _stopNotifListener();
+    _NOTIF_STATE.count = 0; _NOTIF_STATE.items = []; _NOTIF_STATE.lastSentTs = {};
+    _origLogout_n();
+};
+
+// ==================== NOTIFICATION TRIGGERS ====================
+
+// TRIGGER 1: Worker applies -> notify employer
+var _origApplyToJob_n = window.applyToJob || applyToJob;
+window.applyToJob = async function(jobId) {
+    await _origApplyToJob_n(jobId);
+    try {
+        var job = window.STATE && window.STATE.jobs.find(function(j) { return j.id === jobId; });
+        if (!job) return;
+        var employerId = job.employerId || job.employerEmail;
+        if (!employerId) return;
+        var workerName = window.STATE.currentUser.nickname || 'Соискатель';
+        await _createNotification(employerId, 'application', '📩 ' + workerName + ' откликнулся на вакансию «' + job.title + '»', 'apply_' + jobId + '_' + (window.STATE.currentUser.uid || window.STATE.currentUser.email));
+    } catch (e) { console.warn('[notif] applyTrigger error:', e); }
+};
+
+// TRIGGER 2: Employer decides (accept/reject) -> notify worker
+var _origEmpDecide_n = window._employerDecideApp;
+window._employerDecideApp = async function(docId, decision) {
+    if (_origEmpDecide_n) await _origEmpDecide_n(docId, decision);
+    try {
+        if (!window.db) return;
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        var appSnap = await getDoc(doc(window.db, 'applications', docId));
+        if (!appSnap.exists()) return;
+        var app = appSnap.data();
+        var workerId = app.workerId;
+        if (!workerId) return;
+        var job = window.STATE && window.STATE.jobs.find(function(j) { return j.id === app.jobId; });
+        var jobTitle = job ? job.title : 'вакансию';
+        var text = decision === 'accepted' ? '✅ Ваш отклик на «' + jobTitle + '» принят работодателем!' : '❌ Ваш отклик на «' + jobTitle + '» отклонён работодателем';
+        await _createNotification(workerId, 'status', text, 'decide_' + docId + '_' + decision);
+    } catch (e) { console.warn('[notif] decideNotif error:', e); }
+};
+
+// TRIGGER 3: Application viewed -> notify worker
+async function _notifyWorkerViewed(workerId, jobTitle) {
+    if (!workerId || !jobTitle) return;
+    await _createNotification(workerId, 'status', '👁️ Работодатель просмотрел ваш отклик на «' + jobTitle + '»', 'viewed_' + workerId + '_' + jobTitle);
+}
+
+// TRIGGER 4: New chat message -> notify receiver
+async function _notifyChatMessage(chatId, senderName) {
+    if (!window.db || !chatId) return;
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        var chatSnap = await getDoc(doc(window.db, 'chats', chatId));
+        if (!chatSnap.exists()) return;
+        var chat = chatSnap.data();
+        var senderId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+        var receiverId = (senderId === chat.employerId) ? chat.workerId : chat.employerId;
+        if (!receiverId || receiverId === senderId) return;
+        var job = window.STATE && window.STATE.jobs.find(function(j) { return j.id === chat.jobId; });
+        var jobTitle = job ? job.title : 'вакансию';
+        await _createNotification(receiverId, 'message', '💬 ' + senderName + ' написал(а) вам по вакансии «' + jobTitle + '»', 'msg_' + chatId + '_' + senderId);
+    } catch (e) { console.warn('[notif] chatMsgTrigger error:', e); }
+}
+
+var _origSendChat_n = window.sendChatMessage || sendChatMessage;
+window.sendChatMessage = async function() {
+    await _origSendChat_n();
+    if (window.STATE && window.STATE.currentChatId && window.STATE.currentUser) {
+        var name = window.STATE.currentUser.nickname || 'Пользователь';
+        setTimeout(function() { _notifyChatMessage(window.STATE.currentChatId, name); }, 200);
+    }
+};
+
+// Patch showApplications to notify viewed
+var _origShowApps_n = window.showApplications;
+window.showApplications = async function(jobId) {
+    await _origShowApps_n(jobId);
+    try {
+        if (!window.db) return;
+        const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        var q = query(collection(window.db, 'applications'), where('jobId', '==', jobId));
+        var snap = await getDocs(q);
+        var job = window.STATE && window.STATE.jobs.find(function(j) { return j.id === jobId; });
+        var jobTitle = job ? job.title : 'вакансию';
+        snap.forEach(function(d) {
+            var app = d.data();
+            if (app.status === 'viewed' && app.statusUpdatedAt_viewed && Date.now() - app.statusUpdatedAt_viewed < 5000) {
+                _notifyWorkerViewed(app.workerId, jobTitle);
+            }
+        });
+    } catch (e) { console.warn('[notif] viewedNotif error:', e); }
+};
+
+// Patch image/voice send to also notify
+var _origImgUpload_n = window.handleChatImageSelected;
+if (_origImgUpload_n) {
+    window.handleChatImageSelected = async function(e) {
+        await _origImgUpload_n(e);
+        if (window.STATE && window.STATE.currentChatId && window.STATE.currentUser) {
+            setTimeout(function() { _notifyChatMessage(window.STATE.currentChatId, window.STATE.currentUser.nickname || 'Пользователь'); }, 300);
+        }
+    };
+}
+
+var _origVoiceStop_n = window.handleVoiceRecordingStop;
+if (_origVoiceStop_n) {
+    window.handleVoiceRecordingStop = async function() {
+        await _origVoiceStop_n();
+        if (window.STATE && window.STATE.currentChatId && window.STATE.currentUser) {
+            setTimeout(function() { _notifyChatMessage(window.STATE.currentChatId, window.STATE.currentUser.nickname || 'Пользователь'); }, 300);
+        }
+    };
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+    var overlay = document.getElementById('notifOverlay');
+    if (!overlay || !overlay.classList.contains('active')) return;
+    var dropdown = document.getElementById('notifDropdown');
+    var bell = document.getElementById('notifBellBtn');
+    if (dropdown && dropdown.contains(e.target)) return;
+    if (bell && bell.contains(e.target)) return;
+    overlay.classList.remove('active');
+}, true);
+
+// Init
+document.addEventListener('DOMContentLoaded', function() {
+    _injectNotifOverlay();
+    var check = setInterval(function() {
+        if (window.db && window.STATE && window.STATE.currentUser) {
+            clearInterval(check);
+            _injectNotifBell();
+            _startNotifListener();
+        }
+    }, 500);
+    setTimeout(function() { clearInterval(check); }, 15000);
+});
+
+// Patch handleLogin + handleRegister
+var _origHLogin_n = window.handleLogin || handleLogin;
+window.handleLogin = function(e) {
+    _origHLogin_n(e);
+    setTimeout(function() {
+        _injectNotifOverlay();
+        if (window.STATE && window.STATE.currentUser) { _injectNotifBell(); _startNotifListener(); }
+    }, 400);
+};
+
+var _origHReg_n = window.handleRegister || handleRegister;
+window.handleRegister = function(e) {
+    _origHReg_n(e);
+    setTimeout(function() {
+        _injectNotifOverlay();
+        if (window.STATE && window.STATE.currentUser) { _injectNotifBell(); _startNotifListener(); }
+    }, 400);
+};
+</script>
+
+<!-- ================= REALTIME LISTENERS ================= -->
+<!-- Chat activity: unread counter per chat, last message preview -->
+<script>
+// ================= REALTIME LISTENERS JS =================
+
+async function _getChatActivity(chatId, currentUserId) {
+    if (!window.db || !chatId) return { lastMsg: null, unread: 0 };
+    try {
+        const { collection, query, where, orderBy, getDocs, limit } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        var q = query(collection(window.db, 'messages'), where('chatId', '==', chatId), orderBy('createdAt', 'desc'), limit(20));
+        var snap = await getDocs(q);
+        var unread = 0, lastMsg = null;
+        snap.forEach(function(d) {
+            var m = d.data();
+            if (!lastMsg) lastMsg = m.imageUrl ? '📷 Изображение' : m.audioUrl ? '🎙️ Голосовое' : (m.text || '');
+            if (m.senderId !== currentUserId && m.read === false) unread++;
+        });
+        return { lastMsg: lastMsg, unread: unread };
+    } catch (e) { return { lastMsg: null, unread: 0 }; }
+}
+
+// Patch renderAppliedJobs to add chat preview + unread counter
+var _origRenderApplied_act = window.renderAppliedJobs;
+window.renderAppliedJobs = async function() {
+    await _origRenderApplied_act();
+    if (!window.STATE || !window.STATE.currentUser || !window.db) return;
+    var currentUserId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    if (!currentUserId) return;
+    var container = document.getElementById('appliedJobsList');
+    if (!container) return;
+    try {
+        const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        var appsQ = query(collection(window.db, 'applications'), where('workerId', '==', currentUserId));
+        var appsSnap = await getDocs(appsQ);
+        var apps = [];
+        appsSnap.forEach(function(d) { apps.push(Object.assign({ id: d.id }, d.data())); });
+        for (var i = 0; i < apps.length; i++) {
+            var app = apps[i];
+            var chatsQ = query(collection(window.db, 'chats'), where('jobId', '==', app.jobId), where('workerId', '==', currentUserId));
+            var chatsSnap = await getDocs(chatsQ);
+            if (chatsSnap.empty) continue;
+            var chatId = chatsSnap.docs[0].id;
+            var activity = await _getChatActivity(chatId, currentUserId);
+            var job = window.STATE.jobs.find(function(j) { return j.id === app.jobId; });
+            if (!job) continue;
+            var allItems = container.querySelectorAll('.applied-job-item:not(.archived-item)');
+            allItems.forEach(function(item) {
+                if (item.dataset.actDone) return;
+                var titleEl = item.querySelector('.applied-job-title');
+                if (!titleEl || titleEl.textContent.trim() !== job.title) return;
+                item.dataset.actDone = '1';
+                if (activity.lastMsg) {
+                    var companyEl = item.querySelector('.applied-job-company');
+                    if (companyEl && !companyEl.nextElementSibling?.classList.contains('chat-preview-row')) {
+                        var pr = document.createElement('div');
+                        pr.className = 'chat-preview-row';
+                        var previewTxt = activity.lastMsg.slice(0, 38) + (activity.lastMsg.length > 38 ? '…' : '');
+                        pr.innerHTML = '<span class="chat-preview-text ' + (activity.unread > 0 ? 'unread-preview' : '') + '">' + previewTxt + '</span>' + (activity.unread > 0 ? '<span class="chat-preview-dot">' + activity.unread + '</span>' : '');
+                        companyEl.insertAdjacentElement('afterend', pr);
+                    }
+                }
+                if (activity.unread > 0) {
+                    item.classList.add('has-unread-chat');
+                    var chatBtn = item.querySelector('.btn-small.btn-primary');
+                    if (chatBtn && !chatBtn.querySelector('.chat-unread-badge2')) {
+                        var b2 = document.createElement('span');
+                        b2.className = 'chat-unread-badge2';
+                        b2.textContent = String(activity.unread);
+                        chatBtn.appendChild(b2);
+                    }
+                }
+            });
+        }
+    } catch (e) { console.warn('[activity] renderApplied patch error:', e); }
+};
+</script>
+
+<!-- ================= ACTIVITY SYSTEM ================= -->
+<!-- Enhanced lastSeen: updates on user interaction. Debounced 30s. -->
+<script>
+// ================= ACTIVITY SYSTEM JS =================
+
+(function _setupActivityTracking() {
+    var _lastWrite = 0;
+    var _WRITE_INTERVAL = 30000;
+    var _actDebounce = null;
+
+    async function _writeActivity() {
+        if (!window.STATE || !window.STATE.currentUser) return;
+        var now = Date.now();
+        if (now - _lastWrite < _WRITE_INTERVAL) return;
+        _lastWrite = now;
+        if (!window.db) return;
+        var userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+        if (!userId) return;
+        try {
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+            await setDoc(doc(window.db, 'users', userId), { isOnline: true, lastSeen: now, lastActivity: now }, { merge: true });
+        } catch (e) { /* silent */ }
+    }
+
+    function _onActivity() {
+        clearTimeout(_actDebounce);
+        _actDebounce = setTimeout(_writeActivity, 2000);
+    }
+
+    ['click', 'keypress', 'mousemove', 'touchstart', 'scroll'].forEach(function(evt) {
+        document.addEventListener(evt, _onActivity, { passive: true });
+    });
+
+    // Enhance presence subscription: if lastSeen < 60s, treat as online
+    var _origSub = window._subscribeToPresence;
+    if (_origSub) {
+        window._subscribeToPresence = async function(userId, callback) {
+            return _origSub(userId, function(isOnline, lastSeen) {
+                if (!isOnline && lastSeen && Date.now() - lastSeen < 60000) callback(true, lastSeen);
+                else callback(isOnline, lastSeen);
+            });
+        };
+    }
+})();
+
+// Improve _formatLastSeen
+(function _improveLastSeenFormat() {
+    var _origFmt = window._formatLastSeen;
+    window._formatLastSeen = function(ts) {
+        if (!ts) return '';
+        var diff = Date.now() - ts;
+        var sec = Math.floor(diff / 1000);
+        if (sec < 60) return 'только что';
+        var min = Math.floor(sec / 60);
+        if (min < 60) return min + ' мин назад';
+        var hr = Math.floor(min / 60);
+        if (hr < 24) return hr + ' ч назад';
+        if (_origFmt) return _origFmt(ts);
+        var d = new Date(ts);
+        var pad = function(n) { return String(n).padStart(2, '0'); };
+        return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + ' в ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    };
+})();
+
+// Enhance presence bar after injection
+var _origInjectBar = window._injectPresenceBar;
+if (_origInjectBar) {
+    window._injectPresenceBar = function(otherUserId) {
+        _origInjectBar(otherUserId);
+        setTimeout(function() {
+            var dot = document.getElementById('presenceDot');
+            var text = document.getElementById('presenceText');
+            if (dot && dot.classList.contains('presence-dot-online')) dot.classList.add('activity-dot');
+            if (text && text.classList.contains('presence-text-online')) text.classList.add('activity-fresh');
+        }, 300);
+    };
+}
+
+console.log('[TeenWork] Notification + Activity system v1.0 loaded');
+</script>
+
+
 </body>
 </html>
