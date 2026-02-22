@@ -1520,7 +1520,33 @@
                 display: none;
             }
         }
-    </style>
+ .quick-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.tag-btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border-gray);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.tag-btn:hover {
+    background: var(--soft-blue);
+}
+
+.tag-btn.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}   
+</style>
 </head>
 <body>
     <div class="toast-container" id="toastContainer"></div>
@@ -1547,6 +1573,22 @@
         <section class="filters-section" id="search">
             <div class="filters-grid">
                 <input type="text" class="input" id="searchInput" placeholder="Поиск по названию или компании...">
+                function selectTag(tag) {
+    const input = document.getElementById('searchInput');
+    input.value = tag;
+    applyFilters();
+}
+                <div class="quick-tags" id="quickTags">
+    <button class="tag-btn">Сборщик заказов</button>
+    <button class="tag-btn">Разнорабочий</button>
+    <button class="tag-btn">Кассир</button>
+    <button class="tag-btn">Продавец-кассир</button>
+    <button class="tag-btn">Промоутер</button>
+    <button class="tag-btn">Курьер</button>
+    <button class="tag-btn">Официант</button>
+    <button class="tag-btn">Удалённая работа</button>
+    <button class="tag-btn">Без опыта</button>
+</div>
                 <select class="select" id="cityFilter">
                     <option value="">Все города</option>
                     <option value="Санкт-Петербург">Санкт-Петербург</option>
@@ -8533,7 +8575,7 @@ window.renderAppliedJobs = async function() {
 // Improve _formatLastSeen
 (function _improveLastSeenFormat() {
     var _origFmt = window._formatLastSeen;
-    window._formatLastSeen = function(ts) {
+    wifndow._formatLastSeen = function(ts) {
         if (!ts) return '';
         var diff = Date.now() - ts;
         var sec = Math.floor(diff / 1000);
