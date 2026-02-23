@@ -10022,5 +10022,694 @@ async function _updateModerationBadge() {
   color: var(--text-dark);
 }
 </style>
+
+<!-- ===========================
+     PREMIUM UPGRADE — ALL STEPS
+     =========================== -->
+<style>
+
+/* ============================================================
+   STEP 1 — JOB CARDS PREMIUM REDESIGN
+   ============================================================ */
+
+/* Glass-morphism card layer */
+.job-card {
+  background: linear-gradient(145deg, #ffffff 0%, #fafbff 100%) !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(99,125,255,0.13) !important;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 6px 24px rgba(37,99,235,0.07),
+    0 0 0 0px rgba(37,99,235,0) !important;
+  transition:
+    transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.32s cubic-bezier(0.4,0,0.2,1),
+    border-color 0.25s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle top accent line */
+.job-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-blue) 0%, var(--blue-light) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 22px 22px 0 0;
+  z-index: 2;
+}
+
+.job-card:hover::after {
+  opacity: 1;
+}
+
+.job-card:hover {
+  transform: translateY(-10px) scale(1.014) !important;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.05),
+    0 16px 48px rgba(37,99,235,0.15),
+    0 32px 64px rgba(0,0,0,0.06),
+    0 0 0 2px rgba(37,99,235,0.12) !important;
+  border-color: rgba(37,99,235,0.28) !important;
+}
+
+.job-card:active {
+  transform: translateY(-4px) scale(1.006) !important;
+  transition-duration: 0.12s !important;
+}
+
+/* Premium salary badge */
+.job-salary {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(37,99,235,0.09) 0%, rgba(59,130,246,0.06) 100%) !important;
+  border: 1px solid rgba(37,99,235,0.15);
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+  margin-bottom: 14px !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  color: var(--primary-blue) !important;
+}
+
+/* Job title upgrade */
+.job-title {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.4px !important;
+  line-height: 1.28 !important;
+  color: #0c1525 !important;
+  margin-bottom: 7px !important;
+}
+
+/* Company line */
+.job-company {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  margin-bottom: 3px !important;
+}
+
+/* Tags premium */
+.tag {
+  padding: 5px 13px !important;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f7ff 100%) !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(37,99,235,0.14) !important;
+  border-radius: 20px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1px !important;
+  transition: all 0.2s ease !important;
+}
+
+.tag:hover {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  border-color: var(--primary-blue) !important;
+  transform: translateY(-1px) scale(1.04) !important;
+}
+
+/* Card footer */
+.job-footer {
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(226,232,240,0.7) !important;
+  margin-top: 2px !important;
+}
+
+/* ============================================================
+   STEP 2 — ANIMATIONS SYSTEM
+   ============================================================ */
+
+@keyframes premiumFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+    filter: blur(1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes premiumFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmerSlide {
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(250%) skewX(-15deg); }
+}
+
+/* Card load animation */
+.job-card {
+  animation: premiumFadeUp 0.5s cubic-bezier(0.22,1,0.36,1) backwards !important;
+}
+
+.job-card:nth-child(1)  { animation-delay: 0.04s !important; }
+.job-card:nth-child(2)  { animation-delay: 0.09s !important; }
+.job-card:nth-child(3)  { animation-delay: 0.14s !important; }
+.job-card:nth-child(4)  { animation-delay: 0.19s !important; }
+.job-card:nth-child(5)  { animation-delay: 0.24s !important; }
+.job-card:nth-child(6)  { animation-delay: 0.29s !important; }
+
+/* Shimmer on card hover */
+.job-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%) skewX(-15deg);
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 22px;
+}
+
+.job-card:hover::before {
+  animation: shimmerSlide 0.65s ease forwards;
+}
+
+/* Modal premium open */
+@keyframes premiumModalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(-24px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes premiumModalOut {
+  to {
+    opacity: 0;
+    transform: scale(0.94) translateY(-16px);
+    filter: blur(2px);
+  }
+}
+
+.modal.active .modal-content {
+  animation: premiumModalIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards !important;
+}
+
+.modal.hiding .modal-content {
+  animation: premiumModalOut 0.26s ease forwards !important;
+}
+
+/* Section fade-in */
+.section-header {
+  animation: premiumFadeIn 0.6s ease backwards;
+  animation-delay: 0.1s;
+}
+
+/* Info cards stagger */
+.info-card {
+  animation: premiumFadeUp 0.55s cubic-bezier(0.22,1,0.36,1) backwards;
+}
+.info-card:nth-child(1) { animation-delay: 0.05s; }
+.info-card:nth-child(2) { animation-delay: 0.12s; }
+.info-card:nth-child(3) { animation-delay: 0.19s; }
+.info-card:nth-child(4) { animation-delay: 0.26s; }
+
+/* FAQ stagger */
+.faq-item {
+  animation: premiumFadeIn 0.45s ease backwards;
+}
+.faq-item:nth-child(1) { animation-delay: 0.05s; }
+.faq-item:nth-child(2) { animation-delay: 0.10s; }
+.faq-item:nth-child(3) { animation-delay: 0.15s; }
+.faq-item:nth-child(4) { animation-delay: 0.20s; }
+.faq-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* ============================================================
+   STEP 3 — QUICK FILTER TAGS ROW (CSS)
+   ============================================================ */
+
+.quick-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  animation: premiumFadeIn 0.5s ease backwards;
+  animation-delay: 0.15s;
+}
+
+.quick-tag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border: 1.5px solid rgba(37,99,235,0.2);
+  border-radius: 30px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  font-family: inherit;
+  letter-spacing: 0.1px;
+  box-shadow: 0 1px 4px rgba(37,99,235,0.07);
+  white-space: nowrap;
+}
+
+.quick-tag-btn:hover {
+  background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+  color: #fff;
+  border-color: var(--primary-blue);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.28);
+}
+
+.quick-tag-btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.1s;
+}
+
+.quick-tag-btn.active-tag {
+  background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+  color: #fff;
+  border-color: var(--primary-blue);
+  box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+}
+
+.quick-tag-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .quick-tags-row {
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .quick-tag-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ============================================================
+   STEP 4 — BUTTON PREMIUM UPGRADE
+   ============================================================ */
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.22), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  border: none !important;
+  transition:
+    transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.22s ease,
+    filter 0.22s ease !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.04) !important;
+  box-shadow: 0 10px 28px rgba(37,99,235,0.38), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  filter: brightness(1.06) !important;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97) !important;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.2) !important;
+  filter: brightness(0.97) !important;
+  transition-duration: 0.1s !important;
+}
+
+.btn-primary:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.3), 0 4px 16px rgba(37,99,235,0.25) !important;
+}
+
+/* Secondary button */
+.btn-secondary {
+  transition:
+    transform 0.2s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.2s ease,
+    background 0.18s ease,
+    border-color 0.18s ease !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1) !important;
+  border-color: #94a3b8 !important;
+  background: #f8fafc !important;
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97) !important;
+  transition-duration: 0.1s !important;
+}
+
+/* Hero buttons */
+.btn-white {
+  box-shadow: 0 4px 16px rgba(255,255,255,0.25) !important;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease !important;
+}
+
+.btn-white:hover {
+  transform: translateY(-4px) scale(1.04) !important;
+  box-shadow: 0 14px 36px rgba(255,255,255,0.45) !important;
+}
+
+.btn-outline:hover {
+  background: rgba(255,255,255,0.18) !important;
+  transform: translateY(-4px) scale(1.04) !important;
+  box-shadow: 0 10px 28px rgba(255,255,255,0.2) !important;
+}
+
+/* Apply button special glow */
+.btn-apply {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+  box-shadow: 0 2px 10px rgba(37,99,235,0.2) !important;
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease !important;
+}
+
+.btn-apply:hover {
+  transform: translateY(-2px) scale(1.06) !important;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.38) !important;
+}
+
+/* ============================================================
+   STEP 5 — MICRO INTERACTIONS
+   ============================================================ */
+
+/* Navbar item hover */
+.nav-profile-wrapper {
+  transition: background 0.2s ease, transform 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+
+.nav-profile-wrapper:hover {
+  background: rgba(37,99,235,0.06) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Avatar glow on hover */
+.nav-profile-wrapper:hover .user-avatar {
+  box-shadow: 0 4px 16px rgba(37,99,235,0.35) !important;
+  transform: scale(1.08) !important;
+}
+
+/* Input premium focus */
+.input:focus,
+.select:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-blue) !important;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12), 0 2px 8px rgba(37,99,235,0.08) !important;
+  transform: scale(1.006) !important;
+  background: #fff !important;
+}
+
+/* Logo interaction */
+.logo {
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), filter 0.25s ease !important;
+}
+.logo:hover {
+  transform: translateY(-2px) !important;
+  filter: drop-shadow(0 6px 14px rgba(37,99,235,0.4)) !important;
+}
+
+/* Info card hover */
+.info-card {
+  transition:
+    transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.3s ease,
+    border-color 0.25s ease,
+    background 0.25s ease !important;
+}
+
+.info-card:hover {
+  transform: translateY(-10px) scale(1.016) !important;
+  box-shadow: 0 16px 48px rgba(37,99,235,0.13) !important;
+  border-color: rgba(37,99,235,0.22) !important;
+}
+
+.info-card:hover .info-icon {
+  transform: scale(1.18) rotate(6deg) !important;
+}
+
+/* FAQ hover */
+.faq-item:hover {
+  transform: translateX(5px) !important;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.1) !important;
+}
+
+/* Pagination */
+.pagination-btn {
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease, background 0.15s ease !important;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1) !important;
+}
+
+.pagination-btn.active {
+  box-shadow: 0 4px 14px rgba(37,99,235,0.32) !important;
+  transform: none !important;
+}
+
+/* Footer links */
+.footer-links a {
+  transition: color 0.18s ease, padding-left 0.2s ease, opacity 0.18s ease !important;
+  display: inline-block;
+}
+
+.footer-links a:hover {
+  padding-left: 7px !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* Smooth scrollbar */
+* { scrollbar-width: thin; scrollbar-color: rgba(37,99,235,0.22) transparent; }
+*::-webkit-scrollbar { width: 5px; }
+*::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.2); border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(37,99,235,0.4); }
+
+/* ============================================================
+   STEP 6 — VISUAL POLISH
+   ============================================================ */
+
+/* Section spacing */
+.jobs-section { padding: 80px 0 !important; }
+.info-section { padding: 96px 0 !important; }
+.faq-section  { padding: 96px 0 !important; }
+
+/* Hero polish */
+.hero {
+  background: linear-gradient(135deg, #0f2d6e 0%, #1e40af 40%, #2563eb 72%, #3b82f6 100%) !important;
+}
+
+/* Filters section polish */
+.filters-section {
+  box-shadow:
+    0 -4px 0 rgba(37,99,235,0.06),
+    0 12px 48px rgba(37,99,235,0.10),
+    0 2px 8px rgba(0,0,0,0.05) !important;
+  border-radius: 24px !important;
+}
+
+/* Section header title */
+.section-header h2 {
+  font-size: 38px !important;
+  font-weight: 800 !important;
+  letter-spacing: -1.2px !important;
+  line-height: 1.15 !important;
+}
+
+/* Section info subtitle */
+.section-info {
+  font-size: 16px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  margin-top: 6px;
+}
+
+/* Info card typography */
+.info-card h3 {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.3px !important;
+  margin-bottom: 12px !important;
+}
+
+/* FAQ question typography */
+.faq-question {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.2px !important;
+}
+
+/* Footer brand */
+.footer .logo {
+  font-size: 28px !important;
+  color: #fff;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Jobs grid gap */
+.jobs-grid { gap: 24px !important; }
+
+/* Modal content polish */
+.modal-content {
+  border-radius: 24px !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, rgba(37,99,235,0.03), rgba(59,130,246,0.02));
+  border-radius: 24px 24px 0 0 !important;
+}
+
+/* Profile page gradient */
+.profile-header {
+  background: linear-gradient(135deg, #0f2d6e 0%, #1e40af 50%, #3b82f6 100%) !important;
+}
+
+@media (max-width: 768px) {
+  .section-header h2 { font-size: 26px !important; }
+  .jobs-section { padding: 48px 0 !important; }
+  .info-section { padding: 56px 0 !important; }
+}
+
+</style>
+
+<script>
+// ============================================================
+// STEP 3 — QUICK FILTER TAGS ROW (JS — additive only)
+// ============================================================
+(function initQuickTags() {
+  const TAGS = [
+    { label: 'Кассир',        emoji: '🏪', value: 'Кассир' },
+    { label: 'Промоутер',     emoji: '📣', value: 'Промоутер' },
+    { label: 'Онлайн',        emoji: '💻', value: 'Онлайн' },
+    { label: 'Без опыта',     emoji: '🌱', value: 'Без опыта' },
+    { label: 'Разнорабочий',  emoji: '🔧', value: 'Разнорабочий' },
+  ];
+
+  function buildRow() {
+    const filtersSection = document.querySelector('.filters-section');
+    if (!filtersSection || document.getElementById('quickTagsRow')) return;
+
+    const row = document.createElement('div');
+    row.className = 'quick-tags-row';
+    row.id = 'quickTagsRow';
+
+    TAGS.forEach(function(tag) {
+      const btn = document.createElement('button');
+      btn.className = 'quick-tag-btn';
+      btn.innerHTML =
+        '<span class="quick-tag-emoji">' + tag.emoji + '</span>' + tag.label;
+
+      btn.addEventListener('click', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+
+        const alreadyActive = btn.classList.contains('active-tag');
+
+        // Clear all active
+        document.querySelectorAll('.quick-tag-btn').forEach(function(b) {
+          b.classList.remove('active-tag');
+        });
+
+        if (alreadyActive) {
+          // Toggle off: clear input
+          searchInput.value = '';
+        } else {
+          // Set value and activate
+          searchInput.value = tag.value;
+          btn.classList.add('active-tag');
+        }
+
+        // Trigger existing filter
+        if (window.applyFilters) window.applyFilters();
+      });
+
+      row.appendChild(btn);
+    });
+
+    // Insert before filter-actions row
+    const actionsRow = filtersSection.querySelector('.filter-actions');
+    const chipsRow   = filtersSection.querySelector('#filterChipsRow');
+    const noExpRow   = filtersSection.querySelector('#noExpFilterRow');
+    const insertRef  = chipsRow || noExpRow || actionsRow;
+    if (insertRef) {
+      filtersSection.insertBefore(row, insertRef);
+    } else {
+      filtersSection.appendChild(row);
+    }
+  }
+
+  // Sync active state when search input changes externally
+  function syncActiveTags() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    const val = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('.quick-tag-btn').forEach(function(btn) {
+      const label = btn.textContent.trim().toLowerCase();
+      if (val && label.includes(val)) {
+        btn.classList.add('active-tag');
+      } else {
+        btn.classList.remove('active-tag');
+      }
+    });
+  }
+
+  // Patch resetFilters to also clear active tag
+  const _origReset = window.resetFilters;
+  window.resetFilters = function() {
+    if (_origReset) _origReset();
+    document.querySelectorAll('.quick-tag-btn').forEach(function(b) {
+      b.classList.remove('active-tag');
+    });
+  };
+
+  // Patch applyFilters to sync tags
+  const _origApply = window.applyFilters;
+  window.applyFilters = function() {
+    if (_origApply) _origApply();
+    syncActiveTags();
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    buildRow();
+    // Also watch search input for manual typing
+    const si = document.getElementById('searchInput');
+    if (si) si.addEventListener('input', syncActiveTags);
+  });
+
+  // Fallback for already-loaded DOM
+  if (document.readyState !== 'loading') {
+    setTimeout(buildRow, 80);
+  }
+})();
+</script>
 </body>
 </html>
