@@ -1520,9 +1520,735 @@
                 display: none;
             }
         }
+
+        /* ============================================
+           DARK THEME — STEP 1: VARIABLES
+        ============================================ */
+
+        body.dark-theme {
+            /* Backgrounds — soft dark, not pure black */
+            --light-gray:    #0f1117;
+            --white:         #1a1d27;
+            --soft-blue:     #1e2235;
+
+            /* Surface layers (cards, modals, inputs) */
+            --dt-surface-1:  #1a1d27;
+            --dt-surface-2:  #212536;
+            --dt-surface-3:  #272b3d;
+
+            /* Text */
+            --text-dark:     #e8eaf0;
+            --text-gray:     #8b93a9;
+            --dt-text-dim:   #5a6175;
+
+            /* Borders */
+            --border-gray:   #2a2e42;
+            --dt-border-mid: #333750;
+
+            /* Blue accent */
+            --primary-blue:  #3b82f6;
+            --blue-hover:    #60a5fa;
+            --blue-light:    #93c5fd;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.50);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.60);
+
+            /* Status colors */
+            --success: #34d399;
+            --error:   #f87171;
+            --warning: #fbbf24;
+        }
+
+        /* ============================================
+           DARK THEME — STEP 2: COMPONENT STYLES
+        ============================================ */
+
+        /* --- BODY & GLOBAL --- */
+        body.dark-theme {
+            background: var(--light-gray);
+            color: var(--text-dark);
+        }
+
+        /* --- NAVBAR --- */
+        body.dark-theme .nav {
+            background: var(--dt-surface-1);
+            box-shadow: 0 1px 0 var(--border-gray);
+        }
+
+        body.dark-theme .nav.scrolled {
+            background: rgba(26, 29, 39, 0.96);
+            box-shadow: 0 1px 0 var(--border-gray);
+        }
+
+        body.dark-theme .nav-profile-wrapper:hover {
+            background: var(--dt-surface-3);
+        }
+
+        body.dark-theme .nav-profile-text {
+            color: var(--text-dark);
+        }
+
+        /* --- HERO SECTION --- */
+        body.dark-theme .hero {
+            background: linear-gradient(135deg, #0d1b3e 0%, #111827 50%, #0f1117 100%);
+        }
+
+        /* --- FILTER / SEARCH SECTION --- */
+        body.dark-theme .filters-section {
+            background: var(--dt-surface-1);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        body.dark-theme .input,
+        body.dark-theme .filters-section select,
+        body.dark-theme .filters-section input {
+            background: var(--dt-surface-2);
+            border-color: var(--border-gray);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .input::placeholder,
+        body.dark-theme .filters-section input::placeholder {
+            color: var(--dt-text-dim);
+        }
+
+        body.dark-theme .input:focus,
+        body.dark-theme .filters-section input:focus,
+        body.dark-theme .filters-section select:focus {
+            background: var(--dt-surface-3);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        /* --- JOBS SECTION --- */
+        body.dark-theme .jobs-section {
+            background: var(--light-gray);
+        }
+
+        body.dark-theme .section-header h2 {
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .section-info {
+            color: var(--text-gray);
+        }
+
+        /* --- JOB CARDS --- */
+        body.dark-theme .job-card {
+            background: var(--dt-surface-1);
+            border-color: transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px var(--border-gray);
+        }
+
+        body.dark-theme .job-card:hover {
+            background: var(--dt-surface-2);
+            border-color: var(--primary-blue);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--primary-blue);
+        }
+
+        body.dark-theme .job-footer {
+            border-top-color: var(--border-gray);
+        }
+
+        body.dark-theme .tag {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--blue-light);
+        }
+
+        /* --- INFO / TRUST SECTION --- */
+        body.dark-theme .info-section {
+            background: var(--dt-surface-1);
+        }
+
+        body.dark-theme .info-card {
+            background: var(--dt-surface-2);
+            border-color: transparent;
+        }
+
+        body.dark-theme .info-card:hover {
+            background: var(--dt-surface-3);
+            border-color: rgba(59, 130, 246, 0.25);
+            box-shadow: var(--shadow-md);
+        }
+
+        body.dark-theme .info-icon {
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        /* --- FAQ SECTION --- */
+        body.dark-theme .faq-item {
+            background: var(--dt-surface-1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px var(--border-gray);
+        }
+
+        body.dark-theme .faq-question:hover {
+            background: var(--dt-surface-2);
+        }
+
+        body.dark-theme .faq-item.active .faq-question {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--blue-light);
+        }
+
+        /* --- FOOTER --- */
+        body.dark-theme .footer {
+            background: #090c14;
+            border-top: 1px solid var(--border-gray);
+        }
+
+        body.dark-theme .footer-bottom {
+            border-top-color: rgba(255,255,255,0.06);
+        }
+
+        /* --- MODALS --- */
+        body.dark-theme .modal {
+            background: rgba(0, 0, 0, 0.75);
+        }
+
+        body.dark-theme .modal-content {
+            background: var(--dt-surface-1);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px var(--border-gray);
+        }
+
+        body.dark-theme .modal-header {
+            border-bottom-color: var(--border-gray);
+        }
+
+        body.dark-theme .modal-close {
+            background: var(--dt-surface-2);
+            color: var(--text-gray);
+        }
+
+        body.dark-theme .modal-close:hover {
+            background: var(--dt-surface-3);
+            color: var(--text-dark);
+        }
+
+        /* --- FORMS & INPUTS --- */
+        body.dark-theme .form-group input,
+        body.dark-theme .form-group select,
+        body.dark-theme .form-group textarea {
+            background: var(--dt-surface-2);
+            border-color: var(--border-gray);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .form-group input::placeholder,
+        body.dark-theme .form-group textarea::placeholder {
+            color: var(--dt-text-dim);
+        }
+
+        body.dark-theme .form-group input:focus,
+        body.dark-theme .form-group select:focus,
+        body.dark-theme .form-group textarea:focus {
+            background: var(--dt-surface-3);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        body.dark-theme .form-group select option {
+            background: var(--dt-surface-2);
+            color: var(--text-dark);
+        }
+
+        /* --- BUTTONS --- */
+        body.dark-theme .btn-outline-secondary {
+            border-color: var(--dt-border-mid);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .btn-outline-secondary:hover {
+            background: var(--dt-surface-3);
+        }
+
+        body.dark-theme .role-option {
+            background: var(--dt-surface-2);
+            border-color: var(--border-gray);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .role-option:hover {
+            border-color: var(--primary-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* --- PAGINATION --- */
+        body.dark-theme .pagination-btn {
+            background: var(--dt-surface-1);
+            border-color: var(--border-gray);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .pagination-btn:hover:not(:disabled) {
+            background: var(--dt-surface-2);
+            border-color: var(--primary-blue);
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        body.dark-theme .toast {
+            background: var(--dt-surface-2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px var(--border-gray);
+        }
+
+        /* --- EMPTY STATE --- */
+        body.dark-theme .empty-state {
+            background: var(--dt-surface-1);
+            box-shadow: 0 0 0 1px var(--border-gray);
+        }
+
+        /* --- PROFILE PAGE --- */
+        body.dark-theme .profile-page {
+            background: var(--light-gray);
+        }
+
+        body.dark-theme .profile-info {
+            background: var(--dt-surface-2);
+        }
+
+        body.dark-theme .profile-info-item {
+            border-bottom-color: var(--border-gray);
+        }
+
+        body.dark-theme .profile-avatar-display {
+            border-color: var(--dt-surface-3);
+        }
+
+        body.dark-theme .applied-jobs-list {
+            background: var(--dt-surface-2);
+        }
+
+        body.dark-theme .applied-job-item {
+            background: var(--dt-surface-3);
+        }
+
+        body.dark-theme .application-list-item {
+            background: var(--dt-surface-3);
+        }
+
+        /* --- ADMIN CONTROLS --- */
+        body.dark-theme .admin-controls {
+            border-top-color: var(--border-gray);
+        }
+
+        /* --- CHAT --- */
+        body.dark-theme .chat-messages {
+            background: var(--dt-surface-2);
+        }
+
+        body.dark-theme .chat-message.received {
+            background: var(--dt-surface-3);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .chat-media-btn {
+            background: var(--dt-surface-2);
+            border-color: var(--border-gray);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .chat-media-btn:hover {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: var(--primary-blue);
+        }
+
+        body.dark-theme .chat-media-btn.recording {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--error);
+        }
+
+        body.dark-theme .chat-upload-indicator {
+            background: var(--dt-surface-2);
+            color: var(--text-gray);
+        }
+
+        /* --- BOTTOM NAV (mobile) --- */
+        body.dark-theme .bottom-nav {
+            background: rgba(26, 29, 39, 0.97) !important;
+            border-top-color: var(--border-gray) !important;
+        }
+
+        body.dark-theme .bottom-tab-screen {
+            background: var(--light-gray);
+        }
+
+        body.dark-theme .bfav-card {
+            background: var(--dt-surface-1);
+            border-color: var(--border-gray);
+        }
+
+        body.dark-theme .bfav-card:hover {
+            background: var(--dt-surface-2);
+            border-color: var(--primary-blue);
+        }
+
+        /* --- SORT DROPDOWN --- */
+        body.dark-theme .sort-dropdown {
+            background: var(--dt-surface-2);
+            border-color: var(--border-gray);
+            color: var(--text-dark);
+        }
+
+        /* --- STATUS BADGES --- */
+        body.dark-theme [style*="background: #dcfce7"],
+        body.dark-theme [style*="background:#dcfce7"] {
+            background: rgba(52, 211, 153, 0.12) !important;
+        }
+
+        body.dark-theme [style*="background: #fee2e2"],
+        body.dark-theme [style*="background:#fee2e2"] {
+            background: rgba(248, 113, 113, 0.12) !important;
+        }
+
+        body.dark-theme [style*="background: #f1f5f9"],
+        body.dark-theme [style*="background:#f1f5f9"] {
+            background: var(--dt-surface-2) !important;
+        }
+
+        /* ============================================
+           DARK THEME — STEP 3: TOGGLE BUTTON CSS
+        ============================================ */
+
+        .theme-toggle-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-gray);
+            background: var(--light-gray);
+            color: var(--text-dark);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--soft-blue);
+            border-color: var(--primary-blue);
+            transform: scale(1.08) rotate(15deg);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+        }
+
+        .theme-toggle-btn:active {
+            transform: scale(0.94) rotate(0deg);
+        }
+
+        body.dark-theme .theme-toggle-btn {
+            background: var(--dt-surface-2);
+            border-color: var(--dt-border-mid);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .theme-toggle-btn:hover {
+            background: var(--dt-surface-3);
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .theme-toggle-btn .toggle-icon {
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        opacity 0.25s ease;
+        }
+
+        .theme-toggle-btn.switching .toggle-icon {
+            transform: rotate(180deg) scale(0);
+            opacity: 0;
+        }
+
+        /* ============================================
+           DARK THEME — STEP 4 & 5: SMOOTH TRANSITIONS
+        ============================================ */
+
+        *,
+        *::before,
+        *::after {
+            transition-property:
+                background-color,
+                background,
+                border-color,
+                color,
+                box-shadow,
+                fill,
+                stroke;
+            transition-duration: 0.3s;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn,
+        .logo,
+        .nav-profile-wrapper,
+        .user-avatar,
+        .job-card,
+        .info-card,
+        .modal-content,
+        .modal-close,
+        .faq-icon,
+        .faq-question,
+        .chat-message-image,
+        .chat-media-btn,
+        .theme-toggle-btn,
+        .theme-toggle-btn .toggle-icon,
+        .bottom-nav-item,
+        .bottom-nav-icon,
+        .bfav-card,
+        .pagination-btn,
+        .profile-page,
+        [class*="btn"] {
+            transition: var(--transition) !important;
+        }
+
+        .theme-toggle-btn .toggle-icon {
+            transition:
+                transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.25s ease !important;
+        }
+
+        body.no-theme-transition,
+        body.no-theme-transition *,
+        body.no-theme-transition *::before,
+        body.no-theme-transition *::after {
+            transition-duration: 0ms !important;
+        }
+
+        /* ============================================
+           DARK THEME — STEP 6: PREMIUM POLISH
+        ============================================ */
+
+        /* ---- SCROLLBAR ---- */
+        body.dark-theme ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        body.dark-theme ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        body.dark-theme ::-webkit-scrollbar-thumb {
+            background: var(--dt-border-mid);
+            border-radius: 999px;
+        }
+
+        body.dark-theme ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-gray);
+        }
+
+        /* ---- TEXT SELECTION ---- */
+        body.dark-theme ::selection {
+            background: rgba(59, 130, 246, 0.35);
+            color: #e8eaf0;
+        }
+
+        /* ---- AUTOFILL FIX ---- */
+        body.dark-theme input:-webkit-autofill,
+        body.dark-theme input:-webkit-autofill:hover,
+        body.dark-theme input:-webkit-autofill:focus,
+        body.dark-theme textarea:-webkit-autofill,
+        body.dark-theme select:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px var(--dt-surface-2) inset !important;
+            -webkit-text-fill-color: var(--text-dark) !important;
+            caret-color: var(--text-dark);
+        }
+
+        /* ---- NAV PREMIUM GLOW ---- */
+        body.dark-theme .nav {
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        body.dark-theme .nav.scrolled {
+            box-shadow:
+                0 1px 0 var(--border-gray),
+                0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ---- JOB CARD PREMIUM DEPTH ---- */
+        body.dark-theme .job-card {
+            box-shadow:
+                0 1px 3px rgba(0, 0, 0, 0.4),
+                0 0 0 1px var(--border-gray),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        body.dark-theme .job-card:hover {
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.5),
+                0 0 0 1.5px var(--primary-blue),
+                0 0 20px rgba(59, 130, 246, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        /* ---- MODAL PREMIUM DEPTH ---- */
+        body.dark-theme .modal-content {
+            box-shadow:
+                0 32px 100px rgba(0, 0, 0, 0.75),
+                0 0 0 1px var(--border-gray),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        /* ---- FROSTED GLASS BOTTOM NAV ---- */
+        body.dark-theme .bottom-nav {
+            background: rgba(20, 22, 34, 0.92) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* ---- TOAST PREMIUM ---- */
+        body.dark-theme .toast {
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.55),
+                0 0 0 1px var(--border-gray),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        /* ---- SURFACE HIERARCHY ---- */
+        body.dark-theme .modal-content,
+        body.dark-theme .job-card,
+        body.dark-theme .faq-item,
+        body.dark-theme .info-card,
+        body.dark-theme .bfav-card,
+        body.dark-theme .toast,
+        body.dark-theme .empty-state {
+            background-image: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.025) 0%,
+                transparent 60%
+            );
+        }
+
+        /* ---- PROFILE PAGE AVATAR RING ---- */
+        body.dark-theme .profile-avatar-display {
+            border-color: var(--dt-surface-3);
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.15),
+                var(--shadow-lg);
+        }
+
+        /* ---- ACTIVE FAQ ITEM GLOW ---- */
+        body.dark-theme .faq-item.active {
+            box-shadow:
+                0 0 0 1.5px rgba(59, 130, 246, 0.35),
+                0 4px 20px rgba(59, 130, 246, 0.1);
+        }
+
+        /* ---- INPUT FOCUS PREMIUM GLOW ---- */
+        body.dark-theme .form-group input:focus,
+        body.dark-theme .form-group select:focus,
+        body.dark-theme .form-group textarea:focus,
+        body.dark-theme .input:focus {
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.18),
+                0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ---- CHAT BUBBLES PREMIUM ---- */
+        body.dark-theme .chat-message.received {
+            box-shadow:
+                0 1px 4px rgba(0, 0, 0, 0.3),
+                0 0 0 1px var(--border-gray);
+        }
+
+        body.dark-theme .chat-messages {
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        /* ---- HERO GRADIENT REFINEMENT ---- */
+        body.dark-theme .hero {
+            background: linear-gradient(
+                150deg,
+                #0d1b3e 0%,
+                #0f172a 40%,
+                #0f1117 100%
+            );
+        }
+
+        body.dark-theme .hero::before {
+            background: radial-gradient(
+                ellipse 80% 60% at 60% 40%,
+                rgba(37, 99, 235, 0.12) 0%,
+                transparent 70%
+            );
+        }
+
+        /* ---- SECTION DIVIDERS ---- */
+        body.dark-theme .info-section {
+            border-top: 1px solid var(--border-gray);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        /* ---- SORT & SECONDARY SELECTS ---- */
+        body.dark-theme select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b93a9' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        /* ---- PROFILE INFO BLOCK ---- */
+        body.dark-theme .profile-info {
+            box-shadow:
+                0 0 0 1px var(--border-gray),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        /* ---- PAGINATION ACTIVE STATE ---- */
+        body.dark-theme .pagination-btn.active {
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+        }
+
+        /* ---- FOOTER LOGO SOFT GLOW ---- */
+        body.dark-theme .footer .logo {
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.4));
+        }
+
+        /* ---- ROLE OPTION CARD ---- */
+        body.dark-theme .role-option:hover {
+            box-shadow:
+                0 0 0 1.5px var(--primary-blue),
+                0 4px 16px rgba(59, 130, 246, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        /* ---- APPLIED JOB ITEMS ---- */
+        body.dark-theme .applied-job-item,
+        body.dark-theme .application-list-item {
+            box-shadow:
+                0 1px 3px rgba(0, 0, 0, 0.3),
+                0 0 0 1px var(--border-gray);
+        }
+
+        /* ---- THEME TOGGLE BUTTON GLOW ---- */
+        body.dark-theme .theme-toggle-btn:hover {
+            box-shadow:
+                0 0 0 1px var(--primary-blue),
+                0 4px 16px rgba(59, 130, 246, 0.3);
+        }
     </style>
 </head>
 <body>
+<script>
+/* DARK THEME — STEP 5: PREVENT LOAD FLASH */
+(function() {
+    document.body.classList.add('no-theme-transition');
+    if (localStorage.getItem('teenwork-theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            document.body.classList.remove('no-theme-transition');
+        });
+    });
+})();
+</script>
     <div class="toast-container" id="toastContainer"></div>
 
     <nav class="nav" id="navbar">
@@ -10709,6 +11435,74 @@ async function _updateModerationBadge() {
   if (document.readyState !== 'loading') {
     setTimeout(buildRow, 80);
   }
+})();
+</script>
+
+<script>
+/* ============================================
+   DARK THEME — STEP 3 & 4: TOGGLE + PERSISTENCE
+============================================ */
+(function() {
+
+    var STORAGE_KEY = 'teenwork-theme';
+
+    function getIcon() {
+        return document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+    }
+
+    function toggleTheme() {
+        var btn = document.getElementById('themeToggleBtn');
+        if (!btn) return;
+        var icon = btn.querySelector('.toggle-icon');
+        btn.classList.add('switching');
+        setTimeout(function() {
+            document.body.classList.toggle('dark-theme');
+            var isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
+            icon.textContent = getIcon();
+            btn.classList.remove('switching');
+        }, 200);
+    }
+
+    function createToggleButton() {
+        var btn = document.createElement('button');
+        btn.className = 'theme-toggle-btn';
+        btn.id = 'themeToggleBtn';
+        btn.title = 'Переключить тему';
+        btn.setAttribute('aria-label', 'Переключить тему');
+        btn.innerHTML = '<span class="toggle-icon">' + getIcon() + '</span>';
+        btn.addEventListener('click', toggleTheme);
+        return btn;
+    }
+
+    function injectButton() {
+        var navActions = document.getElementById('navActions');
+        if (!navActions) return;
+        if (document.getElementById('themeToggleBtn')) return;
+        var btn = createToggleButton();
+        navActions.insertBefore(btn, navActions.firstChild);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectButton);
+    } else {
+        injectButton();
+    }
+
+    /* Re-inject if navActions is re-rendered after login/logout */
+    var observer = new MutationObserver(function() {
+        if (!document.getElementById('themeToggleBtn')) {
+            injectButton();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var navActions = document.getElementById('navActions');
+        if (navActions) {
+            observer.observe(navActions, { childList: true, subtree: false });
+        }
+    });
+
 })();
 </script>
 </body>
