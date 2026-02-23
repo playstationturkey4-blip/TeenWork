@@ -9784,5 +9784,243 @@ async function _updateModerationBadge() {
 
 }
 </style>
+
+<style>
+/* ===== DESIGN ENHANCEMENT v2 ===== */
+:root {
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(37,99,235,0.07);
+  --shadow-hover: 0 8px 32px rgba(37,99,235,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  --transition-smooth: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  --radius-card: 18px;
+}
+
+.filters-section {
+  box-shadow: 0 8px 40px rgba(37,99,235,0.10), 0 2px 8px rgba(0,0,0,0.06) !important;
+  border: 1px solid rgba(37,99,235,0.07);
+}
+
+.input, .select,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  transition: var(--transition-smooth) !important;
+  background: #fcfcff;
+}
+
+.input:hover, .select:hover,
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: rgba(37,99,235,0.35) !important;
+  background: #fff !important;
+}
+
+.faq-item {
+  border: 1.5px solid transparent;
+}
+
+.faq-item.active {
+  border-color: rgba(37,99,235,0.18) !important;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.09) !important;
+}
+
+.info-section {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%) !important;
+}
+
+/* ===== CARD ANIMATION ENHANCEMENTS ===== */
+@keyframes cardFadeUp {
+  from { opacity: 0; transform: translateY(22px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.job-card {
+  animation: cardFadeUp 0.42s cubic-bezier(0.4,0,0.2,1) backwards !important;
+  will-change: transform, box-shadow;
+}
+
+.job-card:nth-child(1) { animation-delay: 0.05s !important; }
+.job-card:nth-child(2) { animation-delay: 0.10s !important; }
+.job-card:nth-child(3) { animation-delay: 0.15s !important; }
+.job-card:nth-child(4) { animation-delay: 0.20s !important; }
+.job-card:nth-child(5) { animation-delay: 0.25s !important; }
+.job-card:nth-child(6) { animation-delay: 0.30s !important; }
+
+.info-card {
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.32s ease,
+              border-color 0.25s ease,
+              background 0.25s ease !important;
+}
+
+.faq-item {
+  transition: transform 0.22s ease,
+              box-shadow 0.22s ease,
+              border-color 0.22s ease !important;
+}
+
+.review-card {
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.28s ease !important;
+}
+
+.review-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 10px 32px rgba(37,99,235,0.11) !important;
+}
+
+/* ===== MODAL ANIMATION ENHANCEMENTS ===== */
+@keyframes modalBackdropIn {
+  from { backdrop-filter: blur(0px); background: rgba(15,23,42,0); }
+  to   { backdrop-filter: blur(10px); background: rgba(15,23,42,0.5); }
+}
+
+.modal.active {
+  animation: modalBackdropIn 0.3s ease forwards !important;
+}
+
+@keyframes modalContentIn {
+  from { opacity: 0; transform: scale(0.91) translateY(-20px); filter: blur(3px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+.modal.active .modal-content {
+  animation: modalContentIn 0.38s cubic-bezier(0.34,1.56,0.64,1) forwards !important;
+}
+
+@keyframes modalContentOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.95) translateY(-12px); }
+}
+
+.modal.hiding .modal-content {
+  animation: modalContentOut 0.25s ease forwards !important;
+}
+
+.modal-content {
+  will-change: transform, opacity;
+}
+
+/* ===== BUTTON UX ENHANCEMENTS ===== */
+.btn {
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.22s ease,
+              background 0.2s ease,
+              opacity 0.2s ease !important;
+  cursor: pointer !important;
+  user-select: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.32) !important;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97) !important;
+  transition-duration: 0.1s !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97) !important;
+}
+
+.btn-white:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 32px rgba(255,255,255,0.38) !important;
+}
+
+.btn-outline:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 24px rgba(255,255,255,0.18) !important;
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.28) !important;
+}
+
+/* ===== MICRO INTERACTIONS ===== */
+.job-card,
+.info-card,
+.faq-item,
+.review-card,
+.applied-job-item,
+.employer-vacancy-card,
+.bfav-card,
+.bprofile-action-item,
+.role-option,
+.moderation-job-item {
+  cursor: pointer;
+}
+
+.footer-links a {
+  transition: color 0.18s ease, padding-left 0.18s ease !important;
+  display: inline-block;
+}
+
+.footer-links a:hover {
+  color: #fff !important;
+  padding-left: 6px !important;
+}
+
+.tag {
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease !important;
+  cursor: default;
+}
+
+.tag:hover {
+  background: var(--primary-blue) !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}
+
+.nav-profile-wrapper {
+  cursor: pointer;
+}
+
+.modal-close {
+  cursor: pointer;
+}
+
+.pagination-btn {
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.18s ease, border-color 0.18s ease !important;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+}
+
+.pagination-btn.active {
+  cursor: default;
+  transform: none !important;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37,99,235,0.2) transparent;
+}
+
+*::-webkit-scrollbar { width: 5px; height: 5px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(37,99,235,0.18);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(37,99,235,0.35);
+}
+
+::selection {
+  background: rgba(37,99,235,0.18);
+  color: var(--text-dark);
+}
+</style>
 </body>
 </html>
