@@ -1,8 +1,8 @@
-// Настройки подключения к твоему проекту Supabase
+// Проверь, чтобы здесь не было лишних пробелов или пропущенных точек!
 const SUPABASE_URL = 'https://edltxsziwwvbdnpblxzc.supabase.co';
 
-// Твой публичный ключ (Publishable key)
-const SUPABASE_KEY = 'sb_publishable_I8nurQtNC1F-NcYar0bxxQ_vrYHSEXa';
+// ВАЖНО: Нажми кнопку копирования в Supabase, чтобы ключ был полным!
+const SUPABASE_KEY = 'sb_publishable_I8nurQtNC1F-NcYar0bxxQ_vrYHSEXa'; 
 
-// Создаем клиент под именем mySupabase, чтобы избежать конфликтов в коде
+// Инициализируем клиент с именем mySupabase
 const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
