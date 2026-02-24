@@ -11670,6 +11670,20 @@ async function insertJobToSupabase(jobData) {
     console.log('[Supabase] Обработчик ошибок установлен. Используйте window.supabaseSafe("Метка", asyncFn)');
 })();
 </script>
+<!-- SUPABASE CORE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+const SUPABASE_URL = https://edltxsziwwvbdnpblxzc.supabase.co
+const SUPABASE_KEY = sb_publishable_I8nurQtNC1F-NcYar0bxXQ_vrYHSEXa
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.supabase = supabaseClient;
+
+// делаем глобально доступным
+window.supabase = supabase;
+
+console.log("✅ Supabase INIT OK");
+</script>
 </body>
 </html>
