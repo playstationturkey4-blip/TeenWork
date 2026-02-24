@@ -4029,6 +4029,12 @@
             initStorage();
             updateNavbar();
             initEventListeners();
+            // Загружаем вакансии из Firestore при старте
+            setTimeout(function() {
+                if (window.loadJobsFromFirestore) {
+                    window.loadJobsFromFirestore();
+                }
+            }, 500); // небольшая задержка, чтобы Firebase успел инициализироваться
         }
 
         document.addEventListener('DOMContentLoaded', init);
@@ -4301,7 +4307,6 @@
   }
 
   async function loadJobsFromFirestore() {
-      return;
     const snapshot = await getDocs(collection(db, "jobs"));
     const jobs = [];
 
@@ -11549,6 +11554,16 @@ async function loadJobsFromSupabase() {
         }
 
         console.log('[Supabase] Вакансии загружены из Supabase:', data.length, data);
+
+        // Кладём вакансии в STATE и рендерим
+        if (window.STATE) {
+            window.STATE.jobs = data || [];
+            window.STATE.filteredJobs = [...window.STATE.jobs];
+            window.STATE.currentPage = 1;
+            if (window.renderJobs) {
+                window.renderJobs();
+            }
+        }
     } catch (err) {
         console.error('[Supabase] Неожиданная ошибка при загрузке вакансий:', err);
     }
@@ -11568,7 +11583,7 @@ async function insertJobToSupabase(jobData) {
     }
 
     try {
-        var { data, error } = await window.mySupabase
+        var { data, error } = await window.supabaseClient
             .from('jobs')
             .insert([jobData]);
 
