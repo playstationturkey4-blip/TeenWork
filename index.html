@@ -11510,7 +11510,7 @@ async function _updateModerationBadge() {
   <script>
   // 1. Функция для получения всех вакансий из базы
   async function getJobs() {
-    const { data, error } = await supabase
+    const { data, error } = await mySupabase
       .from('jobs') // Название твоей таблицы в Supabase
       .select('*')
       .order('created_at', { ascending: false });
@@ -11525,7 +11525,7 @@ async function _updateModerationBadge() {
 
   // 2. Функция для добавления новой вакансии
   async function addJob(title, description) {
-    const { data, error } = await supabase
+    const { data, error } = await mySupabase
       .from('jobs')
       .insert([{ title, description }])
       .select();
