@@ -11554,17 +11554,9 @@ async function loadJobsFromSupabase() {
             return;
         }
 
-        console.log('[Supabase] Вакансии загружены из Supabase:', data.length, data);
-
-        // Кладём вакансии в STATE и рендерим
-        if (window.STATE) {
-            window.STATE.jobs = data || [];
-            window.STATE.filteredJobs = [...window.STATE.jobs];
-            window.STATE.currentPage = 1;
-            if (window.renderJobs) {
-                window.renderJobs();
-            }
-        }
+        console.log('[Supabase] Вакансии из Supabase (только лог, не перезаписываем STATE):', data.length);
+        // Намеренно НЕ перезаписываем STATE.jobs — основной источник данных Firebase.
+        // Supabase используется только для вставки через insertJobToSupabase.
     } catch (err) {
         console.error('[Supabase] Неожиданная ошибка при загрузке вакансий:', err);
     }
@@ -11726,20 +11718,11 @@ async function loadJobsFromSupabase() {
 
         if (error) throw error;
 
-        if (window.STATE) {
-            // Отправляем данные в "мозг" сайта
-            window.STATE.jobs = data || [];
-            window.STATE.filteredJobs = [...(data || [])];
-            window.STATE.currentPage = 1;
-
-            // Обновляем крупный счетчик вакансий
-            const numEl = document.getElementById('jobSectionNum');
-            if (numEl) numEl.textContent = window.STATE.jobs.length;
-
-            // Команда: Отрисовать карточки
-            if (window.renderJobs) window.renderJobs();
-            console.log("✅ Вакансии из Supabase на экране! Найдено:", data.length);
-        }
+        // Намеренно НЕ перезаписываем STATE.jobs — источник истины Firebase.
+        // Обновляем только счётчик если элемент есть
+        const numEl = document.getElementById('jobSectionNum');
+        if (numEl && data) numEl.textContent = data.length;
+        console.log("[Supabase] лог: вакансий в Supabase:", data ? data.length : 0);
     } catch (err) {
         console.error('❌ Ошибка загрузки:', err.message);
     }
@@ -11751,22 +11734,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
     // Функция для одобрения вакансии (меняет статус на approved)
 async function verifyJob(jobId, event) {
-    if (event) event.stopPropagation(); // Чтобы не открывалось описание вакансии
+    if (event) event.stopPropagation();
     
     if (!confirm("Одобрить эту вакансию? Она появится в общем списке.")) return;
 
-    // Используем mySupabase (тот, что с длинным ключом)
-    const { error } = await window.mySupabase
-        .from('jobs')
-        .update({ status: 'approved' }) 
-        .eq('id', jobId);
+    if (!window.db) {
+        alert("Ошибка: база данных недоступна");
+        return;
+    }
 
-    if (error) {
+    try {
+        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await updateDoc(doc(window.db, 'jobs', jobId), { status: 'approved' });
+
+        if (window.showToast) showToast('Одобрено', 'Вакансия успешно верифицирована', 'success');
+        if (window.loadJobsFromFirestore) await window.loadJobsFromFirestore();
+        if (window._updateModerationBadge) window._updateModerationBadge();
+    } catch (error) {
         console.error("Ошибка верификации:", error.message);
         alert("Ошибка: " + error.message);
-    } else {
-        alert("✅ Вакансия успешно одобрена!");
-        location.reload(); // Перезагружаем страницу, чтобы фильтр увидел изменения
     }
 }
 </script>
