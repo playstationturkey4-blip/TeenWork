@@ -11562,7 +11562,7 @@ async function insertJobToSupabase(jobData) {
     }
 
     try {
-        var { data, error } = await window.supabaseClient
+        var { data, error } = await window.mySupabase
             .from('jobs')
             .insert([jobData]);
 
