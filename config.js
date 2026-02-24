@@ -1,8 +1,8 @@
-// Проверь, чтобы здесь не было лишних пробелов или пропущенных точек!
-const SUPABASE_URL = 'https://edltxsziwwvbdnpblxzc.supabase.co';
+// Внимательно: здесь теперь 'edit' вместо 'edlt'!
+const SUPABASE_URL = 'https://editxsziwwvbdnpblxzc.supabase.co';
 
-// ВАЖНО: Нажми кнопку копирования в Supabase, чтобы ключ был полным!
+// Твой ключ из раздела API
 const SUPABASE_KEY = 'sb_publishable_I8nurQtNC1F-NcYar0bxxQ_vrYHSEXa'; 
 
-// Инициализируем клиент с именем mySupabase
+// Инициализируем клиент
 const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
