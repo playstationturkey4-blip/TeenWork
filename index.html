@@ -3615,11 +3615,17 @@
                 const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
                 const adminControls = isAdmin() ? `
                     <div class="admin-controls">
-                        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">Удалить</button>
-                        <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
-                            ${job.isTop ? 'Снять TOP' : 'Сделать TOP'}
-                        </button>
-                    </div>
+                       const adminControls = isAdmin() ? `
+    <div class="admin-controls">
+        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">удалить</button>
+        <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
+            ${job.isTop ? 'Снять ТОР' : 'Сделать ТОР'}
+        </button>
+        <button class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
+            ✓ Верифицировать
+        </button>
+    </div>
+` : '';
                 ` : '';
                 
                 return `
@@ -11727,6 +11733,26 @@ async function loadJobsFromSupabase() {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(loadJobsFromSupabase, 1000);
 });
+    // Функция для одобрения вакансии (меняет статус на approved)
+async function verifyJob(jobId, event) {
+    if (event) event.stopPropagation(); // Чтобы не открывалось описание вакансии
+    
+    if (!confirm("Одобрить эту вакансию? Она появится в общем списке.")) return;
+
+    // Используем mySupabase (тот, что с длинным ключом)
+    const { error } = await window.mySupabase
+        .from('jobs')
+        .update({ status: 'approved' }) 
+        .eq('id', jobId);
+
+    if (error) {
+        console.error("Ошибка верификации:", error.message);
+        alert("Ошибка: " + error.message);
+    } else {
+        alert("✅ Вакансия успешно одобрена!");
+        location.reload(); // Перезагружаем страницу, чтобы фильтр увидел изменения
+    }
+}
 </script>
 </body>
 </html>
