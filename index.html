@@ -11505,5 +11505,171 @@ async function _updateModerationBadge() {
 
 })();
 </script>
+
+<!-- ================= SUPABASE CONNECTION ================= -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function initSupabase() {
+    var SUPABASE_URL = "https://edltxsziwwvbdnpblxzc.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_I8nurQtNC1F-NcYar0bxXQ_vrYHSEXa";
+
+    if (!window.supabase) {
+        console.error('[Supabase] Библиотека не загружена');
+        return;
+    }
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('[Supabase] Клиент успешно инициализирован');
+})();
+</script>
+
+<!-- ================= SUPABASE: FETCH JOBS ================= -->
+<script>
+async function loadJobsFromSupabase() {
+    if (!window.supabaseClient) {
+        console.error('[Supabase] Клиент не инициализирован. Загрузка невозможна.');
+        return;
+    }
+
+    try {
+        var { data, error } = await window.supabaseClient
+            .from('jobs')
+            .select('*');
+
+        if (error) {
+            console.error('[Supabase] Ошибка загрузки вакансий:', error.message);
+            return;
+        }
+
+        console.log('[Supabase] Вакансии загружены из Supabase:', data.length, data);
+    } catch (err) {
+        console.error('[Supabase] Неожиданная ошибка при загрузке вакансий:', err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadJobsFromSupabase();
+});
+</script>
+
+<!-- ================= SUPABASE: INSERT JOB ================= -->
+<script>
+async function insertJobToSupabase(jobData) {
+    if (!window.supabaseClient) {
+        console.error('[Supabase] Клиент не инициализирован. Вставка невозможна.');
+        return { success: false, error: 'Клиент не инициализирован' };
+    }
+
+    try {
+        var { data, error } = await window.supabaseClient
+            .from('jobs')
+            .insert([jobData]);
+
+        if (error) {
+            console.error('[Supabase] Ошибка при добавлении вакансии:', error.message);
+            return { success: false, error: error.message };
+        }
+
+        console.log('[Supabase] Вакансия успешно добавлена:', data);
+        return { success: true, data: data };
+    } catch (err) {
+        console.error('[Supabase] Неожиданная ошибка при добавлении вакансии:', err);
+        return { success: false, error: err.message };
+    }
+}
+</script>
+
+<!-- ================= SUPABASE: TEST BUTTON ================= -->
+<script>
+(function injectSupabaseTestButton() {
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('supabaseTestBtn')) return;
+
+        var btn = document.createElement('button');
+        btn.id = 'supabaseTestBtn';
+        btn.textContent = '🧪 TEST SUPABASE';
+        btn.style.cssText = [
+            'position:fixed',
+            'bottom:20px',
+            'right:20px',
+            'z-index:99999',
+            'background:#2563eb',
+            'color:white',
+            'border:none',
+            'padding:12px 20px',
+            'border-radius:10px',
+            'font-size:14px',
+            'font-weight:700',
+            'cursor:pointer',
+            'box-shadow:0 4px 14px rgba(37,99,235,0.4)',
+            'font-family:inherit'
+        ].join(';');
+
+        btn.addEventListener('click', async function() {
+            btn.textContent = '⏳ Отправка...';
+            btn.disabled = true;
+
+            var testJob = {
+                title: 'Тестовая вакансия',
+                company: 'TeenWork Test',
+                city: 'Москва',
+                salary: 1000,
+                type: 'Частичная занятость',
+                description: 'Это тестовая запись для проверки Supabase',
+                employerEmail: 'test@test.com',
+                employerId: 'test-user-001',
+                isTop: false,
+                status: 'pending',
+                views: 0,
+                createdAt: Date.now()
+            };
+
+            var result = await insertJobToSupabase(testJob);
+
+            if (result.success) {
+                btn.textContent = '✅ Успешно!';
+                btn.style.background = '#10b981';
+            } else {
+                btn.textContent = '❌ Ошибка';
+                btn.style.background = '#ef4444';
+            }
+
+            setTimeout(function() {
+                btn.textContent = '🧪 TEST SUPABASE';
+                btn.style.background = '#2563eb';
+                btn.disabled = false;
+            }, 3000);
+        });
+
+        document.body.appendChild(btn);
+    });
+})();
+</script>
+
+<!-- ================= SUPABASE: ERROR HANDLING ================= -->
+<script>
+(function setupSupabaseErrorHandling() {
+    window.supabaseSafe = async function(label, asyncFn) {
+        console.log('[Supabase][' + label + '] Запрос начат...');
+        try {
+            var result = await asyncFn();
+
+            if (result && result.error) {
+                console.error('[Supabase][' + label + '] ❌ Ошибка:', result.error.message || result.error);
+                return { success: false, error: result.error };
+            }
+
+            console.log('[Supabase][' + label + '] ✅ Успешно:', result && result.data ? result.data : result);
+            return { success: true, data: result && result.data };
+        } catch (err) {
+            console.error('[Supabase][' + label + '] ❌ Исключение:', err.message || err);
+            return { success: false, error: err };
+        }
+    };
+
+    console.log('[Supabase] Обработчик ошибок установлен. Используйте window.supabaseSafe("Метка", asyncFn)');
+})();
+</script>
+
 </body>
 </html>
