@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11505,5 +11507,35 @@ async function _updateModerationBadge() {
 
 })();
 </script>
+  <script>
+  // 1. Функция для получения всех вакансий из базы
+  async function getJobs() {
+    const { data, error } = await supabase
+      .from('jobs') // Название твоей таблицы в Supabase
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Ошибка загрузки:', error.message);
+      return [];
+    }
+    console.log('Вакансии получены:', data);
+    return data;
+  }
+
+  // 2. Функция для добавления новой вакансии
+  async function addJob(title, description) {
+    const { data, error } = await supabase
+      .from('jobs')
+      .insert([{ title, description }])
+      .select();
+
+    if (error) {
+      console.error('Ошибка добавления:', error.message);
+    } else {
+      alert('Вакансия успешно сохранена в базе!');
+    }
+  }
+</script>  
 </body>
 </html>
