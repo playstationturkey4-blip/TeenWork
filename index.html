@@ -11343,6 +11343,293 @@ async function _updateModerationBadge() {
 
 </style>
 
+<!-- ================= MOBILE UX IMPROVEMENTS ================= -->
+<style>
+/* ===== ОБЩИЕ УЛУЧШЕНИЯ ДЛЯ МОБИЛЬНЫХ ===== */
+@media (max-width: 768px) {
+
+    /* --- НАВБАР --- */
+    .nav {
+        padding: 12px 0;
+    }
+    .nav-container {
+        padding: 0 16px;
+    }
+    .logo {
+        font-size: 22px;
+    }
+    /* Скрываем текстовые кнопки навбара на телефоне — остаётся аватар и иконки */
+    .nav-actions .btn-secondary:not(#darkToggle):not(.notif-bell-btn) {
+        display: none;
+    }
+    /* Аватар чуть крупнее для удобного нажатия */
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 15px;
+    }
+
+    /* --- ГЕРОЙ --- */
+    .hero {
+        padding: 48px 16px 40px;
+        text-align: center;
+    }
+    .hero h1 {
+        font-size: 32px !important;
+        line-height: 1.15;
+    }
+    .hero p {
+        font-size: 16px !important;
+    }
+    .hero-actions {
+        gap: 10px;
+    }
+    .btn-hero {
+        padding: 14px 20px;
+        font-size: 15px;
+        border-radius: 14px;
+    }
+
+    /* --- ФИЛЬТРЫ --- */
+    .filters-section {
+        padding: 16px;
+    }
+    .filters-grid {
+        gap: 10px;
+    }
+    .input, select.input, textarea.input {
+        padding: 13px 14px;
+        font-size: 16px; /* Предотвращает зум на iOS */
+        border-radius: 12px;
+        min-height: 48px;
+    }
+    /* Кнопка поиска во всю ширину */
+    .filters-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .filters-actions .btn {
+        width: 100%;
+        min-height: 48px;
+        font-size: 15px;
+        border-radius: 12px;
+    }
+
+    /* --- КАРТОЧКИ ВАКАНСИЙ --- */
+    .jobs-section {
+        padding: 24px 12px !important;
+    }
+    .job-card {
+        padding: 20px 18px 18px !important;
+        border-radius: 16px !important;
+        margin-bottom: 2px;
+    }
+    .job-title {
+        font-size: 17px !important;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+    .job-company, .job-location {
+        font-size: 13px !important;
+    }
+    .job-salary {
+        font-size: 20px !important;
+        font-weight: 800;
+    }
+    /* Кнопка "Откликнуться" крупнее и выше */
+    .btn-apply {
+        width: 100% !important;
+        min-height: 48px !important;
+        font-size: 15px !important;
+        border-radius: 12px !important;
+        margin-top: 4px;
+    }
+    /* Админ-кнопки на карточке — компактнее */
+    .admin-controls {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+    .btn-admin {
+        min-height: 36px;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
+
+    /* --- ПАГИНАЦИЯ --- */
+    .pagination {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .page-btn {
+        min-width: 40px;
+        min-height: 40px;
+        font-size: 14px;
+        border-radius: 10px;
+    }
+
+    /* --- МОДАЛЬНЫЕ ОКНА --- */
+    .modal-content {
+        border-radius: 20px 20px 0 0 !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        transform: none !important;
+        max-height: 92vh;
+        overflow-y: auto;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    .modal {
+        align-items: flex-end !important;
+        padding: 0 !important;
+    }
+    .modal-header {
+        padding: 20px 20px 16px;
+        position: sticky;
+        top: 0;
+        background: var(--white);
+        z-index: 2;
+        border-radius: 20px 20px 0 0;
+    }
+    .modal-body {
+        padding: 4px 20px 32px;
+    }
+    /* Все кнопки в модале — крупные */
+    .modal-body .btn {
+        min-height: 48px;
+        font-size: 15px;
+        border-radius: 12px;
+    }
+    /* Инпуты в модале — без зума на iOS */
+    .modal-body input,
+    .modal-body select,
+    .modal-body textarea {
+        font-size: 16px !important;
+        min-height: 48px;
+        border-radius: 12px;
+    }
+    .modal-body textarea {
+        min-height: 80px;
+    }
+    /* Кнопка закрытия — крупнее */
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--light-gray);
+    }
+
+    /* --- ПРОФИЛЬ --- */
+    .profile-page .modal-content {
+        max-height: 100vh;
+        border-radius: 0 !important;
+    }
+    .profile-header {
+        padding: 24px 20px 20px;
+    }
+    .profile-title h1 {
+        font-size: 26px !important;
+    }
+
+    /* --- СЕКЦИЯ ИНФОРМАЦИИ --- */
+    .info-section {
+        padding: 32px 16px !important;
+    }
+    .info-card {
+        padding: 20px !important;
+    }
+
+    /* --- FAQ --- */
+    .faq-question {
+        padding: 16px 18px;
+        font-size: 15px;
+    }
+    .faq-answer {
+        padding: 0 18px 16px;
+        font-size: 14px;
+    }
+
+    /* --- ТОСТЫ --- */
+    .toast-container {
+        bottom: 80px !important; /* Выше нижнего меню */
+        left: 12px;
+        right: 12px;
+    }
+    .toast {
+        border-radius: 14px;
+        padding: 14px 16px;
+    }
+
+    /* --- QUICK TAGS --- */
+    .quick-tags-row {
+        padding: 0 12px 12px;
+        gap: 8px;
+    }
+    .quick-tag {
+        padding: 8px 14px;
+        font-size: 13px;
+        min-height: 36px;
+        border-radius: 20px;
+    }
+
+    /* --- ЧАТ --- */
+    #chatModal .modal-content {
+        max-height: 96vh;
+    }
+    .chat-input-area {
+        padding: 10px 12px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    .chat-input {
+        font-size: 16px !important;
+        min-height: 44px;
+        border-radius: 22px;
+    }
+    .chat-send-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 22px;
+    }
+}
+
+/* ===== ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (iPhone SE, ≤380px) ===== */
+@media (max-width: 380px) {
+    .hero h1 {
+        font-size: 26px !important;
+    }
+    .job-title {
+        font-size: 15px !important;
+    }
+    .job-salary {
+        font-size: 18px !important;
+    }
+    .btn-hero {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* ===== ТЁМНАЯ ТЕМА + МОБИЛЬНЫЙ ===== */
+@media (max-width: 768px) {
+    body.dark-theme .modal-header {
+        background: var(--dt-surface-1);
+    }
+    body.dark-theme .modal-close {
+        background: var(--dt-surface-2);
+    }
+}
+</style>
+
 <script>
 // ============================================================
 // STEP 3 — QUICK FILTER TAGS ROW (JS — additive only)
@@ -11597,72 +11884,6 @@ async function insertJobToSupabase(jobData) {
 }
 </script>
 
-<!-- ================= SUPABASE: TEST BUTTON ================= -->
-<script>
-(function injectSupabaseTestButton() {
-    document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('supabaseTestBtn')) return;
-
-        var btn = document.createElement('button');
-        btn.id = 'supabaseTestBtn';
-        btn.textContent = '🧪 TEST SUPABASE';
-        btn.style.cssText = [
-            'position:fixed',
-            'bottom:20px',
-            'right:20px',
-            'z-index:99999',
-            'background:#2563eb',
-            'color:white',
-            'border:none',
-            'padding:12px 20px',
-            'border-radius:10px',
-            'font-size:14px',
-            'font-weight:700',
-            'cursor:pointer',
-            'box-shadow:0 4px 14px rgba(37,99,235,0.4)',
-            'font-family:inherit'
-        ].join(';');
-
-        btn.addEventListener('click', async function() {
-            btn.textContent = '⏳ Отправка...';
-            btn.disabled = true;
-
-            var testJob = {
-                title: 'Тестовая вакансия',
-                company: 'TeenWork Test',
-                city: 'Москва',
-                salary: 1000,
-                type: 'Частичная занятость',
-                description: 'Это тестовая запись для проверки Supabase',
-                employerEmail: 'test@test.com',
-                employerId: 'test-user-001',
-                isTop: false,
-                status: 'pending',
-                views: 0,
-                createdAt: Date.now()
-            };
-
-            var result = await insertJobToSupabase(testJob);
-
-            if (result.success) {
-                btn.textContent = '✅ Успешно!';
-                btn.style.background = '#10b981';
-            } else {
-                btn.textContent = '❌ Ошибка';
-                btn.style.background = '#ef4444';
-            }
-
-            setTimeout(function() {
-                btn.textContent = '🧪 TEST SUPABASE';
-                btn.style.background = '#2563eb';
-                btn.disabled = false;
-            }, 3000);
-        });
-
-        document.body.appendChild(btn);
-    });
-})();
-</script>
 
 <!-- ================= SUPABASE: ERROR HANDLING ================= -->
 <script>
@@ -11758,6 +11979,374 @@ async function verifyJob(jobId, event) {
         alert("Ошибка: " + error.message);
     }
 }
+</script>
+<!-- ================= MOBILE UX FINAL POLISH ================= -->
+<style>
+@media (max-width: 768px) {
+
+    /* === НАВБАР: убираем лишнее, оставляем только нужное === */
+    .nav-container {
+        padding: 0 14px;
+    }
+    /* Кнопка профиля в навбаре — только аватар, без текста */
+    .nav-profile-text { display: none !important; }
+    /* Кнопка входа в навбаре — компактнее */
+    .nav-actions .btn-secondary:first-child {
+        padding: 9px 14px;
+        font-size: 13px;
+    }
+    /* Кнопка регистрации — убираем на совсем маленьких если нет места */
+    .nav-actions .btn-secondary:nth-child(2) {
+        display: none;
+    }
+
+    /* === HERO: компактнее, без лишних отступов === */
+    .hero {
+        padding: 36px 16px 32px !important;
+    }
+    .hero h1 {
+        font-size: 30px !important;
+        margin-bottom: 12px;
+    }
+    .hero p {
+        font-size: 15px !important;
+        margin-bottom: 20px;
+    }
+    .hero-actions {
+        gap: 8px;
+    }
+    .btn-hero {
+        width: 100%;
+        justify-content: center;
+        padding: 15px 20px;
+        font-size: 15px;
+        border-radius: 14px;
+    }
+
+    /* === ФИЛЬТРЫ: горизонтальный скролл для тегов === */
+    .filters-section {
+        padding: 12px 14px;
+    }
+    .filters-grid {
+        gap: 8px;
+    }
+
+    /* === КАРТОЧКИ: приятнее на тапе === */
+    .job-card {
+        padding: 18px 16px 16px !important;
+        border-radius: 18px !important;
+        /* Убираем hover-эффекты на тач устройствах */
+        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    }
+    .job-card:active {
+        transform: scale(0.98) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }
+    /* Убираем hover-трансформацию на мобильном (она мешает) */
+    .job-card:hover {
+        transform: none !important;
+    }
+    .job-header {
+        margin-bottom: 12px;
+    }
+    .job-title {
+        font-size: 16px !important;
+        font-weight: 700;
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+    .job-company {
+        font-size: 13px !important;
+        margin-bottom: 2px;
+    }
+    .job-location {
+        font-size: 12px !important;
+    }
+    .job-details {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    .job-salary {
+        font-size: 19px !important;
+        font-weight: 800;
+    }
+    .tag {
+        font-size: 11px !important;
+        padding: 4px 10px !important;
+    }
+
+    /* === КНОПКА ОТКЛИКА: крупная, удобная === */
+    .btn-apply {
+        width: 100% !important;
+        min-height: 50px !important;
+        font-size: 15px !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.2px;
+    }
+
+    /* === МОДАЛЫ: sheet снизу с ручкой-индикатором === */
+    .modal-content {
+        border-radius: 24px 24px 0 0 !important;
+    }
+    /* Полоска-ручка вверху модала */
+    .modal-content::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-gray);
+        margin: 12px auto -4px;
+        flex-shrink: 0;
+    }
+    .modal-header {
+        border-radius: 24px 24px 0 0 !important;
+        padding: 16px 20px 14px !important;
+    }
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    .modal-close {
+        width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        font-size: 20px !important;
+        border-radius: 50% !important;
+        background: var(--light-gray) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0;
+    }
+    .modal-body {
+        padding: 8px 20px 40px !important;
+    }
+
+    /* === ФОРМА РЕГИСТРАЦИИ/ВХОДА: удобнее на телефоне === */
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    /* === ПРОФИЛЬ: во весь экран === */
+    .profile-page .modal-content {
+        border-radius: 0 !important;
+        max-height: 100dvh !important;
+    }
+    .profile-page .modal-content::before {
+        display: none;
+    }
+    .profile-header {
+        padding: 20px 16px 16px !important;
+    }
+
+    /* === ПАГИНАЦИЯ: крупнее кнопки === */
+    .page-btn {
+        min-width: 42px !important;
+        min-height: 42px !important;
+        font-size: 14px !important;
+        border-radius: 11px !important;
+    }
+
+    /* === СОРТИРОВКА: во всю ширину === */
+    .sort-dropdown select,
+    #sortFilter {
+        width: 100%;
+        min-height: 44px;
+        font-size: 15px;
+    }
+
+    /* === ЧАТ: лучше под клавиатуру === */
+    #chatModal .modal-content {
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+    }
+    #chatModal .modal-content::before { display: none; }
+    .chat-messages {
+        padding: 12px !important;
+    }
+    .chat-message {
+        max-width: 82% !important;
+        font-size: 14px !important;
+        padding: 10px 13px !important;
+    }
+    .chat-input-area {
+        padding: 10px 12px !important;
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        gap: 8px !important;
+    }
+    .chat-input {
+        font-size: 16px !important;
+        min-height: 44px !important;
+        border-radius: 22px !important;
+        padding: 12px 16px !important;
+    }
+    .chat-send-btn,
+    .chat-attach-btn,
+    .chat-voice-btn {
+        width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        border-radius: 22px !important;
+        flex-shrink: 0;
+    }
+
+    /* === НИЖНИЙ НАВБАР: красивее и удобнее === */
+    .bottom-nav {
+        height: 60px !important;
+        padding: 0 12px !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+        gap: 4px;
+    }
+    .bottom-nav-item {
+        border-radius: 14px !important;
+        padding: 6px 4px !important;
+    }
+    .bottom-nav-icon {
+        font-size: 20px !important;
+    }
+    .bottom-nav-label {
+        font-size: 10px !important;
+    }
+
+    /* === ТОСТЫ: выше нижней панели === */
+    .toast-container {
+        bottom: 76px !important;
+    }
+
+    /* === СЕКЦИЯ ИНФОРМАЦИИ: компактнее === */
+    .info-grid {
+        gap: 10px !important;
+    }
+    .info-card {
+        padding: 18px 16px !important;
+        border-radius: 16px !important;
+    }
+    .info-icon {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 20px !important;
+        border-radius: 12px !important;
+    }
+
+    /* === FAQ: удобнее для тапа === */
+    .faq-question {
+        padding: 16px !important;
+        font-size: 14px !important;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+    }
+    .faq-answer p {
+        font-size: 13px !important;
+        line-height: 1.6;
+    }
+
+    /* === ФУТЕР: компактнее === */
+    .footer {
+        padding: 32px 16px !important;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    /* === SCROLL TO TOP КНОПКА: выше нижней панели === */
+    #scrollTopBtn, .scroll-top-btn {
+        bottom: 76px !important;
+        right: 14px !important;
+        width: 44px !important;
+        height: 44px !important;
+    }
+}
+
+/* === ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (≤360px) === */
+@media (max-width: 360px) {
+    .hero h1 { font-size: 26px !important; }
+    .job-title { font-size: 14px !important; }
+    .job-salary { font-size: 17px !important; }
+    .bottom-nav-label { display: none; }
+    .bottom-nav-item { padding: 10px 4px !important; }
+    .bottom-nav-icon { font-size: 22px !important; }
+    .modal-body { padding: 8px 14px 40px !important; }
+}
+
+/* === ТЁМНАЯ ТЕМА + МОБИЛЬНЫЙ === */
+@media (max-width: 768px) {
+    body.dark-theme .modal-content::before {
+        background: var(--dt-border-mid);
+    }
+    body.dark-theme .modal-close {
+        background: var(--dt-surface-2) !important;
+        color: var(--text-gray);
+    }
+    body.dark-theme .bottom-nav {
+        background: rgba(26, 29, 39, 0.97) !important;
+        border-top-color: var(--border-gray) !important;
+    }
+    body.dark-theme .job-card:active {
+        box-shadow: 0 2px 12px rgba(0,0,0,0.35) !important;
+    }
+}
+</style>
+
+<script>
+// Закрытие модала свайпом вниз на мобильном
+(function initSwipeToClose() {
+    if (window.innerWidth > 768) return;
+
+    let startY = 0;
+    let activeModal = null;
+
+    document.addEventListener('touchstart', function(e) {
+        const modal = e.target.closest('.modal.active');
+        if (!modal) return;
+        const content = modal.querySelector('.modal-content');
+        if (!content) return;
+        // Только если скролл вверху
+        if (content.scrollTop > 10) return;
+        startY = e.touches[0].clientY;
+        activeModal = modal;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+        if (!activeModal) return;
+        const dy = e.touches[0].clientY - startY;
+        if (dy > 0) {
+            const content = activeModal.querySelector('.modal-content');
+            if (content) {
+                content.style.transition = 'none';
+                content.style.transform = `translateY(${Math.min(dy * 0.5, 80)}px)`;
+            }
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+        if (!activeModal) return;
+        const dy = e.changedTouches[0].clientY - startY;
+        const content = activeModal.querySelector('.modal-content');
+        if (content) {
+            content.style.transition = '';
+            content.style.transform = '';
+        }
+        // Свайп > 100px вниз — закрываем
+        if (dy > 100) {
+            const id = activeModal.id;
+            if (id && window.closeModal) closeModal(id);
+        }
+        activeModal = null;
+        startY = 0;
+    }, { passive: true });
+})();
 </script>
 </body>
 </html>
