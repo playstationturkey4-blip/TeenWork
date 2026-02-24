@@ -4295,6 +4295,7 @@
   }
 
   async function loadJobsFromFirestore() {
+      return;
     const snapshot = await getDocs(collection(db, "jobs"));
     const jobs = [];
 
