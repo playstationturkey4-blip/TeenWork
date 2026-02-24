@@ -3134,7 +3134,9 @@
 
         async function renderEmployerJobs() {
             const container = document.getElementById('employerJobsList');
-            const userJobs = STATE.jobs.filter(job => job.employerEmail === STATE.currentUser.email || job.employerId === (STATE.currentUser.uid || STATE.currentUser.email));
+            // Используем allJobs чтобы работодатель видел свои pending вакансии
+            const sourceJobs = STATE.allJobs || STATE.jobs;
+            const userJobs = sourceJobs.filter(job => job.employerEmail === STATE.currentUser.email || job.employerId === (STATE.currentUser.uid || STATE.currentUser.email));
             
             if (userJobs.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы еще не разместили ни одной вакансии</p>';
@@ -4309,18 +4311,22 @@
 
   async function loadJobsFromFirestore() {
     const snapshot = await getDocs(collection(db, "jobs"));
-    const jobs = [];
+    const allJobs = [];
+    const approvedJobs = [];
 
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
+      const job = { id: docSnap.id, ...data };
+      allJobs.push(job);
       if (!data.status || data.status === "approved") {
-        jobs.push({ id: docSnap.id, ...data });
+        approvedJobs.push(job);
       }
     });
 
     if (window.STATE) {
-      window.STATE.jobs = jobs;
-      window.STATE.filteredJobs = [...jobs];
+      window.STATE.jobs = approvedJobs;         // В общем списке — только одобренные
+      window.STATE.allJobs = allJobs;           // Все вакансии — для работодателя и админа
+      window.STATE.filteredJobs = [...approvedJobs];
       window.STATE.currentPage = 1;
 
       if (window.renderJobs) {
@@ -4328,7 +4334,7 @@
       }
     }
 
-    console.log("Вакансии загружены из Firestore:", jobs.length);
+    console.log("Вакансии загружены из Firestore:", approvedJobs.length, "approved /", allJobs.length, "всего");
   }
 
   window.loadJobsFromFirestore = loadJobsFromFirestore;
@@ -4787,19 +4793,14 @@ async function _markMessagesAsRead(chatId, currentUserId, messagesSnapshot) {
             _orig();
             // Upgrade jobCount element to styled badge
             const jobCount = document.getElementById('jobCount');
+            // Берём число напрямую из STATE — надёжно, не зависит от текста
+                const n = (window.STATE && window.STATE.filteredJobs) ? window.STATE.filteredJobs.length : 0;
             if (jobCount && !jobCount.querySelector('.job-count-badge')) {
-                const raw = jobCount.textContent || '';
-                const match = raw.match(/\d+/);
-                const n = match ? match[0] : '0';
                 jobCount.innerHTML = `<span class="job-count-badge loaded"><span class="job-count-number">${n}</span> вакансий найдено</span>`;
             } else if (jobCount && jobCount.querySelector('.job-count-badge')) {
                 // Update number inside existing badge
                 const numEl = jobCount.querySelector('.job-count-number');
-                if (numEl) {
-                    const raw = jobCount.textContent || '';
-                    const match = raw.match(/\d+/);
-                    if (match) numEl.textContent = match[0];
-                }
+                if (numEl) numEl.textContent = n;
                 const badge = jobCount.querySelector('.job-count-badge');
                 if (badge) {
                     badge.classList.remove('pop', 'loaded');
@@ -8072,8 +8073,10 @@ window.openApplyModal = async function(jobId, event) {
         if (!grid) return;
 
         // Check if the original rendered an .empty-state
+        // ВАЖНО: не показываем "не найдено" если вакансии ещё не загружены из Firebase
         const oldEmpty = grid.querySelector('.empty-state');
-        if (oldEmpty && window.STATE && window.STATE.filteredJobs.length === 0) {
+        const jobsLoaded = window.STATE && window.STATE.jobs && window.STATE.jobs.length > 0;
+        if (oldEmpty && window.STATE && window.STATE.filteredJobs.length === 0 && jobsLoaded) {
             grid.innerHTML = `
                 <div class="empty-state-enhanced" style="grid-column: 1 / -1;">
                     <span class="ese-icon">🔍</span>
