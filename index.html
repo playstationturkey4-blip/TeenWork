@@ -11673,17 +11673,58 @@ async function insertJobToSupabase(jobData) {
 <!-- SUPABASE CORE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = https://edltxsziwwvbdnpblxzc.supabase.co
-const SUPABASE_KEY = sb_publishable_I8nurQtNC1F-NcYar0bxXQ_vrYHSEXa
+(function initSupabase() {
+    // Кавычки добавлены, адрес исправлен
+    const URL = "https://edltxsziwwvbdnpblxzc.supabase.co";
+    const KEY = "sb_publishable_I8nurQtNC1F-NcYar0bxxQ_vrYHSEXa";
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-window.supabase = supabaseClient;
+    if (!window.supabase) {
+        console.error('Ошибка: Supabase не загружен');
+        return;
+    }
 
-// делаем глобально доступным
-window.supabase = supabase;
+    // Создаем клиент под именем mySupabase
+    window.mySupabase = window.supabase.createClient(URL, KEY);
+    console.log("✅ СВЯЗЬ С SUPABASE УСТАНОВЛЕНА");
+})();
 
-console.log("✅ Supabase INIT OK");
+// Функция, которая берет вакансии из базы и рисует их на сайте
+async function loadJobsFromSupabase() {
+    if (!window.mySupabase) return;
+
+    try {
+        const { data, error } = await window.mySupabase
+            .from('jobs')
+            .select('*')
+            .order('createdAt', { ascending: false });
+
+        if (error) throw error;
+
+        if (window.STATE) {
+            // Отправляем данные в "мозг" сайта
+            window.STATE.jobs = data || [];
+            window.STATE.filteredJobs = [...(data || [])];
+            window.STATE.currentPage = 1;
+
+            // Обновляем крупный счетчик вакансий
+            const numEl = document.getElementById('jobSectionNum');
+            if (numEl) numEl.textContent = window.STATE.jobs.length;
+
+            // Команда: Отрисовать карточки
+            if (window.renderJobs) window.renderJobs();
+            console.log("✅ Вакансии из Supabase на экране! Найдено:", data.length);
+        }
+    } catch (err) {
+        console.error('❌ Ошибка загрузки:', err.message);
+    }
+}
+
+// Запуск через секунду после полной загрузки страницы
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(loadJobsFromSupabase, 1000);
+});
 </script>
 </body>
 </html>
