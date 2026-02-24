@@ -2801,6 +2801,7 @@
         };
         window.STATE = STATE;
         window.renderJobs = renderJobs;
+        window.isAdmin = isAdmin;
 
         const STORAGE = {
             USERS: 'teenwork_users',
@@ -3161,7 +3162,7 @@
                     <div class="applied-job-item">
                         <div style="flex: 1;">
                             <div class="applied-job-title">${job.title}</div>
-                            <div class="applied-job-company">${job.company} • ${job.salary.toLocaleString('ru-RU')} ₽</div>
+                            <div class="applied-job-company">${job.company} • ${(job.salary || 0).toLocaleString('ru-RU')} ₽</div>
                             <div class="job-stats">
                                 👁️ Просмотров: ${viewCount} | 📩 Откликов: ${appCount}
                             </div>
@@ -3592,8 +3593,9 @@
         function renderJobs() {
             const grid = document.getElementById('jobsGrid');
             const jobCount = document.getElementById('jobCount');
+            if (!grid) return;
             
-            jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
+            if (jobCount) jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
             
             if (STATE.filteredJobs.length === 0) {
                 grid.innerHTML = `
@@ -3615,17 +3617,14 @@
                 const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
                 const adminControls = isAdmin() ? `
                     <div class="admin-controls">
-                       const adminControls = isAdmin() ? `
-    <div class="admin-controls">
-        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">удалить</button>
-        <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
-            ${job.isTop ? 'Снять ТОР' : 'Сделать ТОР'}
-        </button>
-        <button class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
-            ✓ Верифицировать
-        </button>
-    </div>
-` : '';
+                        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">удалить</button>
+                        <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
+                            ${job.isTop ? 'Снять ТОР' : 'Сделать ТОР'}
+                        </button>
+                        <button class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
+                            ✓ Верифицировать
+                        </button>
+                    </div>
                 ` : '';
                 
                 return `
@@ -3759,6 +3758,7 @@
 
         function openModal(modalId, contentKey) {
             const modal = document.getElementById(modalId);
+            if (!modal) { console.warn('openModal: modal not found:', modalId); return; }
             
             if (modalId === 'infoModal' && contentKey) {
                 const content = INFO_CONTENT[contentKey];
@@ -3775,6 +3775,7 @@
 
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
+            if (!modal) { console.warn('closeModal: modal not found:', modalId); return; }
             modal.classList.add('hiding');
             
             if (modalId === 'chatModal' && STATE.chatUnsubscribe) {
@@ -3888,7 +3889,7 @@
                     <h3 style="margin-bottom: 10px; font-weight: 700; font-size: 22px;">${job.title}</h3>
                     <p style="color: var(--text-gray); margin-bottom: 20px; font-weight: 600;">${job.company} • ${job.city}</p>
                     <div style="background: var(--light-gray); padding: 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
-                        <strong>Зарплата:</strong> ${job.salary.toLocaleString('ru-RU')} ₽<br>
+                        <strong>Зарплата:</strong> ${(job.salary || 0).toLocaleString('ru-RU')} ₽<br>
                         <strong>Тип:</strong> ${job.type}
                     </div>
                     <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
@@ -7326,7 +7327,7 @@ function renderFavoritesInProfile() {
                     <button class="fav-remove-btn" onclick="toggleLike('${job.id}', null); event.stopPropagation();" title="Удалить">✕</button>
                     <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px; padding-right: 20px;">${job.title}</div>
                     <div style="font-size: 13px; color: var(--text-gray); margin-bottom: 8px;">${job.company}</div>
-                    <div style="font-weight: 700; color: var(--primary-blue); font-size: 14px;">${job.salary.toLocaleString('ru-RU')} ₽</div>
+                    <div style="font-weight: 700; color: var(--primary-blue); font-size: 14px;">${(job.salary || 0).toLocaleString('ru-RU')} ₽</div>
                 </div>
             `;
         }
