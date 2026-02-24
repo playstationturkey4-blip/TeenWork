@@ -12080,5 +12080,28 @@ async function verifyJob(jobId, event) {
 </style>
 
 
+
+<!-- MOBILE CLICK DEBUG - TEMPORARY -->
+<script>
+(function() {
+    // On mobile touch, find what element is at that point
+    document.addEventListener('touchend', function(e) {
+        var t = e.changedTouches[0];
+        var el = document.elementFromPoint(t.clientX, t.clientY);
+        if (!el) return;
+        // Show in top-left corner
+        var dbg = document.getElementById('_mobileDbg');
+        if (!dbg) {
+            dbg = document.createElement('div');
+            dbg.id = '_mobileDbg';
+            dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:rgba(0,0,0,0.85);color:#0f0;font:12px monospace;padding:8px;pointer-events:none;';
+            document.body.appendChild(dbg);
+        }
+        var cs = window.getComputedStyle(el);
+        dbg.textContent = 'tap: ' + el.tagName + '#' + el.id + '.' + [...el.classList].join('.') + ' z:' + cs.zIndex + ' pos:' + cs.position + ' pe:' + cs.pointerEvents;
+        setTimeout(function() { if(dbg) dbg.textContent = ''; }, 3000);
+    }, { passive: true });
+})();
+</script>
 </body>
 </html>
