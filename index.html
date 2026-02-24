@@ -11699,7 +11699,8 @@ async function loadJobsFromSupabase() {
         const { data, error } = await window.mySupabase
             .from('jobs')
             .select('*')
-            .order('created_at', { ascending: false });
+.eq('status', 'approved') // <--- Добавь эту строку!
+.order('created_at', { ascending: false });
 
         if (error) throw error;
 
