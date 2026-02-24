@@ -3631,7 +3631,7 @@
                             <div class="job-location">📍 ${job.city}</div>
                         </div>
                         <div class="job-details">
-                            <div class="job-salary">${job.salary.toLocaleString('ru-RU')} ₽</div>
+                            <div class="job-salary">${(job.salary ? job.salary.toLocaleString('ru-RU') : '0')} ₽</div>
                             <div class="job-tags">
                                 <span class="tag">${job.type}</span>
                             </div>
