@@ -3621,15 +3621,20 @@
             
             grid.innerHTML = jobsToRender.map(job => {
                 const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
+                const verifyBtnId = `verify-btn-unique-${job.id}`;
+                const verifyBtn = !document.getElementById(verifyBtnId) ? `
+                        <button id="${verifyBtnId}" class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
+                            ✓ Верифицировать
+                        </button>
+                    ` : '';
+                
                 const adminControls = isAdmin() ? `
                     <div class="admin-controls">
                         <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">удалить</button>
                         <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
                             ${job.isTop ? 'Снять ТОР' : 'Сделать ТОР'}
                         </button>
-                        <button id="verify-btn-unique-${job.id}" class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
-                            ✓ Верифицировать
-                        </button>
+                        ${verifyBtn}
                     </div>
                 ` : '';
                 
