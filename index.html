@@ -3525,18 +3525,27 @@
             };
 
             try {
-                if (window.db && window.addDoc && window.collection) {
-                    await window.addDoc(window.collection(window.db, "jobs"), newJob);
+                // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+                if (window.supabaseClient) {
+                    const { error } = await window.supabaseClient
+                        .from('jobs')
+                        .insert([newJob]);
+                    
+                    if (error) {
+                        throw new Error(error.message);
+                    }
                 }
             } catch (error) {
-                console.error('Firestore error:', error);
+                console.error('Supabase error:', error);
+                showToast('Ошибка', 'Не удалось размес тить вакансию', 'error');
+                return;
             }
 
             closeModal('postJobModal');
             showToast('Успешно', 'Вакансия размещена', 'success');
 
-            if (window.loadJobsFromFirestore) {
-                await window.loadJobsFromFirestore();
+            if (window.loadJobsFromSupabase) {
+                await window.loadJobsFromSupabase();
             }
         }
 
@@ -3676,15 +3685,22 @@
             }
             
             try {
-                if (window.db) {
-                    const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-                    await deleteDoc(doc(window.db, "jobs", jobId));
+                // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+                if (window.supabaseClient) {
+                    const { error } = await window.supabaseClient
+                        .from('jobs')
+                        .delete()
+                        .eq('id', jobId);
+                    
+                    if (error) {
+                        throw new Error(error.message);
+                    }
                 }
                 
                 showToast('Успешно', 'Вакансия удалена', 'success');
                 
-                if (window.loadJobsFromFirestore) {
-                    await window.loadJobsFromFirestore();
+                if (window.loadJobsFromSupabase) {
+                    await window.loadJobsFromSupabase();
                 }
             } catch (error) {
                 console.error('Delete error:', error);
@@ -3704,17 +3720,22 @@
                 const job = STATE.jobs.find(j => j.id === jobId);
                 if (!job) return;
                 
-                if (window.db) {
-                    const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-                    await updateDoc(doc(window.db, "jobs", jobId), {
-                        isTop: !job.isTop
-                    });
+                // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+                if (window.supabaseClient) {
+                    const { error } = await window.supabaseClient
+                        .from('jobs')
+                        .update({ isTop: !job.isTop })
+                        .eq('id', jobId);
+                    
+                    if (error) {
+                        throw new Error(error.message);
+                    }
                 }
                 
                 showToast('Успешно', job.isTop ? 'TOP снят' : 'Вакансия в TOP', 'success');
                 
-                if (window.loadJobsFromFirestore) {
-                    await window.loadJobsFromFirestore();
+                if (window.loadJobsFromSupabase) {
+                    await window.loadJobsFromSupabase();
                 }
             } catch (error) {
                 console.error('Toggle TOP error:', error);
@@ -4253,103 +4274,9 @@
         }
     </script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyC9l-LPIJl_51GC8FgdApYccycQjA7rNps",
-    authDomain: "teenwork-app-afaa6.firebaseapp.com",
-    projectId: "teenwork-app-afaa6",
-    storageBucket: "teenwork-app-afaa6.firebasestorage.app",
-    messagingSenderId: "657977585927",
-    appId: "1:657977585927:web:190719f2acf432fdaf15a2",
-    measurementId: "G-XWR4S2ZRN7"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.db = db;
-  window.addDoc = addDoc;
-  window.collection = collection;
-  window.deleteDoc = deleteDoc;
-  window.doc = doc;
-  window.updateDoc = updateDoc;
-
-  const jobsCollection = collection(db, "jobs");
-
-  async function uploadInitialJobs() {
-    const snapshot = await getDocs(jobsCollection);
-
-    if (!snapshot.empty) {
-      console.log("Вакансии уже есть в Firestore");
-      return;
-    }
-
-    const initialJobs = [
-      {
-        title: "Промоутер водных экскурсий",
-        company: "Нева Тревел",
-        city: "Санкт-Петербург",
-        salary: 30000,
-        type: "Сезонная",
-        description: "Работа в весенне-летний период.",
-        isTop: false,
-        views: 0,
-        createdAt: Date.now()
-      },
-      {
-        title: "Кассир",
-        company: "Додо Пицца",
-        city: "Санкт-Петербург",
-        salary: 35000,
-        type: "Постоянная",
-        description: "Работа в ресторане быстрого питания.",
-        isTop: false,
-        views: 0,
-        createdAt: Date.now()
-      }
-    ];
-
-    for (let job of initialJobs) {
-      await addDoc(jobsCollection, job);
-    }
-
-    console.log("Вакансии успешно загружены в Firestore");
-  }
-
-  async function loadJobsFromFirestore() {
-    const snapshot = await getDocs(collection(db, "jobs"));
-    const allJobs = [];
-    const approvedJobs = [];
-
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const job = { id: docSnap.id, ...data };
-      allJobs.push(job);
-      if (!data.status || data.status === "approved") {
-        approvedJobs.push(job);
-      }
-    });
-
-    if (window.STATE) {
-      window.STATE.jobs = approvedJobs;         // В общем списке — только одобренные
-      window.STATE.allJobs = allJobs;           // Все вакансии — для работодателя и админа
-      window.STATE.filteredJobs = [...approvedJobs];
-      window.STATE.currentPage = 1;
-
-      if (window.renderJobs) {
-        window.renderJobs();
-      }
-    }
-
-    console.log("Вакансии загружены из Firestore:", approvedJobs.length, "approved /", allJobs.length, "всего");
-  }
-
-  window.loadJobsFromFirestore = loadJobsFromFirestore;
-  
-  uploadInitialJobs();
-  loadJobsFromFirestore();
+// ================= SUPABASE ИНИЦИАЛИЗАЦИЯ (вместо Firebase) =================
+// Firebase удален полностью. Используем только Supabase.
+console.log('[Migration] Firebase полностью удален. Используется только Supabase.');
 </script>
 
 <!-- ================= SAFE PRESENCE EXTENSION ================= -->
@@ -11548,7 +11475,7 @@ async function _updateModerationBadge() {
 })();
 </script>
 
-<!-- ================= SUPABASE: FETCH JOBS ================= -->
+<!-- ================= SUPABASE: FETCH JOBS (основной источник) ================= -->
 <script>
 async function loadJobsFromSupabase() {
     if (!window.supabaseClient) {
@@ -11566,11 +11493,26 @@ async function loadJobsFromSupabase() {
             return;
         }
 
-        console.log('[Supabase] Вакансии из Supabase (только лог, не перезаписываем STATE):', data.length);
-        // Намеренно НЕ перезаписываем STATE.jobs — основной источник данных Firebase.
-        // Supabase используется только для вставки через insertJobToSupabase.
+        // ✓ ИСПРАВЛЕНИЕ: Заполняем STATE реальными данными из Supabase
+        const allJobs = data || [];
+        const approvedJobs = allJobs.filter(job => !job.status || job.status === 'approved');
+
+        if (window.STATE) {
+            window.STATE.jobs = approvedJobs;           // В общем списке — только одобренные
+            window.STATE.allJobs = allJobs;             // Все вакансии — для работодателя и админа
+            window.STATE.filteredJobs = [...approvedJobs];
+            window.STATE.currentPage = 1;
+
+            if (window.renderJobs) {
+                window.renderJobs();
+            }
+        }
+
+        console.log('[Supabase] Вакансии загружены:', approvedJobs.length, 'одобренные /', allJobs.length, 'всего');
+        return { success: true, data: allJobs };
     } catch (err) {
         console.error('[Supabase] Неожиданная ошибка при загрузке вакансий:', err);
+        return { success: false, error: err };
     }
 }
 
@@ -11684,17 +11626,24 @@ async function verifyJob(jobId, event) {
     
     if (!confirm("Одобрить эту вакансию? Она появится в общем списке.")) return;
 
-    if (!window.db) {
-        alert("Ошибка: база данных недоступна");
+    if (!window.supabaseClient) {
+        alert("Ошибка: клиент Supabase недоступен");
         return;
     }
 
     try {
-        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-        await updateDoc(doc(window.db, 'jobs', jobId), { status: 'approved' });
+        // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+        const { error } = await window.supabaseClient
+            .from('jobs')
+            .update({ status: 'approved' })
+            .eq('id', jobId);
+        
+        if (error) {
+            throw new Error(error.message);
+        }
 
         if (window.showToast) showToast('Одобрено', 'Вакансия успешно верифицирована', 'success');
-        if (window.loadJobsFromFirestore) await window.loadJobsFromFirestore();
+        if (window.loadJobsFromSupabase) await window.loadJobsFromSupabase();
         if (window._updateModerationBadge) window._updateModerationBadge();
     } catch (error) {
         console.error("Ошибка верификации:", error.message);
