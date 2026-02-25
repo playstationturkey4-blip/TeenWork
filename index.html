@@ -3617,6 +3617,8 @@
             const endIndex = startIndex + STATE.jobsPerPage;
             const jobsToRender = STATE.filteredJobs.slice(startIndex, endIndex);
             
+            grid.innerHTML = '';
+            
             grid.innerHTML = jobsToRender.map(job => {
                 const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
                 const adminControls = isAdmin() ? `
@@ -3625,7 +3627,7 @@
                         <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
                             ${job.isTop ? 'Снять ТОР' : 'Сделать ТОР'}
                         </button>
-                        <button class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
+                        <button id="verify-btn-unique-${job.id}" class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
                             ✓ Верифицировать
                         </button>
                     </div>
