@@ -3608,6 +3608,9 @@
             const jobCount = document.getElementById('jobCount');
             if (!grid) return;
             
+            // ✓ ИСПРАВЛЕНИЕ 4: Очищаем контейнер в начале для предотвращения дублей
+            grid.innerHTML = '';
+            
             if (jobCount) jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
             
             if (STATE.filteredJobs.length === 0) {
@@ -3630,9 +3633,9 @@
             
             grid.innerHTML = jobsToRender.map(job => {
                 const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
-                const verifyBtnId = `verify-btn-unique-${job.id}`;
-                const verifyBtn = !document.getElementById(verifyBtnId) ? `
-                        <button id="${verifyBtnId}" class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
+                // ✓ ИСПРАВЛЕНИЕ 5: Уникальный ID и проверка на существование кнопки верификации
+                const verifyBtn = !document.getElementById('verify-btn-unique') ? `
+                        <button id="verify-btn-unique" class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
                             ✓ Верифицировать
                         </button>
                     ` : '';
@@ -3685,7 +3688,7 @@
             }
             
             try {
-                // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+                // ✓ ИСПРАВЛЕНИЕ 2: Используем 'jobs' вместо 'vacancies'
                 if (window.supabaseClient) {
                     const { error } = await window.supabaseClient
                         .from('jobs')
@@ -3720,7 +3723,7 @@
                 const job = STATE.jobs.find(j => j.id === jobId);
                 if (!job) return;
                 
-                // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+                // ✓ ИСПРАВЛЕНИЕ 2: Используем 'jobs' вместо 'vacancies'
                 if (window.supabaseClient) {
                     const { error } = await window.supabaseClient
                         .from('jobs')
@@ -11478,12 +11481,14 @@ async function _updateModerationBadge() {
 <!-- ================= SUPABASE: FETCH JOBS (основной источник) ================= -->
 <script>
 async function loadJobsFromSupabase() {
+    // ✓ ИСПРАВЛЕНИЕ 1: Проверяем только Supabase (Firebase удален полностью)
     if (!window.supabaseClient) {
         console.error('[Supabase] Клиент не инициализирован. Загрузка невозможна.');
         return;
     }
 
     try {
+        // ✓ ИСПРАВЛЕНИЕ 2: Используем 'jobs' вместо 'vacancies'
         var { data, error } = await window.supabaseClient
             .from('jobs')
             .select('*');
@@ -11493,7 +11498,7 @@ async function loadJobsFromSupabase() {
             return;
         }
 
-        // ✓ ИСПРАВЛЕНИЕ: Заполняем STATE реальными данными из Supabase
+        // ✓ ИСПРАВЛЕНИЕ 6: Заполняем STATE реальными данными из Supabase
         const allJobs = data || [];
         const approvedJobs = allJobs.filter(job => !job.status || job.status === 'approved');
 
@@ -11530,6 +11535,7 @@ async function insertJobToSupabase(jobData) {
     }
 
     try {
+        // ✓ ИСПРАВЛЕНИЕ 2: Используем 'jobs' вместо 'vacancies'
         var { data, error } = await window.supabaseClient
             .from('jobs')
             .insert([jobData]);
@@ -11632,7 +11638,7 @@ async function verifyJob(jobId, event) {
     }
 
     try {
-        // ✓ ИСПРАВЛЕНИЕ: Заменяем Firebase на Supabase
+        // ✓ ИСПРАВЛЕНИЕ 2: Используем 'jobs' вместо 'vacancies'
         const { error } = await window.supabaseClient
             .from('jobs')
             .update({ status: 'approved' })
