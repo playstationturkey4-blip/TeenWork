@@ -3654,14 +3654,14 @@
                     <div class="job-card" onclick="openApplyModal('${job.id}')">
                         ${adminBadge}
                         <div class="job-header">
-                            <div class="job-title">${job.title}</div>
-                            <div class="job-company">${job.company}</div>
-                            <div class="job-location">📍 ${job.city}</div>
+                            <div class="job-title">${job.title || 'Вакансия'}</div>
+                            <div class="job-company">${job.company || 'Компания не указана'}</div>
+                            <div class="job-location">📍 ${job.city || 'Город не указан'}</div>
                         </div>
                         <div class="job-details">
                             <div class="job-salary">${(job.salary ? job.salary.toLocaleString('ru-RU') : '0')} ₽</div>
                             <div class="job-tags">
-                                <span class="tag">${job.type}</span>
+                                <span class="tag">${job.type || 'Не указано'}</span>
                             </div>
                         </div>
                         <div class="job-footer">
@@ -11599,34 +11599,7 @@ async function insertJobToSupabase(jobData) {
     console.log("✅ СВЯЗЬ С SUPABASE УСТАНОВЛЕНА");
 })();
 
-// Функция, которая берет вакансии из базы и рисует их на сайте
-async function loadJobsFromSupabase() {
-    if (!window.mySupabase) return;
-
-    try {
-        const { data, error } = await window.mySupabase
-            .from('jobs')
-            .select('*')
-.eq('status', 'approved') // <--- Добавь эту строку!
-.order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Намеренно НЕ перезаписываем STATE.jobs — источник истины Firebase.
-        // Обновляем только счётчик если элемент есть
-        const numEl = document.getElementById('jobSectionNum');
-        if (numEl && data) numEl.textContent = data.length;
-        console.log("[Supabase] лог: вакансий в Supabase:", data ? data.length : 0);
-    } catch (err) {
-        console.error('❌ Ошибка загрузки:', err.message);
-    }
-}
-
-// Запуск через секунду после полной загрузки страницы
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(loadJobsFromSupabase, 1000);
-});
-    // Функция для одобрения вакансии (меняет статус на approved)
+// Функция для одобрения вакансии (меняет статус на approved)
 async function verifyJob(jobId, event) {
     if (event) event.stopPropagation();
     
