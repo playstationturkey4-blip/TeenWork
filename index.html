@@ -899,11 +899,9 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            pointer-events: none; /* не блокируем клики под контейнером */
         }
 
         .toast {
-            pointer-events: auto; /* сами тосты кликабельны */
             background: var(--white);
             padding: 18px 24px;
             border-radius: var(--radius-lg);
@@ -2803,7 +2801,6 @@
         };
         window.STATE = STATE;
         window.renderJobs = renderJobs;
-        window.isAdmin = isAdmin;
 
         const STORAGE = {
             USERS: 'teenwork_users',
@@ -3136,9 +3133,7 @@
 
         async function renderEmployerJobs() {
             const container = document.getElementById('employerJobsList');
-            // Используем allJobs чтобы работодатель видел свои pending вакансии
-            const sourceJobs = STATE.allJobs || STATE.jobs;
-            const userJobs = sourceJobs.filter(job => job.employerEmail === STATE.currentUser.email || job.employerId === (STATE.currentUser.uid || STATE.currentUser.email));
+            const userJobs = STATE.jobs.filter(job => job.employerEmail === STATE.currentUser.email || job.employerId === (STATE.currentUser.uid || STATE.currentUser.email));
             
             if (userJobs.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-gray); text-align: center; padding: 20px;">Вы еще не разместили ни одной вакансии</p>';
@@ -3166,7 +3161,7 @@
                     <div class="applied-job-item">
                         <div style="flex: 1;">
                             <div class="applied-job-title">${job.title}</div>
-                            <div class="applied-job-company">${job.company} • ${(job.salary || 0).toLocaleString('ru-RU')} ₽</div>
+                            <div class="applied-job-company">${job.company} • ${job.salary.toLocaleString('ru-RU')} ₽</div>
                             <div class="job-stats">
                                 👁️ Просмотров: ${viewCount} | 📩 Откликов: ${appCount}
                             </div>
@@ -3597,9 +3592,8 @@
         function renderJobs() {
             const grid = document.getElementById('jobsGrid');
             const jobCount = document.getElementById('jobCount');
-            if (!grid) return;
             
-            if (jobCount) jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
+            jobCount.textContent = `Найдено вакансий: ${STATE.filteredJobs.length}`;
             
             if (STATE.filteredJobs.length === 0) {
                 grid.innerHTML = `
@@ -3621,12 +3615,9 @@
                 const adminBadge = job.isTop ? '<div class="admin-badge">TOP</div>' : '';
                 const adminControls = isAdmin() ? `
                     <div class="admin-controls">
-                        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">удалить</button>
+                        <button class="btn btn-admin btn-danger" onclick="deleteJob('${job.id}', event)">Удалить</button>
                         <button class="btn btn-admin btn-warning" onclick="toggleTopJob('${job.id}', event)">
-                            ${job.isTop ? 'Снять ТОР' : 'Сделать ТОР'}
-                        </button>
-                        <button class="btn btn-admin btn-success" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;" onclick="verifyJob('${job.id}', event)">
-                            ✓ Верифицировать
+                            ${job.isTop ? 'Снять TOP' : 'Сделать TOP'}
                         </button>
                     </div>
                 ` : '';
@@ -3640,7 +3631,7 @@
                             <div class="job-location">📍 ${job.city}</div>
                         </div>
                         <div class="job-details">
-                            <div class="job-salary">${(job.salary ? job.salary.toLocaleString('ru-RU') : '0')} ₽</div>
+                            <div class="job-salary">${job.salary.toLocaleString('ru-RU')} ₽</div>
                             <div class="job-tags">
                                 <span class="tag">${job.type}</span>
                             </div>
@@ -3762,7 +3753,6 @@
 
         function openModal(modalId, contentKey) {
             const modal = document.getElementById(modalId);
-            if (!modal) { console.warn('openModal: modal not found:', modalId); return; }
             
             if (modalId === 'infoModal' && contentKey) {
                 const content = INFO_CONTENT[contentKey];
@@ -3779,7 +3769,6 @@
 
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
-            if (!modal) { console.warn('closeModal: modal not found:', modalId); return; }
             modal.classList.add('hiding');
             
             if (modalId === 'chatModal' && STATE.chatUnsubscribe) {
@@ -3893,7 +3882,7 @@
                     <h3 style="margin-bottom: 10px; font-weight: 700; font-size: 22px;">${job.title}</h3>
                     <p style="color: var(--text-gray); margin-bottom: 20px; font-weight: 600;">${job.company} • ${job.city}</p>
                     <div style="background: var(--light-gray); padding: 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
-                        <strong>Зарплата:</strong> ${(job.salary || 0).toLocaleString('ru-RU')} ₽<br>
+                        <strong>Зарплата:</strong> ${job.salary.toLocaleString('ru-RU')} ₽<br>
                         <strong>Тип:</strong> ${job.type}
                     </div>
                     <p style="line-height: 1.7; color: var(--text-gray); font-weight: 500;">${job.description}</p>
@@ -4034,12 +4023,6 @@
             initStorage();
             updateNavbar();
             initEventListeners();
-            // Загружаем вакансии из Firestore при старте
-            setTimeout(function() {
-                if (window.loadJobsFromFirestore) {
-                    window.loadJobsFromFirestore();
-                }
-            }, 500); // небольшая задержка, чтобы Firebase успел инициализироваться
         }
 
         document.addEventListener('DOMContentLoaded', init);
@@ -4313,22 +4296,18 @@
 
   async function loadJobsFromFirestore() {
     const snapshot = await getDocs(collection(db, "jobs"));
-    const allJobs = [];
-    const approvedJobs = [];
+    const jobs = [];
 
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
-      const job = { id: docSnap.id, ...data };
-      allJobs.push(job);
       if (!data.status || data.status === "approved") {
-        approvedJobs.push(job);
+        jobs.push({ id: docSnap.id, ...data });
       }
     });
 
     if (window.STATE) {
-      window.STATE.jobs = approvedJobs;         // В общем списке — только одобренные
-      window.STATE.allJobs = allJobs;           // Все вакансии — для работодателя и админа
-      window.STATE.filteredJobs = [...approvedJobs];
+      window.STATE.jobs = jobs;
+      window.STATE.filteredJobs = [...jobs];
       window.STATE.currentPage = 1;
 
       if (window.renderJobs) {
@@ -4336,7 +4315,7 @@
       }
     }
 
-    console.log("Вакансии загружены из Firestore:", approvedJobs.length, "approved /", allJobs.length, "всего");
+    console.log("Вакансии загружены из Firestore:", jobs.length);
   }
 
   window.loadJobsFromFirestore = loadJobsFromFirestore;
@@ -4794,14 +4773,20 @@ async function _markMessagesAsRead(chatId, currentUserId, messagesSnapshot) {
         const doRender = () => {
             _orig();
             // Upgrade jobCount element to styled badge
-            // Читаем число ПОСЛЕ _orig() — STATE уже обновлён
             const jobCount = document.getElementById('jobCount');
-            const n = (window.STATE && window.STATE.filteredJobs) ? window.STATE.filteredJobs.length : 0;
             if (jobCount && !jobCount.querySelector('.job-count-badge')) {
+                const raw = jobCount.textContent || '';
+                const match = raw.match(/\d+/);
+                const n = match ? match[0] : '0';
                 jobCount.innerHTML = `<span class="job-count-badge loaded"><span class="job-count-number">${n}</span> вакансий найдено</span>`;
             } else if (jobCount && jobCount.querySelector('.job-count-badge')) {
+                // Update number inside existing badge
                 const numEl = jobCount.querySelector('.job-count-number');
-                if (numEl) numEl.textContent = n;
+                if (numEl) {
+                    const raw = jobCount.textContent || '';
+                    const match = raw.match(/\d+/);
+                    if (match) numEl.textContent = match[0];
+                }
                 const badge = jobCount.querySelector('.job-count-badge');
                 if (badge) {
                     badge.classList.remove('pop', 'loaded');
@@ -4813,7 +4798,8 @@ async function _markMessagesAsRead(chatId, currentUserId, messagesSnapshot) {
         };
 
         if (hasContent) {
-            doRender();
+            grid.classList.add('rendering');
+            setTimeout(() => { grid.classList.remove('rendering'); doRender(); }, 110);
         } else {
             doRender();
         }
@@ -7328,7 +7314,7 @@ function renderFavoritesInProfile() {
                     <button class="fav-remove-btn" onclick="toggleLike('${job.id}', null); event.stopPropagation();" title="Удалить">✕</button>
                     <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px; padding-right: 20px;">${job.title}</div>
                     <div style="font-size: 13px; color: var(--text-gray); margin-bottom: 8px;">${job.company}</div>
-                    <div style="font-weight: 700; color: var(--primary-blue); font-size: 14px;">${(job.salary || 0).toLocaleString('ru-RU')} ₽</div>
+                    <div style="font-weight: 700; color: var(--primary-blue); font-size: 14px;">${job.salary.toLocaleString('ru-RU')} ₽</div>
                 </div>
             `;
         }
@@ -8073,10 +8059,8 @@ window.openApplyModal = async function(jobId, event) {
         if (!grid) return;
 
         // Check if the original rendered an .empty-state
-        // ВАЖНО: не показываем "не найдено" если вакансии ещё не загружены из Firebase
         const oldEmpty = grid.querySelector('.empty-state');
-        const jobsLoaded = window.STATE && window.STATE.jobs && window.STATE.jobs.length > 0;
-        if (oldEmpty && window.STATE && window.STATE.filteredJobs.length === 0 && jobsLoaded) {
+        if (oldEmpty && window.STATE && window.STATE.filteredJobs.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state-enhanced" style="grid-column: 1 / -1;">
                     <span class="ese-icon">🔍</span>
@@ -11343,8 +11327,6 @@ async function _updateModerationBadge() {
 
 </style>
 
-</style>
-
 <script>
 // ============================================================
 // STEP 3 — QUICK FILTER TAGS ROW (JS — additive only)
@@ -11523,564 +11505,5 @@ async function _updateModerationBadge() {
 
 })();
 </script>
-
-<!-- ================= SUPABASE CONNECTION ================= -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(function initSupabase() {
-    var SUPABASE_URL = "https://edltxsziwwvbdnpblxzc.supabase.co";
-    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbHR4c3ppd3d2YmRucGJseHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjUzNTYsImV4cCI6MjA4NzUwMTM1Nn0._61qClwHcOvsPoh58YijOz1DFv7TEdMg4mSC6Xws7xgf";
-
-    if (!window.supabase) {
-        console.error('[Supabase] Библиотека не загружена');
-        return;
-    }
-
-    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('[Supabase] Клиент успешно инициализирован');
-})();
-</script>
-
-<!-- ================= SUPABASE: FETCH JOBS ================= -->
-<script>
-async function loadJobsFromSupabase() {
-    if (!window.supabaseClient) {
-        console.error('[Supabase] Клиент не инициализирован. Загрузка невозможна.');
-        return;
-    }
-
-    try {
-        var { data, error } = await window.supabaseClient
-            .from('jobs')
-            .select('*');
-
-        if (error) {
-            console.error('[Supabase] Ошибка загрузки вакансий:', error.message);
-            return;
-        }
-
-        console.log('[Supabase] Вакансии из Supabase (только лог, не перезаписываем STATE):', data.length);
-        // Намеренно НЕ перезаписываем STATE.jobs — основной источник данных Firebase.
-        // Supabase используется только для вставки через insertJobToSupabase.
-    } catch (err) {
-        console.error('[Supabase] Неожиданная ошибка при загрузке вакансий:', err);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadJobsFromSupabase();
-});
-</script>
-
-<!-- ================= SUPABASE: INSERT JOB ================= -->
-<script>
-async function insertJobToSupabase(jobData) {
-    if (!window.supabaseClient) {
-        console.error('[Supabase] Клиент не инициализирован. Вставка невозможна.');
-        return { success: false, error: 'Клиент не инициализирован' };
-    }
-
-    try {
-        var { data, error } = await window.supabaseClient
-            .from('jobs')
-            .insert([jobData]);
-
-        if (error) {
-            console.error('[Supabase] Ошибка при добавлении вакансии:', error.message);
-            return { success: false, error: error.message };
-        }
-
-        console.log('[Supabase] Вакансия успешно добавлена:', data);
-        return { success: true, data: data };
-    } catch (err) {
-        console.error('[Supabase] Неожиданная ошибка при добавлении вакансии:', err);
-        return { success: false, error: err.message };
-    }
-}
-</script>
-
-
-<!-- ================= SUPABASE: ERROR HANDLING ================= -->
-<script>
-(function setupSupabaseErrorHandling() {
-    window.supabaseSafe = async function(label, asyncFn) {
-        console.log('[Supabase][' + label + '] Запрос начат...');
-        try {
-            var result = await asyncFn();
-
-            if (result && result.error) {
-                console.error('[Supabase][' + label + '] ❌ Ошибка:', result.error.message || result.error);
-                return { success: false, error: result.error };
-            }
-
-            console.log('[Supabase][' + label + '] ✅ Успешно:', result && result.data ? result.data : result);
-            return { success: true, data: result && result.data };
-        } catch (err) {
-            console.error('[Supabase][' + label + '] ❌ Исключение:', err.message || err);
-            return { success: false, error: err };
-        }
-    };
-
-    console.log('[Supabase] Обработчик ошибок установлен. Используйте window.supabaseSafe("Метка", asyncFn)');
-})();
-</script>
-<!-- SUPABASE CORE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(function initSupabase() {
-    // Кавычки добавлены, адрес исправлен
-    const URL = "https://edltxsziwwvbdnpblxzc.supabase.co";
-    const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbHR4c3ppd3d2YmRucGJseHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjUzNTYsImV4cCI6MjA4NzUwMTM1Nn0._61qClwHcOvsPoh58YijOz1DFv7TEdMg4mSC6Xws7xg";
-
-    if (!window.supabase) {
-        console.error('Ошибка: Supabase не загружен');
-        return;
-    }
-
-    // Создаем клиент под именем mySupabase
-    window.mySupabase = window.supabase.createClient(URL, KEY);
-    console.log("✅ СВЯЗЬ С SUPABASE УСТАНОВЛЕНА");
-})();
-
-// Функция, которая берет вакансии из базы и рисует их на сайте
-async function loadJobsFromSupabase() {
-    if (!window.mySupabase) return;
-
-    try {
-        const { data, error } = await window.mySupabase
-            .from('jobs')
-            .select('*')
-.eq('status', 'approved') // <--- Добавь эту строку!
-.order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Намеренно НЕ перезаписываем STATE.jobs — источник истины Firebase.
-        // Обновляем только счётчик если элемент есть
-        const numEl = document.getElementById('jobSectionNum');
-        if (numEl && data) numEl.textContent = data.length;
-        console.log("[Supabase] лог: вакансий в Supabase:", data ? data.length : 0);
-    } catch (err) {
-        console.error('❌ Ошибка загрузки:', err.message);
-    }
-}
-
-// Запуск через секунду после полной загрузки страницы
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(loadJobsFromSupabase, 1000);
-});
-    // Функция для одобрения вакансии (меняет статус на approved)
-async function verifyJob(jobId, event) {
-    if (event) event.stopPropagation();
-    
-    if (!confirm("Одобрить эту вакансию? Она появится в общем списке.")) return;
-
-    if (!window.db) {
-        alert("Ошибка: база данных недоступна");
-        return;
-    }
-
-    try {
-        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-        await updateDoc(doc(window.db, 'jobs', jobId), { status: 'approved' });
-
-        if (window.showToast) showToast('Одобрено', 'Вакансия успешно верифицирована', 'success');
-        if (window.loadJobsFromFirestore) await window.loadJobsFromFirestore();
-        if (window._updateModerationBadge) window._updateModerationBadge();
-    } catch (error) {
-        console.error("Ошибка верификации:", error.message);
-        alert("Ошибка: " + error.message);
-    }
-}
-</script>
-<!-- ================= MOBILE UX FINAL POLISH ================= -->
-<style>
-@media (max-width: 768px) {
-
-    /* === НАВБАР: убираем лишнее, оставляем только нужное === */
-    .nav-container {
-        padding: 0 14px;
-    }
-    /* Кнопка профиля в навбаре — только аватар, без текста */
-    .nav-profile-text { display: none !important; }
-    /* Кнопка входа в навбаре — компактнее */
-    .nav-actions .btn-secondary:first-child {
-        padding: 9px 14px;
-        font-size: 13px;
-    }
-    /* Кнопка регистрации — убираем на совсем маленьких если нет места */
-    .nav-actions .btn-secondary:nth-child(2) {
-        display: none;
-    }
-
-    /* === HERO: компактнее, без лишних отступов === */
-    .hero {
-        padding: 36px 16px 32px !important;
-    }
-    .hero h1 {
-        font-size: 30px !important;
-        margin-bottom: 12px;
-    }
-    .hero p {
-        font-size: 15px !important;
-        margin-bottom: 20px;
-    }
-    .hero-actions {
-        gap: 8px;
-    }
-    .btn-hero {
-        width: 100%;
-        justify-content: center;
-        padding: 15px 20px;
-        font-size: 15px;
-        border-radius: 14px;
-    }
-
-    /* === ФИЛЬТРЫ: горизонтальный скролл для тегов === */
-    .filters-section {
-        padding: 12px 14px;
-    }
-    .filters-grid {
-        gap: 8px;
-    }
-
-    /* === КАРТОЧКИ: приятнее на тапе === */
-    .job-card {
-        padding: 18px 16px 16px !important;
-        border-radius: 18px !important;
-        /* Убираем hover-эффекты на тач устройствах */
-        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-    }
-    .job-card:active {
-        transform: scale(0.98) !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-    }
-    /* Убираем hover-трансформацию на мобильном (она мешает) */
-    .job-card:hover {
-        transform: none !important;
-    }
-    .job-header {
-        margin-bottom: 12px;
-    }
-    .job-title {
-        font-size: 16px !important;
-        font-weight: 700;
-        margin-bottom: 4px;
-        line-height: 1.3;
-    }
-    .job-company {
-        font-size: 13px !important;
-        margin-bottom: 2px;
-    }
-    .job-location {
-        font-size: 12px !important;
-    }
-    .job-details {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 12px;
-    }
-    .job-salary {
-        font-size: 19px !important;
-        font-weight: 800;
-    }
-    .tag {
-        font-size: 11px !important;
-        padding: 4px 10px !important;
-    }
-
-    /* === КНОПКА ОТКЛИКА: крупная, удобная === */
-    .btn-apply {
-        width: 100% !important;
-        min-height: 50px !important;
-        font-size: 15px !important;
-        border-radius: 14px !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.2px;
-    }
-
-    /* === МОДАЛЫ: sheet снизу с ручкой-индикатором === */
-    .modal-content {
-        border-radius: 24px 24px 0 0 !important;
-    }
-    /* Полоска-ручка вверху модала */
-    .modal-content::before {
-        content: '';
-        display: block;
-        width: 36px;
-        height: 4px;
-        border-radius: 2px;
-        background: var(--border-gray);
-        margin: 12px auto -4px;
-        flex-shrink: 0;
-    }
-    .modal-header {
-        border-radius: 24px 24px 0 0 !important;
-        padding: 16px 20px 14px !important;
-    }
-    .modal-header h3 {
-        font-size: 18px;
-    }
-    .modal-close {
-        width: 34px !important;
-        height: 34px !important;
-        min-height: 34px !important;
-        font-size: 20px !important;
-        border-radius: 50% !important;
-        background: var(--light-gray) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0;
-    }
-    .modal-body {
-        padding: 8px 20px 40px !important;
-    }
-
-    /* === ФОРМА РЕГИСТРАЦИИ/ВХОДА: удобнее на телефоне === */
-    .form-group {
-        margin-bottom: 14px;
-    }
-    .form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 6px;
-        display: block;
-    }
-
-    /* === ПРОФИЛЬ: во весь экран === */
-    .profile-page .modal-content {
-        border-radius: 0 !important;
-        max-height: 100dvh !important;
-    }
-    .profile-page .modal-content::before {
-        display: none;
-    }
-    .profile-header {
-        padding: 20px 16px 16px !important;
-    }
-
-    /* === ПАГИНАЦИЯ: крупнее кнопки === */
-    .page-btn {
-        min-width: 42px !important;
-        min-height: 42px !important;
-        font-size: 14px !important;
-        border-radius: 11px !important;
-    }
-
-    /* === СОРТИРОВКА: во всю ширину === */
-    .sort-dropdown select,
-    #sortFilter {
-        width: 100%;
-        min-height: 44px;
-        font-size: 15px;
-    }
-
-    /* === ЧАТ: лучше под клавиатуру === */
-    #chatModal .modal-content {
-        max-height: 100dvh !important;
-        border-radius: 0 !important;
-    }
-    #chatModal .modal-content::before { display: none; }
-    .chat-messages {
-        padding: 12px !important;
-    }
-    .chat-message {
-        max-width: 82% !important;
-        font-size: 14px !important;
-        padding: 10px 13px !important;
-    }
-    .chat-input-area {
-        padding: 10px 12px !important;
-        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
-        gap: 8px !important;
-    }
-    .chat-input {
-        font-size: 16px !important;
-        min-height: 44px !important;
-        border-radius: 22px !important;
-        padding: 12px 16px !important;
-    }
-    .chat-send-btn,
-    .chat-attach-btn,
-    .chat-voice-btn {
-        width: 44px !important;
-        height: 44px !important;
-        min-height: 44px !important;
-        border-radius: 22px !important;
-        flex-shrink: 0;
-    }
-
-    /* === НИЖНИЙ НАВБАР: красивее и удобнее === */
-    .bottom-nav {
-        height: 60px !important;
-        padding: 0 12px !important;
-        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-        gap: 4px;
-    }
-    .bottom-nav-item {
-        border-radius: 14px !important;
-        padding: 6px 4px !important;
-    }
-    .bottom-nav-icon {
-        font-size: 20px !important;
-    }
-    .bottom-nav-label {
-        font-size: 10px !important;
-    }
-
-    /* === ТОСТЫ: выше нижней панели === */
-    .toast-container {
-        bottom: 76px !important;
-    }
-
-    /* === СЕКЦИЯ ИНФОРМАЦИИ: компактнее === */
-    .info-grid {
-        gap: 10px !important;
-    }
-    .info-card {
-        padding: 18px 16px !important;
-        border-radius: 16px !important;
-    }
-    .info-icon {
-        width: 44px !important;
-        height: 44px !important;
-        font-size: 20px !important;
-        border-radius: 12px !important;
-    }
-
-    /* === FAQ: удобнее для тапа === */
-    .faq-question {
-        padding: 16px !important;
-        font-size: 14px !important;
-        min-height: 52px;
-        display: flex;
-        align-items: center;
-    }
-    .faq-answer p {
-        font-size: 13px !important;
-        line-height: 1.6;
-    }
-
-    /* === ФУТЕР: компактнее === */
-    .footer {
-        padding: 32px 16px !important;
-    }
-    .footer-bottom {
-        flex-direction: column;
-        gap: 8px;
-        text-align: center;
-    }
-
-    /* === SCROLL TO TOP КНОПКА: выше нижней панели === */
-    #scrollTopBtn, .scroll-top-btn {
-        bottom: 76px !important;
-        right: 14px !important;
-        width: 44px !important;
-        height: 44px !important;
-    }
-}
-
-/* === ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (≤360px) === */
-@media (max-width: 360px) {
-    .hero h1 { font-size: 26px !important; }
-    .job-title { font-size: 14px !important; }
-    .job-salary { font-size: 17px !important; }
-    .bottom-nav-label { display: none; }
-    .bottom-nav-item { padding: 10px 4px !important; }
-    .bottom-nav-icon { font-size: 22px !important; }
-    .modal-body { padding: 8px 14px 40px !important; }
-}
-
-/* === ТЁМНАЯ ТЕМА + МОБИЛЬНЫЙ === */
-@media (max-width: 768px) {
-    body.dark-theme .modal-content::before {
-        background: var(--dt-border-mid);
-    }
-    body.dark-theme .modal-close {
-        background: var(--dt-surface-2) !important;
-        color: var(--text-gray);
-    }
-    body.dark-theme .bottom-nav {
-        background: rgba(26, 29, 39, 0.97) !important;
-        border-top-color: var(--border-gray) !important;
-    }
-    body.dark-theme .job-card:active {
-        box-shadow: 0 2px 12px rgba(0,0,0,0.35) !important;
-    }
-}
-</style>
-
-<!-- ================= MOBILE UX ================= -->
-<style>
-@media (max-width: 768px) {
-
-    /* НАВБАР */
-    .nav-container { padding: 0 16px; }
-    .logo { font-size: 22px; }
-    .nav-profile-text { display: none; }
-    .user-avatar { width: 40px; height: 40px; font-size: 15px; }
-
-    /* ГЕРОЙ */
-    .hero { padding: 44px 16px 36px; text-align: center; }
-    .hero h1 { font-size: 30px !important; line-height: 1.2; }
-    .hero p { font-size: 16px !important; }
-    .btn-hero { padding: 14px 20px; font-size: 15px; width: 100%; }
-
-    /* ФИЛЬТРЫ — инпуты без авто-зума на iOS */
-    .filters-section { padding: 16px; }
-    .filters-grid { gap: 10px; }
-    .input, select, textarea { font-size: 16px !important; min-height: 48px; }
-
-    /* ВАКАНСИИ */
-    .jobs-section { padding: 20px 12px !important; }
-    .job-card { padding: 18px 16px 16px !important; border-radius: 16px !important; }
-    .job-title { font-size: 16px !important; font-weight: 700; }
-    .job-salary { font-size: 19px !important; font-weight: 800; }
-    .btn-apply { width: 100% !important; min-height: 48px !important; font-size: 15px !important; }
-
-    /* ПАГИНАЦИЯ */
-    .pagination { gap: 6px; flex-wrap: wrap; justify-content: center; }
-    .page-btn { min-width: 40px; min-height: 40px; }
-
-    /* КНОПКИ — минимум 44px высота для удобного нажатия */
-    .btn { min-height: 44px; }
-    .btn-small { min-height: 36px; }
-
-    /* ТОСТЫ — выше нижнего меню */
-    .toast-container { bottom: 76px !important; left: 12px; right: 12px; }
-    .toast { min-width: auto; max-width: none; border-radius: 14px; }
-
-    /* QUICK TAGS */
-    .quick-tag { padding: 8px 14px; font-size: 13px; min-height: 36px; }
-
-    /* ПРОФИЛЬ — полноэкранный */
-    .profile-title h1 { font-size: 26px !important; }
-    .profile-page { padding-bottom: 80px; }
-
-    /* FAQ */
-    .faq-question { padding: 16px 18px; font-size: 15px; }
-
-    /* ИНФОРМАЦИЯ */
-    .info-section { padding: 28px 16px !important; }
-    .info-card { padding: 20px !important; }
-}
-
-/* Совсем маленькие экраны — iPhone SE */
-@media (max-width: 380px) {
-    .hero h1 { font-size: 25px !important; }
-    .job-salary { font-size: 17px !important; }
-}
-
-/* Тёмная тема на мобильном */
-@media (max-width: 768px) {
-    body.dark-theme .toast-container { bottom: 76px !important; }
-}
-</style>
-
-
 </body>
 </html>
