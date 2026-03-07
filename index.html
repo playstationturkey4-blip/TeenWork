@@ -2533,6 +2533,7 @@
                         <div class="form-error">Неверный пароль или email</div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Войти</button>
+                    <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="handleForgotPassword()">Забыли пароль?</button>
                 </form>
             </div>
         </div>
@@ -11505,5 +11506,27 @@ async function _updateModerationBadge() {
 
 })();
 </script>
+<script>
+async function handleForgotPassword() {
+    const emailInput = document.querySelector('#loginModal input[name="email"]');
+    const email = emailInput ? emailInput.value.trim() : '';
+
+    if (!email) {
+        showToast('Ошибка', 'Введите email в поле выше', 'error');
+        return;
+    }
+
+    try {
+        const { getAuth, sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+        const auth = getAuth();
+        await sendPasswordResetEmail(auth, email);
+        showToast('Письмо отправлено', 'Проверьте вашу почту для восстановления пароля', 'success');
+        closeModal('loginModal');
+    } catch (error) {
+        showToast('Ошибка', error.message, 'error');
+    }
+}
+</script>
+
 </body>
 </html>
