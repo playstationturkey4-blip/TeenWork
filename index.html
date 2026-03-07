@@ -3377,25 +3377,36 @@
             showToast('До встречи!', 'Вы вышли из аккаунта', 'success');
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const email = formData.get('email');
+            const email = formData.get('email').trim().toLowerCase();
             const password = formData.get('password');
 
-            const user = STATE.users.find(u => u.email === email);
-            
-            if (!user || user.password !== password) {
+            try {
+                const { getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                const auth = getAuth();
+                const result = await signInWithEmailAndPassword(auth, email, password);
+
+                const firebaseUser = result.user;
+                const existingUser = STATE.users.find(u => u.email === email);
+                STATE.currentUser = existingUser || {
+                    email: firebaseUser.email,
+                    uid: firebaseUser.uid,
+                    nickname: firebaseUser.displayName || email.split('@')[0],
+                    role: ADMIN_EMAILS.includes(email) ? 'employer' : 'worker',
+                    avatar: null,
+                    createdAt: Date.now()
+                };
+
+                saveCurrentUser();
+                updateNavbar();
+                closeModal('loginModal');
+                showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
+            } catch (error) {
                 const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
                 formGroup.classList.add('error');
-                return;
             }
-
-            STATE.currentUser = user;
-            saveCurrentUser();
-            updateNavbar();
-            closeModal('loginModal');
-            showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
         }
 
         function handleRegister(e) {
