@@ -3532,10 +3532,17 @@
             document.body.style.overflow = 'auto';
         }
 
-        function logout() {
+        async function logout() {
             if (STATE.chatUnsubscribe) {
                 STATE.chatUnsubscribe();
                 STATE.chatUnsubscribe = null;
+            }
+            // FIX: явный signOut из Firebase Auth — иначе токен остаётся активным
+            try {
+                const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                await signOut(getAuth());
+            } catch (e) {
+                console.warn('[logout] Firebase signOut error:', e.message);
             }
             STATE.currentUser = null;
             saveCurrentUser();
@@ -3557,19 +3564,24 @@
 
                 const firebaseUser = result.user;
                 const existingUser = STATE.users.find(u => u.email === email);
-                STATE.currentUser = existingUser || {
-                    email: firebaseUser.email,
-                    uid: firebaseUser.uid,
-                    nickname: firebaseUser.displayName || email.split('@')[0],
-                    role: ADMIN_EMAILS.includes(email) ? 'employer' : 'worker',
-                    avatar: null,
-                    createdAt: Date.now()
-                };
+                // FIX: всегда синхронизируем uid из Firebase — даже если юзер уже есть в localStorage
+                STATE.currentUser = existingUser
+                    ? { ...existingUser, uid: firebaseUser.uid }
+                    : {
+                        email: firebaseUser.email,
+                        uid: firebaseUser.uid,
+                        nickname: firebaseUser.displayName || email.split('@')[0],
+                        role: ADMIN_EMAILS.includes(email) ? 'employer' : 'worker',
+                        avatar: null,
+                        createdAt: Date.now()
+                    };
 
                 saveCurrentUser();
                 updateNavbar();
                 closeModal('loginModal');
                 showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
+                // FIX: запускаем presence сразу после успешного входа
+                if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
             } catch (error) {
                 const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
                 formGroup.classList.add('error');
@@ -3828,24 +3840,41 @@
 
         async function deleteJob(jobId, event) {
             if (event) event.stopPropagation();
-            
+
             if (!isAdmin()) {
                 showToast('Ошибка', 'Только админ может удалять вакансии', 'error');
                 return;
             }
-            
+
+            // FIX: проверяем Firebase Auth токен перед удалением —
+            // STATE.currentUser из localStorage может быть устаревшим после смены домена
+            try {
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                const fbUser = getAuth().currentUser;
+                if (!fbUser) {
+                    showToast('Ошибка сессии', 'Выйдите и войдите снова — Firebase не видит вашу сессию', 'error');
+                    return;
+                }
+                // FIX: принудительно обновляем токен перед записью в Firestore
+                await fbUser.getIdToken(true);
+            } catch (authErr) {
+                console.warn('[deleteJob] auth check failed:', authErr.message);
+                showToast('Ошибка авторизации', 'Не удалось проверить сессию', 'error');
+                return;
+            }
+
             if (!confirm('Вы уверены, что хотите удалить эту вакансию?')) {
                 return;
             }
-            
+
             try {
                 if (window.db) {
                     const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
                     await deleteDoc(doc(window.db, "jobs", jobId));
                 }
-                
+
                 showToast('Успешно', 'Вакансия удалена', 'success');
-                
+
                 if (window.loadJobsFromFirestore) {
                     await window.loadJobsFromFirestore();
                 }
@@ -4498,7 +4527,37 @@
   }
 
   window.loadJobsFromFirestore = loadJobsFromFirestore;
-  
+
+  // FIX: onAuthStateChanged — восстанавливает сессию Firebase после переезда на новый домен.
+  // Без этого getAuth().currentUser = null при первой загрузке страницы,
+  // что приводит к ошибке "Missing or insufficient permissions" при presence/delete.
+  import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js').then(({ getAuth, onAuthStateChanged }) => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // Токен активен — синхронизируем uid в STATE.currentUser если нужно
+        if (window.STATE && window.STATE.currentUser) {
+          if (window.STATE.currentUser.email === firebaseUser.email && window.STATE.currentUser.uid !== firebaseUser.uid) {
+            window.STATE.currentUser.uid = firebaseUser.uid;
+            if (window.saveCurrentUser) window.saveCurrentUser();
+            console.log('[auth] uid synced from Firebase:', firebaseUser.uid);
+          }
+          // Обновляем presence — теперь токен точно валиден
+          if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
+        }
+        console.log('[auth] session restored for:', firebaseUser.email);
+      } else {
+        // Firebase не видит сессию — сбрасываем STATE чтобы не было расхождения
+        if (window.STATE && window.STATE.currentUser) {
+          console.warn('[auth] Firebase session lost — clearing STATE.currentUser');
+          window.STATE.currentUser = null;
+          if (window.saveCurrentUser) window.saveCurrentUser();
+          if (window.updateNavbar) window.updateNavbar();
+        }
+      }
+    });
+  }).catch(e => console.warn('[auth] onAuthStateChanged init error:', e.message));
+
   uploadInitialJobs();
   loadJobsFromFirestore();
 </script>
@@ -4641,14 +4700,23 @@ function _formatLastSeen(ts) {
     return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${time}`;
 }
 
-// Write presence fields to Firestore users/{userId}
+// Write presence fields to Firestore presence/{userId}
+// FIX: используем коллекцию 'presence', а не 'users' —
+// правила Firestore разрешают write только в presence/{userId} для авторизованных.
 async function _writePresence(isOnline) {
     if (!window.db || !window.STATE || !window.STATE.currentUser) return;
     const userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
     if (!userId) return;
     try {
+        const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+        const fbUser = getAuth().currentUser;
+        // FIX: дополнительная проверка — пишем только если Firebase тоже считает юзера авторизованным
+        if (!fbUser) {
+            console.warn('[presence] skipped: Firebase currentUser is null');
+            return;
+        }
         const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-        await setDoc(doc(window.db, 'users', userId), {
+        await setDoc(doc(window.db, 'presence', userId), {
             isOnline: isOnline,
             lastSeen: Date.now(),
             nickname: window.STATE.currentUser.nickname || '',
@@ -4682,11 +4750,12 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Subscribe to another user's presence in real-time
+// FIX: читаем из 'presence', куда теперь пишет _writePresence
 async function _subscribeToPresence(userId, callback) {
     if (!window.db || !userId) return null;
     try {
         const { doc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-        return onSnapshot(doc(window.db, 'users', userId), snap => {
+        return onSnapshot(doc(window.db, 'presence', userId), snap => {
             if (snap.exists()) {
                 const d = snap.data();
                 callback(!!d.isOnline, d.lastSeen || null);
