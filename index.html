@@ -12928,5 +12928,509 @@ async function handleForgotPassword() {
 })();
 </script>
 
+<!-- ================================================================
+     MOBILE RESPONSIVE LAYER — max-width: 768px
+     Добавлено отдельным блоком. Десктопные стили не затронуты.
+     ================================================================ -->
+<style>
+@media (max-width: 768px) {
+
+  /* ── ГЛОБАЛЬНАЯ ЗАЩИТА ОТ ГОРИЗОНТАЛЬНОГО СКРОЛЛА ── */
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+
+
+  /* ════════════════════════════════════════════════════
+     НАВИГАЦИЯ
+  ════════════════════════════════════════════════════ */
+  .nav { padding: 10px 0; }
+  .nav-container { padding: 0 14px; gap: 8px; }
+  .logo { font-size: 22px !important; letter-spacing: -0.5px; }
+  .nav-actions { gap: 6px; }
+  .nav-profile-wrapper { padding: 6px 8px; }
+  .nav-profile-text { display: none; }
+  .user-avatar { width: 36px !important; height: 36px !important; font-size: 13px !important; }
+  .admin-panel-badge { font-size: 10px; padding: 4px 8px; }
+  .theme-toggle-btn { width: 36px !important; height: 36px !important; font-size: 16px !important; }
+  /* Кнопка уведомлений */
+  .notif-bell-btn { width: 38px !important; height: 38px !important; font-size: 18px !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     HERO — новый Gen-Z блок
+  ════════════════════════════════════════════════════ */
+  .hero {
+    padding: 60px 16px 90px !important;
+    min-height: auto !important;
+  }
+
+  /* Orb-декорации не должны создавать overflow */
+  .hero-bg-orbs,
+  .hero-floating-tags { overflow: hidden !important; }
+  .orb-1 { width: 260px !important; height: 260px !important; top: -80px !important; right: -60px !important; }
+  .orb-2 { width: 180px !important; height: 180px !important; }
+  .orb-3 { display: none !important; }
+  .hero-floating-tags { display: none !important; } /* скрыты на <480px уже, добавляем на 768 */
+
+  /* Trust-badge */
+  .hero-trust-badge { font-size: 11px; padding: 6px 14px; margin-bottom: 20px; }
+
+  /* Заголовок */
+  .hero-headline {
+    font-size: clamp(30px, 9vw, 48px) !important;
+    letter-spacing: -1.5px !important;
+    margin-bottom: 14px !important;
+  }
+  .headline-line-1 { font-size: 11px !important; letter-spacing: 2px !important; }
+  .headline-accent { font-size: 13px !important; margin-top: 6px; }
+
+  /* Подзаголовок */
+  .hero-sub { font-size: 15px !important; margin-bottom: 20px !important; }
+
+  /* Статистика — раскладываем в колонку, убираем разделители */
+  .hero-stats-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 20px !important;
+    width: 100% !important;
+    max-width: 300px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-bottom: 24px !important;
+  }
+  .hstat-divider { display: none !important; }
+  .hstat { padding: 0 !important; }
+
+  /* CTA-кнопки — в колонку на всю ширину */
+  .hero-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 320px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-bottom: 24px !important;
+    gap: 10px !important;
+  }
+  .btn-cta-primary,
+  .btn-cta-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+  }
+
+  /* Social proof */
+  .hero-social-proof { gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .sp-text { font-size: 12px; text-align: center; }
+  .sp-av { width: 28px; height: 28px; font-size: 10px; }
+
+  /* Scroll hint */
+  .hero-scroll-hint { bottom: 12px; width: 34px; height: 34px; }
+
+
+  /* ════════════════════════════════════════════════════
+     БЛОК ФИЛЬТРОВ
+  ════════════════════════════════════════════════════ */
+  .filters-section {
+    padding: 18px 14px !important;
+    margin-top: -40px !important;
+    border-radius: 14px !important;
+  }
+  .filters-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+  }
+  .filter-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .filter-actions .btn {
+    min-width: unset !important;
+    width: 100% !important;
+  }
+  .sort-dropdown {
+    margin-left: 0 !important;
+    min-width: unset !important;
+    width: 100% !important;
+  }
+  /* Quick-tags row */
+  .quick-tags-row { gap: 6px !important; flex-wrap: wrap !important; margin-bottom: 12px; }
+  .quick-tag-btn { padding: 6px 12px !important; font-size: 12px !important; min-height: 36px; }
+  /* No-exp фильтр */
+  .no-exp-filter-row { padding: 10px 12px !important; flex-wrap: wrap; gap: 8px; }
+
+
+  /* ════════════════════════════════════════════════════
+     СЕКЦИЯ ВАКАНСИЙ
+  ════════════════════════════════════════════════════ */
+  .jobs-section { padding: 40px 0 !important; }
+  .section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
+  }
+  .section-header h2 { font-size: 22px !important; }
+  .section-info { font-size: 14px; }
+  .jobs-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════
+     КАРТОЧКА ВАКАНСИИ
+  ════════════════════════════════════════════════════ */
+  .job-card {
+    padding: 16px 14px 14px !important;
+    border-radius: 14px !important;
+  }
+  /* Убираем hover-подъём на touch-устройствах */
+  .job-card:hover { transform: none !important; }
+
+  .job-title { font-size: 16px !important; margin-bottom: 6px !important; }
+  .job-company { font-size: 13px !important; }
+  .job-location { font-size: 12px !important; }
+  .job-salary { font-size: 19px !important; margin-bottom: 10px !important; }
+  .job-tags { gap: 6px !important; margin-bottom: 10px !important; }
+  .tag { padding: 4px 10px !important; font-size: 11px !important; }
+
+  /* footer карточки — кнопка «Откликнуться» + admin-controls */
+  .job-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding-top: 12px !important;
+  }
+  .btn-apply {
+    width: 100% !important;
+    padding: 11px 16px !important;
+    font-size: 13px !important;
+    text-align: center;
+  }
+  /* Admin-кнопки */
+  .admin-controls { flex-wrap: wrap !important; gap: 6px !important; }
+  .btn-admin { font-size: 11px !important; padding: 7px 10px !important; min-height: 36px; }
+
+
+  /* ════════════════════════════════════════════════════
+     КНОПКИ — touch-friendly (минимум 44px по высоте)
+  ════════════════════════════════════════════════════ */
+  .btn { padding: 10px 16px !important; font-size: 13px !important; min-height: 44px; }
+  .btn-small { padding: 7px 14px !important; font-size: 12px !important; min-height: 36px; }
+  .btn-hero { padding: 14px 20px !important; font-size: 15px !important; }
+  .pagination-btn { padding: 10px 14px !important; font-size: 13px !important; min-height: 44px; }
+
+
+  /* ════════════════════════════════════════════════════
+     ФОРМЫ — iOS не зумит при font-size ≥ 16px
+  ════════════════════════════════════════════════════ */
+  .input, .select,
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .reg-input { font-size: 16px !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     МОДАЛЬНЫЕ ОКНА — sheet снизу (bottom sheet)
+  ════════════════════════════════════════════════════ */
+  .modal {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+  .modal-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92vh !important;
+    margin: 0 !important;
+  }
+  /* Drag-handle — визуальный намёк на свайп */
+  .modal-content::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--border-gray);
+    border-radius: 2px;
+    margin: 10px auto -2px;
+    flex-shrink: 0;
+  }
+  .modal-header {
+    padding: 16px 16px 12px !important;
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 2;
+  }
+  .modal-header h3 { font-size: 17px !important; }
+  .modal-body { padding: 14px 16px 28px !important; }
+  .modal-close { width: 40px !important; height: 40px !important; font-size: 20px !important; }
+
+  /* Чат-модал */
+  #chatModal .modal-content { max-height: 90vh !important; }
+  #chatModal .modal-body { padding: 0 0 16px 0 !important; }
+  .chat-messages {
+    max-height: 42vh !important;
+    padding: 12px !important;
+  }
+  .chat-message { max-width: 85% !important; }
+  .chat-message-image { max-width: 180px !important; }
+  #chatModal .chat-input-container {
+    padding: 0 14px !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+  }
+  .chat-media-btn { width: 40px !important; height: 40px !important; font-size: 16px !important; }
+  .chat-presence-bar { padding: 8px 14px !important; font-size: 12px !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     СТРАНИЦА ПРОФИЛЯ
+  ════════════════════════════════════════════════════ */
+  .profile-header { padding: 28px 14px 14px !important; }
+  .profile-nav { margin-bottom: 20px !important; }
+  .profile-title h1 { font-size: 24px !important; letter-spacing: -0.5px; }
+  .profile-body { padding: 24px 14px !important; }
+  .profile-avatar-display {
+    width: 84px !important;
+    height: 84px !important;
+    font-size: 34px !important;
+  }
+  /* Info items — label сверху, значение снизу */
+  .profile-info-item {
+    flex-direction: column !important;
+    gap: 2px !important;
+    padding: 10px 0 !important;
+  }
+  .profile-info-value {
+    text-align: left !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  /* Отклики соискателя */
+  .applied-job-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .applied-job-item .btn-small {
+    align-self: stretch !important;
+    text-align: center !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════
+     ВАКАНСИИ РАБОТОДАТЕЛЯ (внутри профиля)
+  ════════════════════════════════════════════════════ */
+  .employer-vacancy-section { padding: 16px !important; }
+  .employer-vacancy-card { padding: 14px !important; }
+  .employer-vacancy-card-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .employer-vacancy-stats { flex-wrap: wrap !important; gap: 10px !important; }
+  .employer-vacancy-controls {
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+  .employer-vacancy-controls .btn,
+  .btn-toggle-vacancy {
+    width: 100% !important;
+    min-height: 40px !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════
+     СЕКЦИЯ «КАК ЭТО РАБОТАЕТ»
+  ════════════════════════════════════════════════════ */
+  .info-section { padding: 50px 0 !important; }
+  .info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-top: 28px !important;
+  }
+  .info-card { padding: 20px 16px !important; }
+  .info-card:hover { transform: none !important; }
+  .info-icon {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 24px !important;
+    margin-bottom: 14px !important;
+  }
+  .info-card h3 { font-size: 16px !important; }
+  .info-card p { font-size: 14px; }
+
+
+  /* ════════════════════════════════════════════════════
+     FAQ
+  ════════════════════════════════════════════════════ */
+  .faq-section { padding: 50px 0 !important; }
+  .faq-question { padding: 16px 16px !important; font-size: 14px !important; min-height: 54px; }
+  .faq-answer-content { padding: 0 16px 18px !important; font-size: 14px; }
+
+
+  /* ════════════════════════════════════════════════════
+     FOOTER
+  ════════════════════════════════════════════════════ */
+  .footer { padding: 40px 0 16px !important; }
+  .footer-content {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+  }
+  .footer-section h4 { font-size: 14px !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     УВЕДОМЛЕНИЯ
+  ════════════════════════════════════════════════════ */
+  .notif-dropdown {
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    top: 62px !important;
+    max-height: 70vh !important;
+    border-radius: var(--radius-lg) !important;
+  }
+  .notif-dropdown-header { padding: 14px 16px 12px !important; }
+  .notif-item { padding: 12px 14px !important; gap: 10px !important; }
+  .notif-icon-wrap {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 16px !important;
+    flex-shrink: 0;
+  }
+
+
+  /* ════════════════════════════════════════════════════
+     НИЖНЯЯ НАВИГАЦИЯ (bottom nav)
+  ════════════════════════════════════════════════════ */
+  .bottom-nav { height: 58px !important; }
+  body { padding-bottom: 64px !important; }
+  .bottom-nav-item { min-height: 48px !important; border-radius: 10px !important; }
+  .bottom-nav-icon { font-size: 20px !important; }
+  .bottom-nav-label { font-size: 9px !important; }
+
+  /* Экраны bottom nav */
+  .bscreen-header {
+    padding-top: 52px !important;
+    padding-bottom: 16px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .bscreen-header h2 { font-size: 22px !important; }
+
+  /* Избранное */
+  .bfav-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+  .bfav-card { padding: 12px !important; }
+  .bfav-card-title { font-size: 13px !important; }
+  .bfav-card-salary { font-size: 14px !important; font-weight: 800; }
+  .bfav-card:hover { transform: none !important; }
+
+  /* Профиль (bottom screen) */
+  .bprofile-card { margin: 14px 12px !important; padding: 20px 16px !important; }
+  .bprofile-name { font-size: 20px !important; }
+  .bprofile-action-list { margin: 8px 12px !important; gap: 8px !important; }
+  .bprofile-action-item { padding: 12px 14px !important; min-height: 52px; }
+  .bprofile-logout-btn {
+    margin: 12px !important;
+    width: calc(100% - 24px) !important;
+    min-height: 48px !important;
+    padding: 13px !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════
+     МОДЕРАЦИЯ
+  ════════════════════════════════════════════════════ */
+  .moderation-job-item { padding: 14px !important; }
+  .moderation-btns { flex-direction: column !important; gap: 6px !important; }
+  .btn-approve,
+  .btn-decline {
+    width: 100% !important;
+    padding: 10px !important;
+    font-size: 13px !important;
+    min-height: 40px !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════
+     РЕЗЮМЕ
+  ════════════════════════════════════════════════════ */
+  .resume-view-row {
+    flex-direction: column !important;
+    gap: 2px !important;
+    padding: 10px 0 !important;
+  }
+  .resume-view-label { min-width: unset !important; font-size: 12px; }
+  .resume-view-value { font-size: 14px; }
+  .resume-skills-wrap { gap: 6px !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     ОТЗЫВЫ
+  ════════════════════════════════════════════════════ */
+  .review-card { padding: 14px 14px !important; margin-bottom: 10px !important; }
+  .review-card-header { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
+  .review-card:hover { transform: none !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     ТОСТЫ / УВЕДОМЛЕНИЯ
+  ════════════════════════════════════════════════════ */
+  .toast-container { right: 10px !important; left: 10px !important; top: 14px !important; }
+  .toast {
+    min-width: unset !important;
+    max-width: none !important;
+    padding: 12px 14px !important;
+    font-size: 13px;
+  }
+  .toast-title { font-size: 13px !important; }
+  .toast-message { font-size: 12px !important; }
+
+
+  /* ════════════════════════════════════════════════════
+     ПАГИНАЦИЯ
+  ════════════════════════════════════════════════════ */
+  .pagination { flex-wrap: wrap !important; gap: 6px !important; margin-top: 32px !important; }
+  .pagination-btn { padding: 10px 12px !important; font-size: 13px !important; min-height: 44px !important; }
+
+  /* ════════════════════════════════════════════════════
+     ФОРМА РЕГИСТРАЦИИ (умная форма)
+  ════════════════════════════════════════════════════ */
+  .reg-modal-logo { font-size: 16px; }
+  .rs-line { width: 36px !important; }
+  .reg-role-pills { grid-template-columns: 1fr 1fr !important; }
+  .age-chip { padding: 9px 14px !important; font-size: 14px !important; min-height: 44px; }
+  .reg-submit-btn { min-height: 52px !important; }
+
+}
+
+
+/* ════════════════════════════════════════════════════
+   ДОПОЛНИТЕЛЬНО: экраны ≤ 360px (самые узкие телефоны)
+════════════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .footer-content { grid-template-columns: 1fr !important; }
+  .bfav-grid { grid-template-columns: 1fr !important; }
+  .hero-headline { font-size: 28px !important; }
+  .btn-cta-primary,
+  .btn-cta-secondary { font-size: 14px !important; padding: 12px 14px !important; }
+  .nav-container { padding: 0 10px; }
+}
+</style>
+
 </body>
 </html>
