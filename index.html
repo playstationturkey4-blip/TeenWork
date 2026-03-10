@@ -2258,21 +2258,89 @@
         </div>
     </nav>
 
-    <section class="hero">
+    <section class="hero" id="hero-section">
+        <div class="hero-bg-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+        <div class="hero-floating-tags" aria-hidden="true">
+            <span class="ftag ftag-1">💼 Кассир</span>
+            <span class="ftag ftag-2">📱 SMM</span>
+            <span class="ftag ftag-3">🛵 Курьер</span>
+            <span class="ftag ftag-4">🎨 Дизайн</span>
+            <span class="ftag ftag-5">☕ Бариста</span>
+        </div>
         <div class="hero-content">
-            <h1>Твоя первая работа начинается здесь</h1>
-            <p>Безопасная платформа для поиска работы подросткам 14-18 лет. Официальное трудоустройство, реальная зарплата, проверенные работодатели.</p>
+            <div class="hero-trust-badge">
+                <span class="trust-dot"></span>
+                <span>Только проверенные работодатели</span>
+            </div>
+            <h1 class="hero-headline">
+                <span class="headline-line-1">Найди свою</span>
+                <span class="headline-line-2">первую работу</span>
+                <span class="headline-accent">без опыта ✦</span>
+            </h1>
+            <p class="hero-sub">
+                Платформа для подростков 14–18 лет.<br>
+                Официальное оформление, реальная зарплата.
+            </p>
+            <div class="hero-stats-row">
+                <div class="hstat">
+                    <strong id="heroJobCountStat">6+</strong>
+                    <span>вакансий</span>
+                </div>
+                <div class="hstat-divider"></div>
+                <div class="hstat">
+                    <strong>100%</strong>
+                    <span>официально</span>
+                </div>
+                <div class="hstat-divider"></div>
+                <div class="hstat">
+                    <strong>14+</strong>
+                    <span>лет</span>
+                </div>
+            </div>
             <div class="hero-actions">
-                <button class="btn btn-hero btn-white" onclick="scrollToSearch()">Найти работу</button>
-                <button class="btn btn-hero btn-outline" onclick="handleEmployerButtonClick()">Работодателям</button>
+                <button class="btn btn-hero btn-cta-primary" onclick="scrollToSearch()">
+                    <span class="cta-icon">🔍</span>
+                    Найти работу сейчас
+                    <svg class="cta-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+                <button class="btn btn-hero btn-cta-secondary" onclick="handleEmployerButtonClick()">
+                    💼 Я работодатель
+                </button>
+            </div>
+            <div class="hero-social-proof">
+                <div class="sp-avatars">
+                    <div class="sp-av sp-av-1">А</div>
+                    <div class="sp-av sp-av-2">М</div>
+                    <div class="sp-av sp-av-3">В</div>
+                    <div class="sp-av sp-av-4">К</div>
+                </div>
+                <div class="sp-text">
+                    <span class="sp-bold">1 200+ подростков</span>
+                    уже нашли работу этим летом
+                </div>
             </div>
         </div>
+        <button class="hero-scroll-hint" onclick="scrollToSearch()" aria-label="Прокрутить вниз">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </button>
     </section>
 
     <div class="container">
         <section class="filters-section" id="search">
             <div class="filters-grid">
                 <input type="text" class="input" id="searchInput" placeholder="Поиск по названию или компании...">
+                <select class="select" id="ageFilter">
+                    <option value="">Мой возраст</option>
+                    <option value="14">14 лет (14+)</option>
+                    <option value="15">15 лет (14+)</option>
+                    <option value="16">16 лет (16+)</option>
+                    <option value="17">17 лет (16+)</option>
+                    <option value="18">18 лет (любые)</option>
+                </select>
                 <select class="select" id="cityFilter">
                     <option value="">Все города</option>
                     <option value="Санкт-Петербург">Санкт-Петербург</option>
@@ -2540,39 +2608,138 @@
     </div>
 
     <div class="modal" id="registerModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Регистрация</h3>
+        <div class="modal-content" style="max-width: 460px;">
+            <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                <div style="flex:1;">
+                    <div class="reg-modal-logo">TeenWork</div>
+                    <h3 style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-top: 4px;">
+                        Создать аккаунт
+                    </h3>
+                    <p style="font-size: 13px; color: var(--text-gray); font-weight: 500; margin-top: 4px;">
+                        Займёт меньше минуты ⚡
+                    </p>
+                </div>
                 <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
             </div>
-            <div class="modal-body">
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label>Никнейм</label>
-                        <input type="text" name="nickname" required>
-                        <div class="form-error">Это поле обязательно</div>
+            <div class="modal-body" style="padding-top: 20px;">
+                <div class="reg-steps-indicator">
+                    <div class="reg-step active" id="rstep-1">
+                        <div class="rs-circle">1</div>
+                        <span>Аккаунт</span>
                     </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" name="email" required>
-                        <div class="form-error">Введите корректный email</div>
+                    <div class="rs-line"></div>
+                    <div class="reg-step" id="rstep-2">
+                        <div class="rs-circle">2</div>
+                        <span>Роль</span>
                     </div>
-                    <div class="form-group">
-                        <label>Пароль (минимум 6 символов)</label>
-                        <input type="password" id="registerPassword" name="password" required>
-                        <span class="password-toggle" onclick="togglePassword('registerPassword')">👁️</span>
-                        <div class="form-error">Пароль должен быть не менее 6 символов</div>
+                    <div class="rs-line"></div>
+                    <div class="reg-step" id="rstep-3">
+                        <div class="rs-circle">✓</div>
+                        <span>Готово</span>
                     </div>
-                    <div class="form-group">
-                        <label>Я регистрируюсь как</label>
-                        <select name="role" id="registerRoleSelect" required>
+                </div>
+                <form id="registerForm" novalidate>
+                    <div class="form-group reg-field-group" id="rg-name">
+                        <label class="reg-label">
+                            <span class="reg-label-icon">👤</span>
+                            Как тебя зовут?
+                        </label>
+                        <input type="text" name="nickname" id="regName"
+                            placeholder="Например: Артём"
+                            autocomplete="given-name" required class="reg-input">
+                        <div class="form-error" id="err-name">Введи своё имя</div>
+                    </div>
+                    <div class="form-group reg-field-group" id="rg-email">
+                        <label class="reg-label">
+                            <span class="reg-label-icon">📧</span>
+                            Email
+                        </label>
+                        <input type="email" name="email" id="regEmail"
+                            placeholder="example@mail.ru"
+                            autocomplete="email" required class="reg-input">
+                        <div class="form-error" id="err-email">Введи корректный email</div>
+                    </div>
+                    <div class="form-group reg-field-group" id="rg-age">
+                        <label class="reg-label">
+                            <span class="reg-label-icon">🎂</span>
+                            Сколько тебе лет?
+                        </label>
+                        <div class="reg-age-selector" id="regAgeSelector">
+                            <button type="button" class="age-chip" data-age="14" onclick="selectRegAge(14, this)">14</button>
+                            <button type="button" class="age-chip" data-age="15" onclick="selectRegAge(15, this)">15</button>
+                            <button type="button" class="age-chip" data-age="16" onclick="selectRegAge(16, this)">16</button>
+                            <button type="button" class="age-chip" data-age="17" onclick="selectRegAge(17, this)">17</button>
+                            <button type="button" class="age-chip" data-age="18" onclick="selectRegAge(18, this)">18</button>
+                            <button type="button" class="age-chip age-chip-other" onclick="showCustomAge()" id="agechip-other">Другой</button>
+                        </div>
+                        <input type="number" name="age" id="regAgeInput"
+                            placeholder="Введи свой возраст"
+                            min="1" max="99" class="reg-input"
+                            style="display:none; margin-top:8px;">
+                        <input type="hidden" id="regAgeHidden" name="ageValue">
+                        <div class="form-error" id="err-age">Укажи свой возраст</div>
+                    </div>
+                    <div class="reg-underage-block" id="regUnderageBlock">
+                        <div class="underage-icon">🙏</div>
+                        <div class="underage-content">
+                            <div class="underage-title">Пока рановато...</div>
+                            <div class="underage-text">
+                                К сожалению, по российскому трудовому законодательству
+                                (ТК РФ, ст. 63) мы можем предлагать работу только
+                                подросткам <strong>от 14 лет</strong>.<br><br>
+                                Не расстраивайся — совсем скоро ты сможешь зарегистрироваться!
+                                Пока можешь <span class="underage-link" onclick="closeModal('registerModal'); scrollToSearch()">посмотреть вакансии</span>,
+                                чтобы подготовиться.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group reg-field-group" id="rg-password" style="display:none;">
+                        <label class="reg-label">
+                            <span class="reg-label-icon">🔒</span>
+                            Придумай пароль
+                        </label>
+                        <div style="position:relative;">
+                            <input type="password" name="password" id="regPassword"
+                                placeholder="Минимум 6 символов"
+                                autocomplete="new-password" required class="reg-input">
+                            <button type="button" class="reg-pwd-eye" onclick="togglePassword('regPassword')" tabindex="-1">👁️</button>
+                        </div>
+                        <div class="form-error" id="err-password">Пароль должен быть не менее 6 символов</div>
+                        <div class="reg-pwd-strength" id="regPwdStrength"></div>
+                    </div>
+                    <div class="form-group reg-field-group" id="rg-role" style="display:none;">
+                        <label class="reg-label">
+                            <span class="reg-label-icon">🎯</span>
+                            Ты регистрируешься как:
+                        </label>
+                        <div class="reg-role-pills">
+                            <button type="button" class="role-pill" id="rpill-worker"
+                                onclick="selectRegRole('worker', this)">
+                                <span class="role-pill-icon">🎯</span>
+                                <span class="role-pill-title">Ищу работу</span>
+                                <span class="role-pill-sub">Подросток</span>
+                            </button>
+                            <button type="button" class="role-pill" id="rpill-employer"
+                                onclick="selectRegRole('employer', this)">
+                                <span class="role-pill-icon">💼</span>
+                                <span class="role-pill-title">Работодатель</span>
+                                <span class="role-pill-sub">Нанимаю людей</span>
+                            </button>
+                        </div>
+                        <select name="role" id="registerRoleSelect" style="display:none;">
                             <option value="">Выберите роль</option>
                             <option value="worker">Я ищу работу</option>
                             <option value="employer">Я работодатель</option>
                         </select>
-                        <div class="form-error">Выберите роль</div>
+                        <div class="form-error" id="err-role">Выбери свою роль</div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Зарегистрироваться</button>
+                    <button type="submit" class="btn btn-primary reg-submit-btn" id="regSubmitBtn" style="display:none;">
+                        Создать аккаунт 🚀
+                    </button>
+                    <div class="reg-signin-link">
+                        Уже есть аккаунт?
+                        <span onclick="closeModal('registerModal'); openModal('loginModal')">Войти</span>
+                    </div>
                 </form>
             </div>
         </div>
@@ -11337,6 +11504,734 @@ async function _updateModerationBadge() {
   .info-section { padding: 56px 0 !important; }
 }
 
+/* ============================================================
+   ШАГ 1 — НОВЫЙ HERO: MOBILE-FIRST GEN-Z ДИЗАЙН
+   ============================================================ */
+
+.hero {
+    position: relative;
+    background: linear-gradient(150deg, #0a1628 0%, #0d2244 35%, #1a3a6e 70%, #1e40af 100%) !important;
+    padding: 80px 20px 110px !important;
+    overflow: hidden;
+    min-height: min(100svh, 700px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-bg-orbs {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+}
+
+.orb-1 {
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, #3b82f6, transparent);
+    top: -120px; right: -80px;
+    animation: orbFloat1 8s ease-in-out infinite;
+}
+
+.orb-2 {
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, #8b5cf6, transparent);
+    bottom: -60px; left: -60px;
+    animation: orbFloat2 10s ease-in-out infinite;
+}
+
+.orb-3 {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #06b6d4, transparent);
+    top: 40%; left: 50%;
+    animation: orbFloat3 6s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-30px, 20px) scale(1.1); }
+}
+@keyframes orbFloat2 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(20px, -30px); }
+}
+@keyframes orbFloat3 {
+    0%, 100% { transform: translate(-50%, 0); opacity: 0.2; }
+    50% { transform: translate(-50%, -20px); opacity: 0.4; }
+}
+
+.hero-floating-tags {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.ftag {
+    position: absolute;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    white-space: nowrap;
+    animation: tagFloat 12s ease-in-out infinite;
+}
+
+.ftag-1 { top: 12%; left: 4%;  animation-delay: 0s;    animation-duration: 11s; }
+.ftag-2 { top: 22%; right: 5%; animation-delay: 1.5s;  animation-duration: 13s; }
+.ftag-3 { top: 60%; left: 3%;  animation-delay: 3s;    animation-duration: 9s; }
+.ftag-4 { bottom: 20%; right: 4%; animation-delay: 0.8s; animation-duration: 14s; }
+.ftag-5 { bottom: 35%; left: 8%;  animation-delay: 2s;   animation-duration: 10s; }
+
+@keyframes tagFloat {
+    0%, 100% { transform: translateY(0px); opacity: 0.7; }
+    50% { transform: translateY(-12px); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+    .hero-floating-tags { display: none; }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.hero-trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 30px;
+    padding: 7px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 28px;
+    animation: badgeFadeIn 0.6s ease backwards;
+    animation-delay: 0.1s;
+}
+
+.trust-dot {
+    width: 7px;
+    height: 7px;
+    background: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(52,211,153,0.3);
+    animation: trustPulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes trustPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(52,211,153,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(52,211,153,0.1); }
+}
+
+@keyframes badgeFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-headline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: clamp(36px, 8vw, 68px) !important;
+    font-weight: 900 !important;
+    letter-spacing: -2.5px !important;
+    line-height: 1.05 !important;
+    margin-bottom: 20px !important;
+    color: #fff;
+}
+
+.headline-line-1 {
+    color: rgba(255,255,255,0.6);
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: clamp(12px, 2.5vw, 16px) !important;
+    margin-bottom: 6px;
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.2s;
+}
+
+.headline-line-2 {
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.3s;
+    background: linear-gradient(90deg, #fff 0%, #bfdbfe 60%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.headline-accent {
+    font-size: clamp(14px, 3vw, 20px) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0px !important;
+    color: rgba(255,255,255,0.55) !important;
+    -webkit-text-fill-color: rgba(255,255,255,0.55) !important;
+    margin-top: 8px;
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.4s;
+}
+
+@keyframes lineFadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-sub {
+    font-size: clamp(15px, 2.5vw, 18px) !important;
+    color: rgba(255,255,255,0.65) !important;
+    font-weight: 500 !important;
+    line-height: 1.65 !important;
+    margin-bottom: 28px !important;
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.45s;
+}
+
+.hero-stats-row {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 12px 24px;
+    margin-bottom: 32px;
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.5s;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0;
+}
+
+.hstat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.hstat strong {
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+
+.hstat span {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.hstat-divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 28px !important;
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.55s;
+}
+
+.btn-cta-primary {
+    background: linear-gradient(135deg, #fff 0%, #e0eaff 100%) !important;
+    color: #1d4ed8 !important;
+    padding: 16px 32px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 16px !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 24px rgba(255,255,255,0.2), 0 1px 4px rgba(0,0,0,0.1) !important;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1) !important;
+    -webkit-text-fill-color: #1d4ed8 !important;
+}
+
+.btn-cta-primary:hover {
+    transform: translateY(-4px) scale(1.04) !important;
+    box-shadow: 0 16px 40px rgba(255,255,255,0.35), 0 4px 12px rgba(0,0,0,0.12) !important;
+}
+
+.cta-icon { font-size: 18px; }
+
+.cta-arrow {
+    transition: transform 0.22s ease;
+    flex-shrink: 0;
+}
+
+.btn-cta-primary:hover .cta-arrow {
+    transform: translateX(4px);
+}
+
+.btn-cta-secondary {
+    background: rgba(255,255,255,0.1) !important;
+    color: rgba(255,255,255,0.9) !important;
+    padding: 16px 28px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 16px !important;
+    border: 1.5px solid rgba(255,255,255,0.2) !important;
+    backdrop-filter: blur(8px);
+    transition: all 0.22s ease !important;
+    -webkit-text-fill-color: rgba(255,255,255,0.9) !important;
+}
+
+.btn-cta-secondary:hover {
+    background: rgba(255,255,255,0.18) !important;
+    border-color: rgba(255,255,255,0.4) !important;
+    transform: translateY(-3px) !important;
+}
+
+@media (max-width: 480px) {
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .btn-cta-primary, .btn-cta-secondary { justify-content: center; }
+}
+
+.hero-social-proof {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    animation: lineFadeUp 0.7s ease backwards;
+    animation-delay: 0.65s;
+}
+
+.sp-avatars {
+    display: flex;
+    align-items: center;
+}
+
+.sp-av {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #fff;
+    margin-left: -8px;
+    transition: transform 0.2s ease;
+}
+
+.sp-av:first-child { margin-left: 0; }
+.sp-av-1 { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.sp-av-2 { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.sp-av-3 { background: linear-gradient(135deg,#f59e0b,#d97706); }
+.sp-av-4 { background: linear-gradient(135deg,#10b981,#059669); }
+
+.hero-social-proof:hover .sp-av { transform: translateX(-2px); }
+.hero-social-proof:hover .sp-av:first-child { transform: none; }
+
+.sp-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.sp-bold {
+    font-weight: 800;
+    color: rgba(255,255,255,0.9);
+}
+
+.hero-scroll-hint {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgba(255,255,255,0.6);
+    transition: all 0.25s ease;
+    animation: scrollBounce 2.5s ease-in-out infinite;
+    z-index: 2;
+}
+
+.hero-scroll-hint:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    transform: translateX(-50%) translateY(-2px);
+}
+
+@keyframes scrollBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+}
+
+@media (max-width: 768px) {
+    .hero { padding: 60px 16px 90px !important; min-height: auto; }
+    .hstat { padding: 0 12px; }
+    .hero-stats-row { padding: 10px 12px; }
+}
+
+/* ============================================================
+   ШАГ 3 — МИНИМАЛИСТИЧНАЯ ФОРМА РЕГИСТРАЦИИ
+   ============================================================ */
+
+.reg-modal-logo {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary-blue);
+    letter-spacing: -0.5px;
+}
+
+.reg-steps-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 28px;
+}
+
+.reg-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.rs-circle {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--border-gray);
+    color: var(--text-gray);
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.reg-step span {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-gray);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+.reg-step.active .rs-circle {
+    background: var(--primary-blue);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+    transform: scale(1.1);
+}
+
+.reg-step.active span { color: var(--primary-blue); }
+
+.reg-step.done .rs-circle {
+    background: #10b981;
+    color: #fff;
+}
+
+.rs-line {
+    width: 50px;
+    height: 2px;
+    background: var(--border-gray);
+    margin: 0 8px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+    transition: background 0.4s ease;
+    flex-shrink: 0;
+}
+
+.reg-field-group {
+    margin-bottom: 18px;
+    animation: regFieldAppear 0.35s cubic-bezier(0.34,1.56,0.64,1) backwards;
+}
+
+@keyframes regFieldAppear {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.reg-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    cursor: default;
+}
+
+.reg-label-icon { font-size: 16px; }
+
+.reg-input {
+    width: 100%;
+    padding: 14px 18px !important;
+    border: 2px solid var(--border-gray) !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-family: inherit !important;
+    font-weight: 600 !important;
+    transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1) !important;
+    background: var(--light-gray) !important;
+    color: var(--text-dark) !important;
+    outline: none;
+}
+
+.reg-input:focus {
+    border-color: var(--primary-blue) !important;
+    background: var(--white) !important;
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.1) !important;
+    transform: scale(1.01) !important;
+}
+
+.reg-input.input-success {
+    border-color: #10b981 !important;
+    background: rgba(16,185,129,0.04) !important;
+}
+
+.reg-input.input-error {
+    border-color: var(--error) !important;
+    background: rgba(239,68,68,0.04) !important;
+    animation: inputShake 0.4s ease;
+}
+
+@keyframes inputShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.reg-age-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.age-chip {
+    padding: 9px 18px;
+    border: 2px solid var(--border-gray);
+    background: var(--white);
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    font-family: inherit;
+    color: var(--text-dark);
+}
+
+.age-chip:hover {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    transform: translateY(-2px);
+}
+
+.age-chip.selected {
+    border-color: var(--primary-blue);
+    background: var(--primary-blue);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+    transform: scale(1.06);
+}
+
+.age-chip-other {
+    font-size: 13px;
+    color: var(--text-gray);
+    border-style: dashed;
+}
+
+.reg-underage-block {
+    display: none;
+    background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(245,158,11,0.05));
+    border: 1.5px solid rgba(245,158,11,0.3);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 18px;
+    animation: underagePop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.reg-underage-block.visible {
+    display: flex;
+}
+
+@keyframes underagePop {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.underage-icon {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.underage-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 6px;
+}
+
+.underage-text {
+    font-size: 13px;
+    color: #78350f;
+    line-height: 1.65;
+    font-weight: 500;
+}
+
+.underage-link {
+    color: var(--primary-blue);
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.reg-role-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.role-pill {
+    padding: 14px 12px;
+    border: 2px solid var(--border-gray);
+    background: var(--white);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.role-pill:hover {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+    transform: translateY(-2px);
+}
+
+.role-pill.selected {
+    border-color: var(--primary-blue);
+    background: var(--soft-blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+.role-pill-icon { font-size: 24px; }
+.role-pill-title { font-size: 14px; font-weight: 800; color: var(--text-dark); }
+.role-pill-sub   { font-size: 11px; font-weight: 600; color: var(--text-gray); }
+
+.reg-pwd-strength {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    height: 4px;
+}
+
+.pwd-bar {
+    flex: 1;
+    border-radius: 4px;
+    background: var(--border-gray);
+    transition: background 0.3s ease;
+}
+
+.pwd-bar.weak   { background: #ef4444; }
+.pwd-bar.medium { background: #f59e0b; }
+.pwd-bar.strong { background: #10b981; }
+
+.reg-pwd-eye {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+.reg-pwd-eye:hover { opacity: 1; }
+
+.reg-submit-btn {
+    width: 100% !important;
+    padding: 15px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 16px !important;
+    margin-top: 4px !important;
+    letter-spacing: -0.2px;
+    animation: regFieldAppear 0.35s ease backwards;
+}
+
+.reg-signin-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.reg-signin-link span {
+    color: var(--primary-blue);
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .reg-role-pills { grid-template-columns: 1fr 1fr; }
+    .age-chip { padding: 8px 14px; font-size: 14px; }
+}
+
 </style>
 
 <script>
@@ -11537,6 +12432,431 @@ async function handleForgotPassword() {
         showToast('Ошибка', error.message, 'error');
     }
 }
+</script>
+
+
+<script>
+// ============================================================
+// ШАГ 1 — HERO: динамический счётчик вакансий
+// ============================================================
+(function() {
+    function updateHeroStat() {
+        if (window.STATE && window.STATE.jobs) {
+            var el = document.getElementById('heroJobCountStat');
+            if (el) el.textContent = window.STATE.jobs.length + '+';
+        }
+    }
+    var origLoad = window.loadJobsFromFirestore;
+    if (origLoad) {
+        window.loadJobsFromFirestore = async function() {
+            await origLoad();
+            updateHeroStat();
+        };
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(updateHeroStat, 1500);
+    });
+})();
+</script>
+
+<script>
+/* ============================================================
+   ШАГ 2 — УМНАЯ ФИЛЬТРАЦИЯ ВАКАНСИЙ
+   Работает поверх существующей системы фильтров.
+   ============================================================ */
+(function initSmartFiltering() {
+
+    const AGE_KEYWORDS_16 = [
+        'водитель', 'охранник', 'ночн', 'алкогол',
+        'сигарет', 'медицин', 'бухгалт', 'юрист'
+    ];
+
+    const NO_EXP_KEYWORDS = [
+        'без опыта', 'опыт не требуется', 'обучим',
+        'для начинающих', 'стажёр', 'стажер', 'подработка',
+        'временная', 'сезонная', 'промоутер', 'курьер',
+        'расклейщик', 'аниматор', 'разнорабочий'
+    ];
+
+    function getJobMinAge(job) {
+        if (job.minAge) return job.minAge;
+        const haystack = [job.title, job.description, job.type, job.requirements || '']
+            .join(' ').toLowerCase();
+        for (const kw of AGE_KEYWORDS_16) {
+            if (haystack.includes(kw)) return 16;
+        }
+        return 14;
+    }
+
+    function isNoExperienceJob(job) {
+        if (job.noExperience === true) return true;
+        const haystack = [job.title, job.description, job.type, job.requirements || '']
+            .join(' ').toLowerCase();
+        return NO_EXP_KEYWORDS.some(kw => haystack.includes(kw));
+    }
+
+    function smartFilter() {
+        if (!window.STATE || !window.STATE.jobs) return;
+
+        const searchTerm   = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+        const cityFilter   = document.getElementById('cityFilter')?.value  || '';
+        const typeFilter   = document.getElementById('typeFilter')?.value  || '';
+        const salaryFilter = document.getElementById('salaryFilter')?.value || '';
+        const ageFilter    = document.getElementById('ageFilter')?.value   || '';
+        const noExpCb      = document.getElementById('noExpCheckbox');
+        const sortValue    = document.getElementById('sortFilter')?.value  || 'salary-desc';
+
+        const userAge = ageFilter ? parseInt(ageFilter) : null;
+
+        let result = window.STATE.jobs.filter(job => {
+            if (searchTerm) {
+                const haystack = (job.title + ' ' + job.company).toLowerCase();
+                if (!haystack.includes(searchTerm)) return false;
+            }
+            if (cityFilter && job.city !== cityFilter) return false;
+            if (typeFilter && !job.type.includes(typeFilter)) return false;
+            if (salaryFilter) {
+                const [minS, maxS] = salaryFilter.split('-').map(v => parseInt(v) || Infinity);
+                if (job.salary < minS || job.salary > maxS) return false;
+            }
+            if (userAge !== null) {
+                const jobMinAge = getJobMinAge(job);
+                if (userAge < jobMinAge) return false;
+            }
+            if (noExpCb?.checked && !isNoExperienceJob(job)) return false;
+            return true;
+        });
+
+        result.sort((a, b) => {
+            if (a.isTop && !b.isTop) return -1;
+            if (!a.isTop && b.isTop) return 1;
+            if (sortValue === 'salary-asc')  return a.salary - b.salary;
+            if (sortValue === 'date-desc')   return (b.createdAt || 0) - (a.createdAt || 0);
+            return b.salary - a.salary;
+        });
+
+        window.STATE.filteredJobs = result;
+        window.STATE.currentPage  = 1;
+
+        if (userAge !== null) {
+            _showAgeFilterNotice(userAge, window.STATE.jobs.length - result.length);
+        } else {
+            _hideAgeFilterNotice();
+        }
+
+        if (window.renderJobs) window.renderJobs();
+    }
+
+    function _showAgeFilterNotice(age, hiddenCount) {
+        let notice = document.getElementById('ageFilterNotice');
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = 'ageFilterNotice';
+            notice.style.cssText = `
+                background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(251,191,36,0.08));
+                border: 1.5px solid rgba(245,158,11,0.3);
+                border-radius: 14px;
+                padding: 12px 18px;
+                margin-bottom: 16px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #92400e;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: fadeIn 0.3s ease;
+            `;
+            const jobsGrid = document.getElementById('jobsGrid');
+            if (jobsGrid?.parentNode) {
+                jobsGrid.parentNode.insertBefore(notice, jobsGrid);
+            }
+        }
+        if (hiddenCount > 0) {
+            notice.innerHTML = `⚡ Для ${age} лет: мы скрыли <strong>${hiddenCount} вакансий</strong>, для которых нужно 16+`;
+            notice.style.display = 'flex';
+        } else {
+            notice.style.display = 'none';
+        }
+    }
+
+    function _hideAgeFilterNotice() {
+        const el = document.getElementById('ageFilterNotice');
+        if (el) el.style.display = 'none';
+    }
+
+    const _origApplyFilters = window.applyFilters;
+    window.applyFilters = function() {
+        smartFilter();
+        if (typeof renderFilterChips === 'function') renderFilterChips();
+        if (typeof saveFiltersToStorage === 'function') saveFiltersToStorage();
+    };
+
+    const _origResetFilters = window.resetFilters;
+    window.resetFilters = function() {
+        const ageFilter = document.getElementById('ageFilter');
+        if (ageFilter) ageFilter.value = '';
+        _hideAgeFilterNotice();
+        if (_origResetFilters) _origResetFilters();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const ageFilter = document.getElementById('ageFilter');
+        if (ageFilter) {
+            ageFilter.addEventListener('change', function() {
+                window.applyFilters();
+                this.style.borderColor = this.value ? 'var(--primary-blue)' : '';
+            });
+        }
+        const sortFilter = document.getElementById('sortFilter');
+        if (sortFilter) {
+            sortFilter.addEventListener('change', function() {
+                window.applyFilters();
+            });
+        }
+    });
+
+    window.getJobMinAge      = getJobMinAge;
+    window.isNoExperienceJob = isNoExperienceJob;
+
+})();
+</script>
+
+<script>
+/* ============================================================
+   ШАГ 3 — ЛОГИКА УМНОЙ ФОРМЫ РЕГИСТРАЦИИ
+   ============================================================ */
+(function initSmartRegForm() {
+
+    const REG_STATE = { age: null, role: null };
+
+    window.selectRegAge = function(age, chipEl) {
+        REG_STATE.age = age;
+        document.querySelectorAll('.age-chip').forEach(c => {
+            c.classList.remove('selected');
+            c.style.background = '';
+            c.style.borderColor = '';
+            c.style.color = '';
+        });
+        if (chipEl) chipEl.classList.add('selected');
+        const hidden = document.getElementById('regAgeHidden');
+        if (hidden) hidden.value = age;
+        const manualInput = document.getElementById('regAgeInput');
+        if (manualInput) manualInput.style.display = 'none';
+        _onAgeSelected(age);
+    };
+
+    window.showCustomAge = function() {
+        const manualInput = document.getElementById('regAgeInput');
+        if (!manualInput) return;
+        manualInput.style.display = 'block';
+        manualInput.focus();
+        document.querySelectorAll('.age-chip:not(.age-chip-other)').forEach(c => c.classList.remove('selected'));
+        document.getElementById('agechip-other')?.classList.add('selected');
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const manualInput = document.getElementById('regAgeInput');
+        if (manualInput) {
+            manualInput.addEventListener('input', function() {
+                const val = parseInt(this.value);
+                if (!isNaN(val) && val >= 1 && val <= 99) {
+                    REG_STATE.age = val;
+                    const hidden = document.getElementById('regAgeHidden');
+                    if (hidden) hidden.value = val;
+                    _onAgeSelected(val);
+                }
+            });
+        }
+    });
+
+    function _onAgeSelected(age) {
+        const underageBlock = document.getElementById('regUnderageBlock');
+        const passwordGroup = document.getElementById('rg-password');
+        const roleGroup     = document.getElementById('rg-role');
+        const submitBtn     = document.getElementById('regSubmitBtn');
+
+        if (age < 14) {
+            underageBlock?.classList.add('visible');
+            if (passwordGroup) passwordGroup.style.display = 'none';
+            if (roleGroup)     roleGroup.style.display     = 'none';
+            if (submitBtn)     submitBtn.style.display     = 'none';
+            document.querySelectorAll('.age-chip.selected').forEach(c => {
+                c.style.background   = '#fee2e2';
+                c.style.borderColor  = '#ef4444';
+                c.style.color        = '#dc2626';
+            });
+            _updateStep(1);
+        } else {
+            underageBlock?.classList.remove('visible');
+            if (passwordGroup) { passwordGroup.style.display = 'block'; passwordGroup.style.animationDelay = '0.05s'; }
+            if (roleGroup)     { roleGroup.style.display     = 'block'; roleGroup.style.animationDelay     = '0.12s'; }
+            if (submitBtn)     { submitBtn.style.display     = 'block'; submitBtn.style.animationDelay     = '0.2s'; }
+            _updateStep(2);
+        }
+    }
+
+    window.selectRegRole = function(role, pillEl) {
+        REG_STATE.role = role;
+        document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('selected'));
+        if (pillEl) pillEl.classList.add('selected');
+        const select = document.getElementById('registerRoleSelect');
+        if (select) select.value = role;
+        _updateStep(3);
+    };
+
+    function _updateStep(step) {
+        for (let i = 1; i <= 3; i++) {
+            const el = document.getElementById('rstep-' + i);
+            if (!el) continue;
+            el.classList.remove('active', 'done');
+            const circle = el.querySelector('.rs-circle');
+            if (i < step) {
+                el.classList.add('done');
+                if (circle) circle.textContent = '✓';
+            } else if (i === step) {
+                el.classList.add('active');
+                if (circle && i < 3) circle.textContent = String(i);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const pwdInput    = document.getElementById('regPassword');
+        const strengthEl  = document.getElementById('regPwdStrength');
+        if (pwdInput && strengthEl) {
+            pwdInput.addEventListener('input', function() {
+                const score = _calcPwdStrength(this.value);
+                strengthEl.innerHTML = '';
+                const labels = ['', 'weak', 'medium', 'strong'];
+                for (let i = 0; i < 3; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'pwd-bar ' + (i < score ? labels[score] : '');
+                    strengthEl.appendChild(bar);
+                }
+            });
+        }
+
+        const nameInput  = document.getElementById('regName');
+        const emailInput = document.getElementById('regEmail');
+
+        if (nameInput) {
+            nameInput.addEventListener('blur', function() {
+                _validateField(this, 'err-name', this.value.trim().length >= 2, 'Введи имя (минимум 2 символа)');
+            });
+            nameInput.addEventListener('input', function() {
+                if (this.value.trim().length >= 2) _setFieldSuccess(this);
+            });
+        }
+
+        if (emailInput) {
+            emailInput.addEventListener('blur', function() {
+                const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+                _validateField(this, 'err-email', ok, 'Введи корректный email');
+            });
+            emailInput.addEventListener('input', function() {
+                if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value)) _setFieldSuccess(this);
+            });
+        }
+
+        const form = document.getElementById('registerForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const name     = document.getElementById('regName')?.value.trim()  || '';
+                const email    = document.getElementById('regEmail')?.value.trim() || '';
+                const password = document.getElementById('regPassword')?.value     || '';
+                const age      = REG_STATE.age;
+                const role     = REG_STATE.role;
+
+                let hasError = false;
+
+                if (name.length < 2) {
+                    _validateField(document.getElementById('regName'), 'err-name', false, 'Введи имя (минимум 2 символа)');
+                    hasError = true;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    _validateField(document.getElementById('regEmail'), 'err-email', false, 'Введи корректный email');
+                    hasError = true;
+                }
+                if (!age) {
+                    const errAge = document.getElementById('err-age');
+                    if (errAge) { errAge.textContent = 'Выбери свой возраст'; errAge.style.display = 'block'; }
+                    hasError = true;
+                } else if (age < 14) {
+                    document.getElementById('regUnderageBlock')?.classList.add('visible');
+                    if (window.showToast) {
+                        showToast('К сожалению, пока нельзя 🙏', 'По закону (ТК РФ, ст. 63) работа доступна с 14 лет', 'warning');
+                    }
+                    hasError = true;
+                }
+                if (password.length < 6) {
+                    _validateField(document.getElementById('regPassword'), 'err-password', false, 'Пароль должен быть не менее 6 символов');
+                    hasError = true;
+                }
+                if (!role) {
+                    const errRole = document.getElementById('err-role');
+                    if (errRole) { errRole.textContent = 'Выбери свою роль'; errRole.style.display = 'block'; }
+                    hasError = true;
+                }
+
+                if (hasError) return;
+
+                // Синхронизируем поля с тем, что читает handleRegister
+                const nicknameInput = form.querySelector('[name="nickname"]');
+                const emailInp      = form.querySelector('[name="email"]');
+                const passwordInp   = form.querySelector('[name="password"]');
+                const roleSelect    = form.querySelector('[name="role"]');
+
+                if (nicknameInput) nicknameInput.value = name;
+                if (emailInp)      emailInp.value      = email;
+                if (passwordInp)   passwordInp.value   = password;
+                if (roleSelect)    roleSelect.value    = role;
+
+                const btn = document.getElementById('regSubmitBtn');
+                if (btn) { btn.textContent = '⏳ Создаём аккаунт...'; btn.disabled = true; }
+
+                if (window.handleRegister) {
+                    try { window.handleRegister(e); } catch(err) { console.error('[reg]', err); }
+                }
+
+                setTimeout(function() {
+                    if (btn) { btn.textContent = 'Создать аккаунт 🚀'; btn.disabled = false; }
+                }, 3000);
+            });
+        }
+    });
+
+    function _calcPwdStrength(pwd) {
+        if (!pwd || pwd.length < 4) return 0;
+        let score = 0;
+        if (pwd.length >= 6)  score++;
+        if (pwd.length >= 10) score++;
+        if (/[0-9]/.test(pwd) || /[!@#$%^&*]/.test(pwd)) score++;
+        return Math.min(score, 3);
+    }
+
+    function _validateField(input, errId, isValid, errMsg) {
+        if (!input) return isValid;
+        const errEl = document.getElementById(errId);
+        if (isValid) {
+            input.classList.remove('input-error');
+            _setFieldSuccess(input);
+            if (errEl) errEl.style.display = 'none';
+        } else {
+            input.classList.remove('input-success');
+            input.classList.add('input-error');
+            if (errEl) { errEl.textContent = errMsg; errEl.style.display = 'block'; }
+        }
+        return isValid;
+    }
+
+    function _setFieldSuccess(input) {
+        input.classList.remove('input-error');
+        input.classList.add('input-success');
+    }
+
+})();
 </script>
 
 </body>
