@@ -3050,6 +3050,11 @@
 
                 if (storedUsers) {
                     STATE.users = JSON.parse(storedUsers);
+                    // Чистим пароли из localStorage — они не должны там храниться
+                    STATE.users = STATE.users.map(u => {
+                        const { password, ...safeUser } = u;
+                        return safeUser;
+                    });
                 }
 
                 if (storedUser) {
@@ -3557,86 +3562,137 @@
             const email = formData.get('email').trim().toLowerCase();
             const password = formData.get('password');
 
+            // Блокируем кнопку на время запроса
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Вход...'; }
+
             try {
+                // 1. Входим через Firebase Authentication
                 const { getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
                 const auth = getAuth();
                 const result = await signInWithEmailAndPassword(auth, email, password);
-
                 const firebaseUser = result.user;
-                const existingUser = STATE.users.find(u => u.email === email);
-                // FIX: всегда синхронизируем uid из Firebase — даже если юзер уже есть в localStorage
-                STATE.currentUser = existingUser
-                    ? { ...existingUser, uid: firebaseUser.uid }
-                    : {
-                        email: firebaseUser.email,
+
+                // 2. Загружаем профиль из Firestore по uid (не из localStorage)
+                const { doc, getDoc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const userDoc = await getDoc(doc(window.db, 'users', firebaseUser.uid));
+
+                let userProfile;
+                if (userDoc.exists()) {
+                    // Профиль найден в Firestore — используем его
+                    userProfile = { ...userDoc.data(), uid: firebaseUser.uid };
+                } else {
+                    // Профиля нет в Firestore (старый пользователь) — создаём базовый и сохраняем
+                    userProfile = {
                         uid: firebaseUser.uid,
+                        email: firebaseUser.email,
                         nickname: firebaseUser.displayName || email.split('@')[0],
                         role: ADMIN_EMAILS.includes(email) ? 'employer' : 'worker',
                         avatar: null,
                         createdAt: Date.now()
                     };
+                    await setDoc(doc(window.db, 'users', firebaseUser.uid), userProfile);
+                }
 
+                STATE.currentUser = userProfile;
                 saveCurrentUser();
                 updateNavbar();
                 closeModal('loginModal');
                 showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
-                // FIX: запускаем presence сразу после успешного входа
                 if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
+
             } catch (error) {
                 const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
                 formGroup.classList.add('error');
+
+                let message = 'Проверьте email и пароль';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    message = 'Пользователь с таким email не найден';
+                } else if (error.code === 'auth/wrong-password') {
+                    message = 'Неверный пароль';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = 'Некорректный формат email';
+                } else if (error.code === 'auth/too-many-requests') {
+                    message = 'Слишком много попыток. Попробуйте позже';
+                }
+                showToast('Ошибка входа', message, 'error');
+            } finally {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Войти'; }
             }
         }
 
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
-            
+
             if (!validateForm(e.target)) {
                 showToast('Ошибка', 'Заполните все поля корректно', 'error');
                 return;
             }
 
             const formData = new FormData(e.target);
-            const email = formData.get('email');
+            const email = formData.get('email').trim().toLowerCase();
             const password = formData.get('password');
             const nickname = formData.get('nickname');
             const role = formData.get('role');
 
-            if (STATE.users.find(u => u.email === email)) {
-                showToast('Ошибка', 'Пользователь с таким email уже существует', 'error');
-                return;
-            }
-
             if (password.length < 6) {
                 const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
                 formGroup.classList.add('error');
+                showToast('Ошибка', 'Пароль должен быть не менее 6 символов', 'error');
                 return;
             }
 
             if (!role) {
                 const formGroup = e.target.querySelector('select[name="role"]').closest('.form-group');
                 formGroup.classList.add('error');
+                showToast('Ошибка', 'Выберите роль', 'error');
                 return;
             }
 
-            const newUser = {
-                email,
-                password,
-                nickname,
-                role,
-                avatar: null,
-                createdAt: Date.now(),
-                uid: email
-            };
+            // Блокируем кнопку на время запроса
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Регистрация...'; }
 
-            STATE.users.push(newUser);
-            STATE.currentUser = newUser;
-            
-            saveUsers();
-            saveCurrentUser();
-            updateNavbar();
-            closeModal('registerModal');
-            showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+            try {
+                // 1. Создаём пользователя в Firebase Authentication
+                const { getAuth, createUserWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                const auth = getAuth();
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                const firebaseUser = result.user;
+
+                // 2. Сохраняем профиль в Firestore по реальному uid (БЕЗ пароля)
+                const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                const userProfile = {
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    nickname,
+                    role,
+                    avatar: null,
+                    createdAt: Date.now()
+                };
+                await setDoc(doc(window.db, 'users', firebaseUser.uid), userProfile);
+
+                // 3. Обновляем STATE (без пароля)
+                STATE.currentUser = userProfile;
+                saveCurrentUser();
+                updateNavbar();
+                closeModal('registerModal');
+                showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+                if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
+
+            } catch (error) {
+                let message = 'Произошла ошибка при регистрации';
+                if (error.code === 'auth/email-already-in-use') {
+                    message = 'Пользователь с таким email уже зарегистрирован';
+                } else if (error.code === 'auth/weak-password') {
+                    message = 'Пароль слишком слабый — минимум 6 символов';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = 'Некорректный формат email';
+                }
+                showToast('Ошибка регистрации', message, 'error');
+            } finally {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Зарегистрироваться'; }
+            }
         }
 
         function handleProfileUpdate(e) {
@@ -4533,18 +4589,31 @@
   // что приводит к ошибке "Missing or insufficient permissions" при presence/delete.
   import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js').then(({ getAuth, onAuthStateChanged }) => {
     const auth = getAuth();
-    onAuthStateChanged(auth, (firebaseUser) => {
+    onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Токен активен — синхронизируем uid в STATE.currentUser если нужно
-        if (window.STATE && window.STATE.currentUser) {
-          if (window.STATE.currentUser.email === firebaseUser.email && window.STATE.currentUser.uid !== firebaseUser.uid) {
-            window.STATE.currentUser.uid = firebaseUser.uid;
+        // Токен активен — загружаем свежий профиль из Firestore (актуальные данные с любого устройства)
+        try {
+          const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+          const userDoc = await getDoc(doc(window.db, 'users', firebaseUser.uid));
+          if (userDoc.exists() && window.STATE) {
+            const freshProfile = { ...userDoc.data(), uid: firebaseUser.uid };
+            window.STATE.currentUser = freshProfile;
             if (window.saveCurrentUser) window.saveCurrentUser();
-            console.log('[auth] uid synced from Firebase:', firebaseUser.uid);
+            if (window.updateNavbar) window.updateNavbar();
+            console.log('[auth] profile loaded from Firestore for:', firebaseUser.email);
+          } else if (window.STATE && window.STATE.currentUser) {
+            // Профиля в Firestore нет — минимальная синхронизация uid
+            if (window.STATE.currentUser.uid !== firebaseUser.uid) {
+              window.STATE.currentUser.uid = firebaseUser.uid;
+              if (window.saveCurrentUser) window.saveCurrentUser();
+              console.log('[auth] uid synced from Firebase:', firebaseUser.uid);
+            }
           }
-          // Обновляем presence — теперь токен точно валиден
-          if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
+        } catch (err) {
+          console.warn('[auth] failed to load Firestore profile:', err.message);
         }
+        // Обновляем presence — теперь токен точно валиден
+        if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
         console.log('[auth] session restored for:', firebaseUser.email);
       } else {
         // Firebase не видит сессию — сбрасываем STATE чтобы не было расхождения
@@ -12498,7 +12567,15 @@ async function handleForgotPassword() {
         showToast('Письмо отправлено', 'Проверьте вашу почту для восстановления пароля', 'success');
         closeModal('loginModal');
     } catch (error) {
-        showToast('Ошибка', error.message, 'error');
+        let message = 'Не удалось отправить письмо';
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            message = 'Пользователь с таким email не найден';
+        } else if (error.code === 'auth/invalid-email') {
+            message = 'Некорректный формат email';
+        } else if (error.code === 'auth/too-many-requests') {
+            message = 'Слишком много запросов. Попробуйте позже';
+        }
+        showToast('Ошибка', message, 'error');
     }
 }
 </script>
