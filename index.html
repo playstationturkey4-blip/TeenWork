@@ -4105,7 +4105,14 @@
 
             if (window.db) {
                 try {
-                    const { updateDoc, doc, increment, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    // FIX: обновляем токен перед записью просмотра, иначе Firestore rules могут отклонить
+                    try {
+                        const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                        const _fbU = getAuth().currentUser;
+                        if (_fbU) await _fbU.getIdToken(true);
+                    } catch (_te) { /* fallback — пишем без обновления токена */ }
+
+                    const { updateDoc, doc, increment, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
                     const jobRef = doc(window.db, "jobs", jobId);
                     const jobSnap = await getDoc(jobRef);
                     
@@ -4120,6 +4127,9 @@
                                 views: 1
                             });
                         }
+                        // FIX: обновляем счётчик просмотров локально в STATE, чтобы профиль работодателя не показывал устаревшие данные
+                        const localJob = window.STATE && window.STATE.jobs.find(function(j){ return j.id === jobId; });
+                        if (localJob) localJob.views = (typeof localJob.views === 'number' ? localJob.views + 1 : 1);
                     }
                 } catch (error) {
                     console.error('Error incrementing views:', error);
@@ -4201,6 +4211,11 @@
                 showToast('Ошибка', 'Не удалось откликнуться', 'error');
             }
         }
+
+        // FIX: явно экспортируем в window, чтобы onclick-вызовы из HTML работали
+        // независимо от порядка загрузки скриптов и патчей
+        window.openApplyModal = window.openApplyModal || openApplyModal;
+        window.applyToJob    = window.applyToJob    || applyToJob;
 
         function toggleFaq(element) {
             const faqItem = element.parentElement;
@@ -9356,8 +9371,19 @@ window.logout = function() {
 // Патч выше уже вызывает showToast на успех — цепляем через обёртку безопасно.
 var _origApplyToJob_n = window.applyToJob;
 window.applyToJob = async function(jobId) {
-    await _origApplyToJob_n(jobId);
-    // Отправляем уведомление работодателю только если STATE актуален
+    // FIX: оборачиваем вызов оригинальной функции в try/catch,
+    // чтобы ошибка в основном apply (дубликат, Firestore) не обрывала весь обработчик
+    var _applySucceeded = false;
+    try {
+        await _origApplyToJob_n(jobId);
+        _applySucceeded = true;
+    } catch (e) {
+        console.error('[applyToJob] core apply error:', e);
+        // Не показываем повторный тост — основная функция уже показала свой
+        return;
+    }
+    // Отправляем уведомление работодателю только если отклик прошёл успешно
+    if (!_applySucceeded) return;
     try {
         if (!window.STATE || !window.STATE.currentUser) return;
         var job = window.STATE.jobs.find(function(j) { return j.id === jobId; });
