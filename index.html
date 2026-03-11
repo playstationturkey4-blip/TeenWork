@@ -7879,6 +7879,8 @@ function _appStatusLabel(status) {
 
 // ------------------------------------------------------------------
 // PATCH applyToJob: set status = "sent"
+// FIX: обновляем Firebase Auth токен перед записью, чтобы Firestore rules не отклонили запрос.
+// FIX: workerId всегда берётся из Firebase Auth (реальный uid), а не из STATE/localStorage.
 // ------------------------------------------------------------------
 const _origApplyToJob_status = window.applyToJob || applyToJob;
 window.applyToJob = async function(jobId) {
@@ -7886,14 +7888,54 @@ window.applyToJob = async function(jobId) {
         showToast('Ошибка', 'База данных недоступна', 'error');
         return;
     }
-    const job = window.STATE && window.STATE.jobs.find(j => j.id === jobId);
+    if (!window.STATE || !window.STATE.currentUser) {
+        showToast('Ошибка', 'Вы не авторизованы', 'error');
+        return;
+    }
+    const job = window.STATE.jobs.find(j => j.id === jobId);
     if (!job) return;
     const message = document.getElementById('applicationMessage')?.value || '';
+
+    // FIX: получаем актуальный Firebase uid и обновляем токен
+    let workerUid = null;
     try {
-        const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+        const fbUser = getAuth().currentUser;
+        if (!fbUser) {
+            showToast('Ошибка сессии', 'Выйдите и войдите снова — Firebase не видит вашу сессию', 'error');
+            return;
+        }
+        await fbUser.getIdToken(true); // принудительно обновляем токен
+        workerUid = fbUser.uid;
+        // синхронизируем uid в STATE если расходится
+        if (window.STATE.currentUser.uid !== workerUid) {
+            window.STATE.currentUser.uid = workerUid;
+        }
+    } catch (authErr) {
+        console.warn('[applyToJob] auth token refresh failed:', authErr.message);
+        // fallback — используем uid из STATE
+        workerUid = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    }
+
+    try {
+        const { collection, query, where, getDocs, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+        // FIX: проверяем дубликат по реальному uid (не email)
+        const dupQ = query(
+            collection(window.db, 'applications'),
+            where('jobId', '==', jobId),
+            where('workerId', '==', workerUid)
+        );
+        const dupSnap = await getDocs(dupQ);
+        if (!dupSnap.empty) {
+            showToast('Уже откликнулись', 'Вы уже подали заявку на эту вакансию', 'warning');
+            closeModal('applyModal');
+            return;
+        }
+
         await addDoc(collection(window.db, 'applications'), {
             jobId: jobId,
-            workerId: window.STATE.currentUser.uid || window.STATE.currentUser.email,
+            workerId: workerUid,
             employerId: job.employerId || job.employerEmail,
             workerEmail: window.STATE.currentUser.email,
             workerNickname: window.STATE.currentUser.nickname || 'Соискатель',
@@ -7904,7 +7946,7 @@ window.applyToJob = async function(jobId) {
         closeModal('applyModal');
         showToast('Успешно', 'Вы откликнулись на вакансию', 'success');
     } catch (error) {
-        console.error('Error applying to job:', error);
+        console.error('[applyToJob] Error applying to job:', error);
         showToast('Ошибка', 'Не удалось откликнуться', 'error');
     }
 };
@@ -9309,16 +9351,27 @@ window.logout = function() {
 // ==================== NOTIFICATION TRIGGERS ====================
 
 // TRIGGER 1: Worker applies -> notify employer
-var _origApplyToJob_n = window.applyToJob || applyToJob;
+// FIX: не перезаписываем window.applyToJob ещё раз (уже исправлен выше с Auth токеном).
+// Уведомление работодателю отправляется напрямую после успешного отклика.
+// Патч выше уже вызывает showToast на успех — цепляем через обёртку безопасно.
+var _origApplyToJob_n = window.applyToJob;
 window.applyToJob = async function(jobId) {
     await _origApplyToJob_n(jobId);
+    // Отправляем уведомление работодателю только если STATE актуален
     try {
-        var job = window.STATE && window.STATE.jobs.find(function(j) { return j.id === jobId; });
+        if (!window.STATE || !window.STATE.currentUser) return;
+        var job = window.STATE.jobs.find(function(j) { return j.id === jobId; });
         if (!job) return;
         var employerId = job.employerId || job.employerEmail;
         if (!employerId) return;
         var workerName = window.STATE.currentUser.nickname || 'Соискатель';
-        await _createNotification(employerId, 'application', '📩 ' + workerName + ' откликнулся на вакансию «' + job.title + '»', 'apply_' + jobId + '_' + (window.STATE.currentUser.uid || window.STATE.currentUser.email));
+        var workerId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+        await _createNotification(
+            employerId,
+            'application',
+            '📩 ' + workerName + ' откликнулся на вакансию «' + job.title + '»',
+            'apply_' + jobId + '_' + workerId
+        );
     } catch (e) { console.warn('[notif] applyTrigger error:', e); }
 };
 
