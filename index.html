@@ -3563,24 +3563,46 @@
                 const result = await signInWithEmailAndPassword(auth, email, password);
 
                 const firebaseUser = result.user;
-                const existingUser = STATE.users.find(u => u.email === email);
-                // FIX: всегда синхронизируем uid из Firebase — даже если юзер уже есть в localStorage
-                STATE.currentUser = existingUser
-                    ? { ...existingUser, uid: firebaseUser.uid }
-                    : {
-                        email: firebaseUser.email,
-                        uid: firebaseUser.uid,
-                        nickname: firebaseUser.displayName || email.split('@')[0],
-                        role: ADMIN_EMAILS.includes(email) ? 'employer' : 'worker',
-                        avatar: null,
-                        createdAt: Date.now()
-                    };
 
+                // Пытаемся загрузить профиль из Firestore (там хранятся nickname, role, avatar)
+                let firestoreProfile = null;
+                if (window.db) {
+                    try {
+                        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                        const snap = await getDoc(doc(window.db, 'users', firebaseUser.uid));
+                        if (snap.exists()) firestoreProfile = snap.data();
+                    } catch (fsErr) {
+                        console.warn('[handleLogin] Firestore read error:', fsErr.message);
+                    }
+                }
+
+                const existingUser = STATE.users.find(u => u.email === email);
+
+                // Собираем итоговый профиль: Firestore > localStorage > defaults
+                // НИ В КОЕМ СЛУЧАЕ не сохраняем пароль
+                const base = firestoreProfile || existingUser || {};
+                STATE.currentUser = {
+                    email:     firebaseUser.email,
+                    uid:       firebaseUser.uid,
+                    nickname:  base.nickname || firebaseUser.displayName || email.split('@')[0],
+                    role:      base.role     || (ADMIN_EMAILS.includes(email) ? 'employer' : 'worker'),
+                    avatar:    base.avatar   || null,
+                    createdAt: base.createdAt || Date.now()
+                };
+
+                // Если в localStorage есть запись с паролем — перезаписываем без пароля
+                const idx = STATE.users.findIndex(u => u.email === email);
+                if (idx !== -1) {
+                    STATE.users[idx] = { ...STATE.currentUser };
+                } else {
+                    STATE.users.push({ ...STATE.currentUser });
+                }
+
+                saveUsers();
                 saveCurrentUser();
                 updateNavbar();
                 closeModal('loginModal');
                 showToast('Добро пожаловать!', 'Вы успешно вошли в систему', 'success');
-                // FIX: запускаем presence сразу после успешного входа
                 if (typeof _setPresenceOnline === 'function') _setPresenceOnline();
             } catch (error) {
                 const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
@@ -3588,55 +3610,91 @@
             }
         }
 
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
-            
-            if (!validateForm(e.target)) {
-                showToast('Ошибка', 'Заполните все поля корректно', 'error');
-                return;
-            }
 
             const formData = new FormData(e.target);
-            const email = formData.get('email');
-            const password = formData.get('password');
-            const nickname = formData.get('nickname');
-            const role = formData.get('role');
+            const email    = (formData.get('email')    || '').trim().toLowerCase();
+            const password = (formData.get('password') || '').trim();
+            const nickname = (formData.get('nickname') || '').trim();
+            const role     = formData.get('role') || '';
 
-            if (STATE.users.find(u => u.email === email)) {
-                showToast('Ошибка', 'Пользователь с таким email уже существует', 'error');
+            // Базовые проверки перед запросом к Firebase
+            if (!email || !password || !nickname) {
+                showToast('Ошибка', 'Заполните все поля', 'error');
                 return;
             }
-
             if (password.length < 6) {
-                const formGroup = e.target.querySelector('input[name="password"]').closest('.form-group');
-                formGroup.classList.add('error');
+                showToast('Ошибка', 'Пароль должен быть не менее 6 символов', 'error');
                 return;
             }
-
             if (!role) {
-                const formGroup = e.target.querySelector('select[name="role"]').closest('.form-group');
-                formGroup.classList.add('error');
+                showToast('Ошибка', 'Выберите роль', 'error');
                 return;
             }
 
-            const newUser = {
-                email,
-                password,
-                nickname,
-                role,
-                avatar: null,
-                createdAt: Date.now(),
-                uid: email
-            };
+            try {
+                // 1. Создаём пользователя в Firebase Authentication
+                const { getAuth, createUserWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                const auth = getAuth();
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                const firebaseUser = result.user;
 
-            STATE.users.push(newUser);
-            STATE.currentUser = newUser;
-            
-            saveUsers();
-            saveCurrentUser();
-            updateNavbar();
-            closeModal('registerModal');
-            showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+                // 2. Готовим объект пользователя БЕЗ пароля
+                const newUser = {
+                    email:     firebaseUser.email,
+                    uid:       firebaseUser.uid,
+                    nickname:  nickname,
+                    role:      role,
+                    avatar:    null,
+                    createdAt: Date.now()
+                };
+
+                // 3. Сохраняем профиль в Firestore (merge — не перезаписывает старые поля)
+                if (window.db) {
+                    try {
+                        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                        await setDoc(doc(window.db, 'users', firebaseUser.uid), {
+                            email:     newUser.email,
+                            nickname:  newUser.nickname,
+                            role:      newUser.role,
+                            avatar:    null,
+                            createdAt: newUser.createdAt,
+                            uid:       firebaseUser.uid
+                        }, { merge: true });
+                    } catch (fsErr) {
+                        console.warn('[handleRegister] Firestore write error:', fsErr.message);
+                        // Не блокируем регистрацию — продолжаем
+                    }
+                }
+
+                // 4. Обновляем локальное состояние
+                STATE.users.push(newUser);
+                STATE.currentUser = newUser;
+
+                saveUsers();
+                saveCurrentUser();
+                updateNavbar();
+                closeModal('registerModal');
+                showToast('Регистрация успешна!', 'Добро пожаловать в TeenWork', 'success');
+
+                // 5. Запускаем presence если доступно
+                if (typeof _setPresenceOnline === 'function') {
+                    setTimeout(_setPresenceOnline, 300);
+                }
+
+            } catch (error) {
+                console.error('[handleRegister] Firebase error:', error.code, error.message);
+                let msg = 'Ошибка регистрации. Попробуйте снова.';
+                if (error.code === 'auth/email-already-in-use') {
+                    msg = 'Пользователь с таким email уже зарегистрирован.';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = 'Некорректный email адрес.';
+                } else if (error.code === 'auth/weak-password') {
+                    msg = 'Пароль слишком простой (минимум 6 символов).';
+                }
+                showToast('Ошибка', msg, 'error');
+            }
         }
 
         function handleProfileUpdate(e) {
@@ -4848,8 +4906,14 @@ window.handleLogin = function(e) {
 // Patch handleRegister to set presence online after registration
 const _origHandleRegister = window.handleRegister || handleRegister;
 window.handleRegister = function(e) {
-    _origHandleRegister(e);
-    setTimeout(() => { if (window.STATE && window.STATE.currentUser) _setPresenceOnline(); }, 200);
+    // handleRegister теперь async — дожидаемся завершения перед presence
+    const result = _origHandleRegister(e);
+    const afterReg = () => { if (window.STATE && window.STATE.currentUser) _setPresenceOnline(); };
+    if (result && typeof result.then === 'function') {
+        result.then(afterReg).catch(() => {});
+    } else {
+        setTimeout(afterReg, 500);
+    }
 };
 
 // Patch logout to set presence offline
@@ -9386,11 +9450,16 @@ window.handleLogin = function(e) {
 
 var _origHReg_n = window.handleRegister || handleRegister;
 window.handleRegister = function(e) {
-    _origHReg_n(e);
-    setTimeout(function() {
+    var result = _origHReg_n(e);
+    var afterReg2 = function() {
         _injectNotifOverlay();
         if (window.STATE && window.STATE.currentUser) { _injectNotifBell(); _startNotifListener(); }
-    }, 400);
+    };
+    if (result && typeof result.then === 'function') {
+        result.then(function() { setTimeout(afterReg2, 400); }).catch(function() {});
+    } else {
+        setTimeout(afterReg2, 600);
+    }
 };
 </script>
 
