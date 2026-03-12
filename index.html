@@ -3163,6 +3163,124 @@ body.dark-theme .info-icon {
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         EMPLOYER CABINET — /employer/dashboard
+         Аддитивная страница. Паттерн: profile-page (slide-in).
+         Всю бизнес-логику берёт из существующих функций.
+    ════════════════════════════════════════════════════════════ -->
+    <div class="profile-page" id="employerCabinet">
+        <!-- HEADER -->
+        <div class="profile-header ec-header">
+            <div class="profile-nav">
+                <button class="back-btn" onclick="closeEmployerCabinet()">← Назад</button>
+            </div>
+            <div class="profile-title">
+                <h1>Кабинет работодателя</h1>
+                <p id="ecCompanyName" style="font-size:14px;opacity:0.8;margin-top:4px;"></p>
+            </div>
+        </div>
+
+        <!-- LAYOUT: sidebar + content -->
+        <div class="ec-layout">
+            <!-- LEFT SIDEBAR NAV -->
+            <nav class="ec-sidebar">
+                <button class="ec-nav-item active" id="ecNav-vacancies" onclick="ecSwitchTab('vacancies')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    <span>Мои вакансии</span>
+                    <span class="ec-nav-badge" id="ecBadge-vacancies"></span>
+                </button>
+                <button class="ec-nav-item" id="ecNav-applications" onclick="ecSwitchTab('applications')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Отклики</span>
+                    <span class="ec-nav-badge ec-nav-badge--new" id="ecBadge-applications"></span>
+                </button>
+                <button class="ec-nav-item" id="ecNav-analytics" onclick="ecSwitchTab('analytics')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <span>Статистика</span>
+                </button>
+                <button class="ec-nav-item ec-nav-item--create" id="ecNav-create" onclick="ecSwitchTab('create')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    <span>Разместить вакансию</span>
+                </button>
+            </nav>
+
+            <!-- MAIN CONTENT -->
+            <main class="ec-content">
+                <!-- TAB: Vacancies -->
+                <div class="ec-tab active" id="ecTab-vacancies">
+                    <div class="ec-section-header">
+                        <h2 class="ec-section-title">Мои вакансии</h2>
+                        <button class="btn btn-primary ec-add-btn" onclick="ecSwitchTab('create')">+ Новая вакансия</button>
+                    </div>
+                    <div id="ecVacanciesList" class="ec-list"></div>
+                </div>
+
+                <!-- TAB: Applications -->
+                <div class="ec-tab" id="ecTab-applications">
+                    <div class="ec-section-header">
+                        <h2 class="ec-section-title">Отклики</h2>
+                        <select class="ec-filter-select" id="ecAppJobFilter" onchange="ecFilterApplications()">
+                            <option value="">Все вакансии</option>
+                        </select>
+                    </div>
+                    <div id="ecApplicationsList" class="ec-list"></div>
+                </div>
+
+                <!-- TAB: Analytics -->
+                <div class="ec-tab" id="ecTab-analytics">
+                    <h2 class="ec-section-title" style="margin-bottom:20px;">Статистика</h2>
+                    <div class="ec-stats-grid" id="ecStatsGrid"></div>
+                    <div class="ec-chart-section" id="ecChartSection"></div>
+                </div>
+
+                <!-- TAB: Create vacancy (embedding existing postJobForm logic) -->
+                <div class="ec-tab" id="ecTab-create">
+                    <h2 class="ec-section-title" style="margin-bottom:20px;">Разместить вакансию</h2>
+                    <div class="ec-create-wrap">
+                        <form id="ecPostJobForm" class="ec-job-form">
+                            <div class="form-group">
+                                <label>Название вакансии</label>
+                                <input type="text" name="title" required placeholder="Например: Кассир, Промоутер...">
+                                <div class="form-error">Это поле обязательно</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Компания</label>
+                                <input type="text" name="company" required placeholder="Название компании">
+                                <div class="form-error">Это поле обязательно</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Город</label>
+                                <select name="city" required>
+                                    <option value="">Выберите город</option>
+                                    <option value="Санкт-Петербург">Санкт-Петербург</option>
+                                </select>
+                                <div class="form-error">Это поле обязательно</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Зарплата (₽/мес)</label>
+                                <input type="number" name="salary" required min="0" placeholder="15000">
+                                <div class="form-error">Введите корректную зарплату</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Тип работы</label>
+                                <input type="text" name="type" placeholder="Частичная занятость, сменный график..." required>
+                                <div class="form-error">Это поле обязательно</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Описание</label>
+                                <textarea name="description" required placeholder="Опишите обязанности, требования и условия работы..."></textarea>
+                                <div class="form-error">Это поле обязательно</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">
+                                Разместить вакансию
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
     <div class="modal" id="postJobModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -3548,7 +3666,7 @@ body.dark-theme .info-icon {
                 
                 if (isAdmin()) setTimeout(_updateModerationBadge, 500);
                 if (STATE.currentUser.role === 'employer') {
-                    navHTML += `<button class="btn btn-primary" onclick="openModal('postJobModal')">Разместить вакансию</button>`;
+                    navHTML += `<button class="btn btn-primary" onclick="openEmployerCabinet()">Кабинет работодателя</button>`;
                 }
                 
                 navHTML += `
@@ -3585,7 +3703,7 @@ body.dark-theme .info-icon {
                 }
                 openModal('registerModal');
             } else if (STATE.currentUser.role === 'employer') {
-                openModal('postJobModal');
+                openEmployerCabinet();
             } else {
                 openModal('workerNeedsChangeModal');
             }
@@ -14002,6 +14120,441 @@ async function handleForgotPassword() {
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════
+     EMPLOYER CABINET CSS
+════════════════════════════════════════════════════════════ -->
+<style>
+/* ── LAYOUT ── */
+.ec-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 140px);
+    gap: 0;
+}
+
+/* ── SIDEBAR ── */
+.ec-sidebar {
+    background: var(--light-gray);
+    border-right: 1.5px solid var(--border-gray);
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: sticky;
+    top: 140px;
+    height: fit-content;
+}
+
+body.dark-theme .ec-sidebar {
+    background: var(--dt-surface-2, #1a1d2e);
+    border-right-color: var(--border-gray);
+}
+
+.ec-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--text-gray);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+    width: 100%;
+    position: relative;
+}
+
+.ec-nav-item:hover {
+    background: var(--white);
+    color: var(--text-dark);
+    box-shadow: var(--shadow-sm);
+}
+
+.ec-nav-item.active {
+    background: var(--white);
+    color: var(--primary-blue);
+    box-shadow: var(--shadow-sm);
+}
+
+body.dark-theme .ec-nav-item.active,
+body.dark-theme .ec-nav-item:hover {
+    background: var(--dt-surface-3, #252840);
+}
+
+.ec-nav-item svg {
+    flex-shrink: 0;
+}
+
+.ec-nav-item--create {
+    margin-top: 12px;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    border: 1.5px dashed rgba(37,99,235,0.3);
+}
+
+.ec-nav-item--create:hover,
+.ec-nav-item--create.active {
+    background: var(--primary-blue);
+    color: #fff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+.ec-nav-badge {
+    margin-left: auto;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--border-gray);
+    color: var(--text-gray);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    display: none;
+}
+
+.ec-nav-badge--new {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.ec-nav-badge.visible { display: inline-flex; }
+
+/* ── MAIN CONTENT ── */
+.ec-content {
+    padding: 28px 32px;
+    min-width: 0;
+}
+
+/* ── TABS ── */
+.ec-tab {
+    display: none;
+    animation: fadeInUp 0.25s ease;
+}
+
+.ec-tab.active {
+    display: block;
+}
+
+/* ── SECTION HEADER ── */
+.ec-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ec-section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-dark);
+    letter-spacing: -0.4px;
+}
+
+.ec-add-btn {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.ec-filter-select {
+    padding: 8px 12px;
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text-dark);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    min-width: 180px;
+}
+
+/* ── VACANCY CARD (в кабинете) ── */
+.ec-vacancy-card {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: var(--transition);
+}
+
+body.dark-theme .ec-vacancy-card {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+
+.ec-vacancy-card:hover {
+    border-color: var(--primary-blue);
+    box-shadow: var(--shadow-sm);
+}
+
+.ec-vc-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+.ec-vc-dot.closed { background: #94a3b8; }
+
+.ec-vc-info { flex: 1; min-width: 0; }
+
+.ec-vc-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+}
+
+.ec-vc-meta {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.ec-vc-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ec-vc-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 600;
+}
+
+.ec-vc-stat svg { flex-shrink: 0; }
+
+.ec-vc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: flex-end;
+}
+
+.ec-btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-gray);
+    background: var(--white);
+    color: var(--text-dark);
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.ec-btn-sm:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+.ec-btn-sm.primary { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+.ec-btn-sm.primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+.ec-btn-sm.danger { color: #dc2626; border-color: #fecaca; }
+.ec-btn-sm.danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+body.dark-theme .ec-btn-sm {
+    background: var(--dt-surface-3, #252840);
+    border-color: var(--border-gray);
+}
+
+/* ── APPLICATION CARD ── */
+.ec-app-card {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: var(--transition);
+}
+
+body.dark-theme .ec-app-card {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+
+.ec-app-card.ec-app-new {
+    border-left: 3px solid #10b981;
+}
+
+.ec-app-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.ec-app-info { flex: 1; min-width: 0; }
+
+.ec-app-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 2px;
+}
+
+.ec-app-job {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.ec-app-message {
+    font-size: 13px;
+    color: var(--text-dark);
+    opacity: 0.8;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ec-app-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ── STATS ── */
+.ec-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.ec-stat-card {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+body.dark-theme .ec-stat-card {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+
+.ec-stat-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.ec-stat-value { font-size: 32px; font-weight: 800; color: var(--primary-blue); line-height: 1; margin-bottom: 6px; }
+.ec-stat-label { font-size: 12px; color: var(--text-gray); font-weight: 600; }
+.ec-stat-card.green .ec-stat-value { color: #10b981; }
+.ec-stat-card.red .ec-stat-value { color: #ef4444; }
+.ec-stat-card.amber .ec-stat-value { color: #f59e0b; }
+
+.ec-per-vacancy-table {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+body.dark-theme .ec-per-vacancy-table { background: var(--dt-surface-2, #212536); border-color: var(--border-gray); }
+.ec-pv-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border-gray);
+    font-size: 13px;
+}
+.ec-pv-row:last-child { border-bottom: none; }
+.ec-pv-title { flex: 1; font-weight: 600; color: var(--text-dark); }
+.ec-pv-num { font-weight: 700; color: var(--text-gray); min-width: 30px; text-align: right; }
+
+/* ── CREATE FORM ── */
+.ec-create-wrap {
+    max-width: 560px;
+}
+.ec-job-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* ── EMPTY STATE ── */
+.ec-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-gray);
+}
+.ec-empty svg { margin: 0 auto 16px; display: block; color: var(--border-gray); }
+.ec-empty-title { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+.ec-empty-sub { font-size: 14px; margin-bottom: 20px; }
+
+/* ── LOADING ── */
+.ec-loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+    .ec-layout {
+        grid-template-columns: 1fr;
+    }
+    .ec-sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 6px;
+        position: static;
+        border-right: none;
+        border-bottom: 1.5px solid var(--border-gray);
+    }
+    .ec-nav-item {
+        padding: 8px 12px;
+        font-size: 12px;
+        flex: 0 0 auto;
+    }
+    .ec-nav-item span:first-of-type { display: none; }
+    .ec-nav-item--create { margin-top: 0; }
+    .ec-content { padding: 20px 16px; }
+    .ec-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .ec-vacancy-card { flex-direction: column; gap: 12px; }
+    .ec-vc-actions { flex-direction: row; align-items: center; }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
      TASKS 2-6: PROFILE PROGRESS + EMPLOYER DASHBOARD + DESIGN
      Все изменения аддитивные — существующая логика не тронута
 ════════════════════════════════════════════════════════════ -->
@@ -14434,6 +14987,484 @@ window.openProfile = function() {
         _renderEmployerDashboard(dashWrap, user);
     }, 100);
 };
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     EMPLOYER CABINET — JavaScript
+     Все функции аддитивны. Существующие showApplications,
+     renderEmployerJobs, openChatFromEmployer — не тронуты.
+════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+// ── СОСТОЯНИЕ КАБИНЕТА ──────────────────────────────────────
+var _ecTab       = 'vacancies';   // текущий таб
+var _ecJobs      = [];            // вакансии работодателя
+var _ecApps      = [];            // все отклики
+var _ecLoaded    = false;         // данные уже загружены в сессии
+
+// ── OPEN / CLOSE ─────────────────────────────────────────────
+
+window.openEmployerCabinet = function() {
+    var user = window.STATE && window.STATE.currentUser;
+    if (!user) { if (window.openModal) openModal('loginModal'); return; }
+    if (user.role !== 'employer') { openModal('roleSelectorModal'); return; }
+
+    var cabinet = document.getElementById('employerCabinet');
+    if (!cabinet) return;
+
+    // Заголовок — компания пользователя (из первой вакансии или email)
+    var compEl = document.getElementById('ecCompanyName');
+    if (compEl) {
+        var ownJobs = (window.STATE.jobs || []).filter(function(j) {
+            return j.employerEmail === user.email || j.employerId === (user.uid || user.email);
+        });
+        compEl.textContent = (ownJobs.length && ownJobs[0].company)
+            ? ownJobs[0].company
+            : (user.email || '');
+    }
+
+    cabinet.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Переключаем на таб вакансий и грузим данные
+    ecSwitchTab('vacancies');
+    _ecLoadData();
+};
+
+window.closeEmployerCabinet = function() {
+    var cabinet = document.getElementById('employerCabinet');
+    if (cabinet) cabinet.classList.remove('active');
+    document.body.style.overflow = '';
+    _ecLoaded = false; // сбрасываем кеш при закрытии — данные устарели
+};
+
+// ── ПЕРЕКЛЮЧЕНИЕ ТАБОВ ───────────────────────────────────────
+
+window.ecSwitchTab = function(tab) {
+    _ecTab = tab;
+
+    // Убираем active со всех
+    document.querySelectorAll('#employerCabinet .ec-nav-item').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('#employerCabinet .ec-tab').forEach(function(t) {
+        t.classList.remove('active');
+    });
+
+    // Ставим active на нужный
+    var navBtn = document.getElementById('ecNav-' + tab);
+    var tabEl  = document.getElementById('ecTab-' + tab);
+    if (navBtn) navBtn.classList.add('active');
+    if (tabEl)  tabEl.classList.add('active');
+
+    // Рендерим контент таба
+    if (_ecLoaded) {
+        _ecRenderTab(tab);
+    }
+};
+
+// ── ЗАГРУЗКА ДАННЫХ ──────────────────────────────────────────
+
+async function _ecLoadData() {
+    var user = window.STATE && window.STATE.currentUser;
+    if (!user) return;
+
+    // Вакансии из STATE (уже загружены Firestore-листенером)
+    _ecJobs = (window.STATE.jobs || []).filter(function(j) {
+        return j.employerEmail === user.email
+            || j.employerId === (user.uid || user.email);
+    });
+
+    // Обновляем badge в nav
+    _ecSetBadge('vacancies', _ecJobs.length);
+
+    // Рендерим немедленно с тем что есть
+    _ecRenderTab(_ecTab);
+
+    // Загружаем отклики из Firestore
+    if (!window.db || _ecJobs.length === 0) {
+        _ecLoaded = true;
+        _ecRenderTab(_ecTab);
+        return;
+    }
+
+    try {
+        var jobIds = _ecJobs.map(function(j) { return j.id; });
+        var { collection, query, where, getDocs, orderBy } =
+            await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+        // Firestore "in" поддерживает до 30 значений
+        var chunks = [];
+        for (var i = 0; i < jobIds.length; i += 30) {
+            chunks.push(jobIds.slice(i, i + 30));
+        }
+
+        _ecApps = [];
+        for (var chunk of chunks) {
+            var q    = query(collection(window.db, 'applications'), where('jobId', 'in', chunk));
+            var snap = await getDocs(q);
+            snap.forEach(function(d) { _ecApps.push({ _docId: d.id, ...d.data() }); });
+        }
+
+        // Счётчик новых откликов (sent / new)
+        var newCount = _ecApps.filter(function(a) {
+            var s = a.status || 'new';
+            return s === 'new' || s === 'sent';
+        }).length;
+        _ecSetBadge('applications', newCount, true);
+
+        _ecLoaded = true;
+        _ecRenderTab(_ecTab);
+
+        // Заполняем фильтр-селект по вакансиям
+        _ecFillJobFilter();
+    } catch (e) {
+        console.error('[ec] loadData error:', e);
+        _ecLoaded = true;
+        _ecRenderTab(_ecTab);
+    }
+}
+
+// ── BADGE NAV ─────────────────────────────────────────────────
+
+function _ecSetBadge(tab, count, isNew) {
+    var el = document.getElementById('ecBadge-' + tab);
+    if (!el) return;
+    if (!count) { el.classList.remove('visible'); return; }
+    el.textContent = count > 99 ? '99+' : count;
+    el.classList.add('visible');
+    if (isNew) el.classList.add('ec-nav-badge--new');
+}
+
+// ── РЕНДЕР ПО ТАБУ ────────────────────────────────────────────
+
+function _ecRenderTab(tab) {
+    if (tab === 'vacancies')    _ecRenderVacancies();
+    if (tab === 'applications') _ecRenderApplications();
+    if (tab === 'analytics')    _ecRenderAnalytics();
+    if (tab === 'create')       _ecRenderCreate();
+}
+
+// ── ВАКАНСИИ ──────────────────────────────────────────────────
+
+function _ecRenderVacancies() {
+    var el = document.getElementById('ecVacanciesList');
+    if (!el) return;
+
+    if (_ecJobs.length === 0) {
+        el.innerHTML = _ecEmpty(
+            '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+            'Вакансий пока нет',
+            'Создайте первую вакансию, чтобы начать поиск сотрудников',
+            'Разместить вакансию', "ecSwitchTab('create')"
+        );
+        return;
+    }
+
+    var html = '';
+    _ecJobs.forEach(function(job) {
+        var appCount   = _ecApps.filter(function(a) { return a.jobId === job.id; }).length;
+        var newCount   = _ecApps.filter(function(a) { return a.jobId === job.id && (!a.status || a.status === 'new' || a.status === 'sent'); }).length;
+        var isClosed   = !!job.isClosed;
+        var isTop      = !!job.isTop;
+        var isVerified = !!(job.verified || job.isVerified);
+        var views      = job.views || 0;
+
+        html += '<div class="ec-vacancy-card">' +
+            '<div class="ec-vc-dot' + (isClosed ? ' closed' : '') + '"></div>' +
+            '<div class="ec-vc-info">' +
+                '<div class="ec-vc-title">' + _esc(job.title) +
+                    (isTop ? ' <span style="font-size:11px;font-weight:800;color:#f59e0b;margin-left:6px;">★ TOP</span>' : '') +
+                    (isVerified ? ' <span style="font-size:11px;font-weight:700;color:#10b981;margin-left:4px;">✓ Верифицирован</span>' : '') +
+                '</div>' +
+                '<div class="ec-vc-meta">' + _esc(job.company) + ' · ' + _esc(job.city) + ' · ' +
+                    (job.salary || 0).toLocaleString('ru-RU') + ' ₽/мес' +
+                    (isClosed ? ' · <span style="color:#94a3b8;">Закрыта</span>' : ' · <span style="color:#10b981;">Активна</span>') +
+                '</div>' +
+                '<div class="ec-vc-stats">' +
+                    '<span class="ec-vc-stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' + views + ' просм.</span>' +
+                    '<span class="ec-vc-stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+                    appCount + ' откликов' + (newCount > 0 ? ' <b style="color:#10b981;">(+' + newCount + ' новых)</b>' : '') + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="ec-vc-actions">' +
+                '<button class="ec-btn-sm primary" onclick="ecOpenApplicationsForJob(\'' + job.id + '\')">Отклики</button>' +
+                '<button class="ec-btn-sm" onclick="showApplications(\'' + job.id + '\')">Полный список</button>' +
+            '</div>' +
+        '</div>';
+    });
+
+    el.innerHTML = html;
+}
+
+// ── ОТКЛИКИ ───────────────────────────────────────────────────
+
+function _ecFillJobFilter() {
+    var sel = document.getElementById('ecAppJobFilter');
+    if (!sel) return;
+    var existing = Array.from(sel.options).map(function(o) { return o.value; });
+    _ecJobs.forEach(function(j) {
+        if (!existing.includes(j.id)) {
+            var opt = document.createElement('option');
+            opt.value = j.id;
+            opt.textContent = j.title;
+            sel.appendChild(opt);
+        }
+    });
+}
+
+window.ecFilterApplications = function() { _ecRenderApplications(); };
+
+window.ecOpenApplicationsForJob = function(jobId) {
+    ecSwitchTab('applications');
+    var sel = document.getElementById('ecAppJobFilter');
+    if (sel) { sel.value = jobId; }
+    _ecRenderApplications();
+};
+
+function _ecRenderApplications() {
+    var el = document.getElementById('ecApplicationsList');
+    if (!el) return;
+
+    var filterJobId = (document.getElementById('ecAppJobFilter') || {}).value || '';
+    var apps = filterJobId
+        ? _ecApps.filter(function(a) { return a.jobId === filterJobId; })
+        : _ecApps;
+
+    if (apps.length === 0) {
+        el.innerHTML = _ecEmpty(
+            '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+            'Откликов пока нет',
+            'Как только соискатели откликнутся — отклики появятся здесь',
+            null, null
+        );
+        return;
+    }
+
+    // Сортируем: новые наверх
+    var sorted = apps.slice().sort(function(a, b) {
+        var stA = a.status || 'new'; var stB = b.status || 'new';
+        var isNewA = stA === 'new' || stA === 'sent';
+        var isNewB = stB === 'new' || stB === 'sent';
+        if (isNewA && !isNewB) return -1;
+        if (!isNewA && isNewB) return 1;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+
+    var html = '';
+    sorted.forEach(function(app) {
+        var status  = app.status || 'new';
+        var isNew   = status === 'new' || status === 'sent';
+        var job     = _ecJobs.find(function(j) { return j.id === app.jobId; });
+        var jobName = job ? job.title : (app.jobId || '');
+        var initial = (app.workerNickname || 'S')[0].toUpperCase();
+        var statusBadge = _ecStatusBadge(status);
+
+        html += '<div class="ec-app-card' + (isNew ? ' ec-app-new' : '') + '">' +
+            '<div class="ec-app-avatar">' + _esc(initial) + '</div>' +
+            '<div class="ec-app-info">' +
+                '<div class="ec-app-name">' + _esc(app.workerNickname || 'Соискатель') +
+                    '&nbsp;' + statusBadge + '</div>' +
+                '<div class="ec-app-job">На вакансию: ' + _esc(jobName) + '</div>' +
+                (app.message ? '<div class="ec-app-message">' + _esc(app.message) + '</div>' : '') +
+                '<div class="ec-app-actions">' +
+                    '<button class="ec-btn-sm primary" onclick="openChatFromEmployer(\'' + _esc(app.jobId) + '\', \'' + _esc(app.workerId) + '\')">Чат</button>' +
+                    (app.workerId ? '<button class="ec-btn-sm" onclick="viewWorkerResume && viewWorkerResume(\'' + _esc(app.workerId) + '\', \'' + _esc(app.workerNickname || 'Соискатель') + '\')">Резюме</button>' : '') +
+                    (['new','sent','viewed'].includes(status) ?
+                        '<button class="ec-btn-sm" style="color:#10b981;border-color:#bbf7d0;" onclick="_employerDecideApp(\'' + _esc(app._docId) + '\',\'accepted\')">Принять</button>' +
+                        '<button class="ec-btn-sm" style="color:#dc2626;border-color:#fecaca;" onclick="_employerDecideApp(\'' + _esc(app._docId) + '\',\'rejected\')">Отклонить</button>'
+                    : '') +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    });
+
+    el.innerHTML = html;
+}
+
+function _ecStatusBadge(status) {
+    var map = {
+        sent:               '<span class="jc-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;padding:2px 7px;">Отправлено</span>',
+        new:                '<span class="jc-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;padding:2px 7px;">Новый</span>',
+        viewed:             '<span class="jc-badge" style="background:#eff6ff;color:#2563eb;font-size:10px;padding:2px 7px;">Просмотрено</span>',
+        accepted:           '<span class="jc-badge" style="background:#dcfce7;color:#15803d;font-size:10px;padding:2px 7px;">Принято</span>',
+        rejected:           '<span class="jc-badge" style="background:#fee2e2;color:#dc2626;font-size:10px;padding:2px 7px;">Отклонено</span>',
+        archived_hired:     '<span class="jc-badge" style="background:#f0fdf4;color:#166534;font-size:10px;padding:2px 7px;">Устроился</span>',
+        archived_not_hired: '<span class="jc-badge" style="background:#f8fafc;color:#64748b;font-size:10px;padding:2px 7px;">Архив</span>',
+    };
+    return map[status] || map['new'];
+}
+
+// ── АНАЛИТИКА ─────────────────────────────────────────────────
+
+function _ecRenderAnalytics() {
+    var grid = document.getElementById('ecStatsGrid');
+    var chart = document.getElementById('ecChartSection');
+    if (!grid) return;
+
+    var totalViews  = _ecJobs.reduce(function(s, j) { return s + (j.views || 0); }, 0);
+    var totalApps   = _ecApps.length;
+    var newApps     = _ecApps.filter(function(a) { var s = a.status||'new'; return s==='new'||s==='sent'; }).length;
+    var accepted    = _ecApps.filter(function(a) { return a.status === 'accepted'; }).length;
+    var rejected    = _ecApps.filter(function(a) { return a.status === 'rejected'; }).length;
+    var convRate    = totalViews > 0 ? Math.round((totalApps / totalViews) * 100) : 0;
+
+    grid.innerHTML =
+        _ecStatCard('' + _ecJobs.length, 'Активных вакансий', '') +
+        _ecStatCard('' + totalViews, 'Просмотров', '') +
+        _ecStatCard('' + totalApps, 'Всего откликов', '') +
+        _ecStatCard('' + newApps, 'Новых откликов', 'green') +
+        _ecStatCard('' + accepted, 'Принято', 'green') +
+        _ecStatCard('' + rejected, 'Отклонено', 'red') +
+        _ecStatCard(convRate + '%', 'Конверсия', 'amber');
+
+    // Таблица по вакансиям
+    if (_ecJobs.length === 0) { if (chart) chart.innerHTML = ''; return; }
+
+    var rows = _ecJobs.map(function(j) {
+        var cnt = _ecApps.filter(function(a) { return a.jobId === j.id; }).length;
+        return { title: j.title, views: j.views || 0, apps: cnt };
+    }).sort(function(a, b) { return b.apps - a.apps; });
+
+    var tableHtml = '<div class="ec-per-vacancy-table">' +
+        rows.map(function(r) {
+            return '<div class="ec-pv-row">' +
+                '<div class="ec-pv-title">' + _esc(r.title) + '</div>' +
+                '<span class="ec-vc-stat" style="margin-right:8px;">' +
+                    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>&nbsp;' + r.views +
+                '</span>' +
+                '<span class="ec-vc-stat">' +
+                    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>&nbsp;' + r.apps +
+                '</span>' +
+            '</div>';
+        }).join('') +
+        '</div>';
+
+    if (chart) chart.innerHTML = '<div style="font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:12px;">По вакансиям</div>' + tableHtml;
+}
+
+function _ecStatCard(val, label, mod) {
+    return '<div class="ec-stat-card' + (mod ? ' ' + mod : '') + '">' +
+        '<div class="ec-stat-value">' + val + '</div>' +
+        '<div class="ec-stat-label">' + label + '</div>' +
+        '</div>';
+}
+
+// ── СОЗДАТЬ ВАКАНСИЮ ─────────────────────────────────────────
+
+function _ecRenderCreate() {
+    // Форма уже в HTML — просто убеждаемся что обработчик подключён
+    var form = document.getElementById('ecPostJobForm');
+    if (!form || form._ecBound) return;
+    form._ecBound = true;
+    form.addEventListener('submit', _ecHandlePostJob);
+}
+
+async function _ecHandlePostJob(e) {
+    e.preventDefault();
+    var user = window.STATE && window.STATE.currentUser;
+    if (!user) return;
+
+    // Используем validateForm если есть
+    if (window.validateForm && !validateForm(e.target)) {
+        if (window.showToast) showToast('Ошибка', 'Заполните все поля корректно', 'error');
+        return;
+    }
+
+    var fd = new FormData(e.target);
+    var newJob = {
+        title:        (fd.get('title') || '').trim(),
+        company:      (fd.get('company') || '').trim(),
+        city:         (fd.get('city') || '').trim(),
+        salary:       parseInt(fd.get('salary') || '0'),
+        type:         (fd.get('type') || '').trim(),
+        description:  (fd.get('description') || '').trim(),
+        employerEmail: user.email,
+        employerId:   user.uid || user.email,
+        isTop: false,
+        status: 'pending',
+        views: 0,
+        createdAt: Date.now()
+    };
+
+    if (!newJob.title || !newJob.company || !newJob.city || !newJob.salary || !newJob.type || !newJob.description) {
+        if (window.showToast) showToast('Ошибка', 'Заполните все поля', 'error');
+        return;
+    }
+
+    var btn = e.target.querySelector('[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Размещаем...'; }
+
+    try {
+        if (window.db && window.addDoc && window.collection) {
+            await window.addDoc(window.collection(window.db, 'jobs'), newJob);
+        }
+        if (window.showToast) showToast('Успешно', 'Вакансия отправлена на модерацию', 'success');
+        e.target.reset();
+        // Перезагружаем данные и переключаемся на список вакансий
+        if (window.loadJobsFromFirestore) await window.loadJobsFromFirestore();
+        _ecLoaded = false;
+        await _ecLoadData();
+        ecSwitchTab('vacancies');
+    } catch (err) {
+        console.error('[ec] postJob error:', err);
+        if (window.showToast) showToast('Ошибка', 'Не удалось разместить вакансию', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Разместить вакансию'; }
+    }
+}
+
+// ── УТИЛИТЫ ──────────────────────────────────────────────────
+
+function _esc(s) {
+    if (!s) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function _ecEmpty(iconPath, title, sub, btnLabel, btnAction) {
+    return '<div class="ec-empty">' +
+        '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">' + iconPath + '</svg>' +
+        '<div class="ec-empty-title">' + title + '</div>' +
+        '<div class="ec-empty-sub">' + sub + '</div>' +
+        (btnLabel ? '<button class="btn btn-primary" onclick="' + btnAction + '">' + btnLabel + '</button>' : '') +
+        '</div>';
+}
+
+// ── ИНТЕГРАЦИЯ: обновляем данные при перезагрузке вакансий ──
+
+var _origRenderJobs_ec = window.renderJobs;
+window.renderJobs = function() {
+    if (_origRenderJobs_ec) _origRenderJobs_ec();
+    // Если кабинет открыт — обновляем список вакансий
+    var cab = document.getElementById('employerCabinet');
+    if (cab && cab.classList.contains('active')) {
+        var user = window.STATE && window.STATE.currentUser;
+        if (user && user.role === 'employer') {
+            _ecLoaded = false;
+            _ecLoadData();
+        }
+    }
+};
+
+// ── ESC ЗАКРЫВАЕТ КАБИНЕТ ────────────────────────────────────
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var cab = document.getElementById('employerCabinet');
+        if (cab && cab.classList.contains('active')) {
+            closeEmployerCabinet();
+        }
+    }
+});
+
+})();
 </script>
 
 </body>
