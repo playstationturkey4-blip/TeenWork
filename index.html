@@ -2232,6 +2232,24 @@
                 0 0 0 1px var(--primary-blue),
                 0 4px 16px rgba(59, 130, 246, 0.3);
         }
+        /* ── VERIFIED EMPLOYER BADGE ── */
+        .job-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: #dcfce7;
+            color: #15803d;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        body.dark-theme .job-verified-badge {
+            background: rgba(21, 128, 61, 0.15);
+            color: #4ade80;
+        }
     </style>
 </head>
 <body>
@@ -2303,12 +2321,11 @@
             </div>
             <div class="hero-actions">
                 <button class="btn btn-hero btn-cta-primary" onclick="scrollToSearch()">
-                    <span class="cta-icon">🔍</span>
                     Найти работу сейчас
                     <svg class="cta-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
                 <button class="btn btn-hero btn-cta-secondary" onclick="handleEmployerButtonClick()">
-                    💼 Я работодатель
+                    Я работодатель
                 </button>
             </div>
             <div class="hero-social-proof">
@@ -2319,8 +2336,8 @@
                     <div class="sp-av sp-av-4">К</div>
                 </div>
                 <div class="sp-text">
-                    <span class="sp-bold">1 200+ подростков</span>
-                    уже нашли работу этим летом
+                    <span class="sp-bold">Первая платформа</span>
+                    официального трудоустройства подростков в СПб
                 </div>
             </div>
         </div>
@@ -2389,22 +2406,30 @@
             </div>
             <div class="info-grid">
                 <div class="info-card">
-                    <div class="info-icon">🛡️</div>
+                    <div class="info-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
                     <h3>Проверенные работодатели</h3>
                     <p>Все компании проходят обязательную верификацию. Мы проверяем юридические данные и репутацию.</p>
                 </div>
                 <div class="info-card">
-                    <div class="info-icon">📋</div>
+                    <div class="info-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
                     <h3>Официальное оформление</h3>
                     <p>Только легальное трудоустройство с соблюдением Трудового кодекса РФ для несовершеннолетних.</p>
                 </div>
                 <div class="info-card">
-                    <div class="info-icon">⏰</div>
+                    <div class="info-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
                     <h3>Безопасный график</h3>
                     <p>Контроль рабочего времени согласно законодательству: не более 24 часов в неделю для школьников.</p>
                 </div>
                 <div class="info-card">
-                    <div class="info-icon">💰</div>
+                    <div class="info-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
                     <h3>Гарантия выплат</h3>
                     <p>Прозрачные условия оплаты труда. Никаких скрытых комиссий и задержек зарплаты.</p>
                 </div>
@@ -2519,6 +2544,217 @@
             </div>
         </div>
     </footer>
+
+<!-- ===== PARENTS TRUST SECTION (additive, не трогает существующий код) ===== -->
+<style>
+.parents-section {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 80px 0;
+    border-top: 1px solid #bae6fd;
+}
+body.dark-theme .parents-section {
+    background: linear-gradient(135deg, #0c1a2e 0%, #0f1f38 100%);
+    border-top-color: #1e3a5f;
+}
+.parents-section .section-header {
+    text-align: center;
+    display: block;
+    margin-bottom: 48px;
+}
+.parents-section .section-header h2 {
+    color: #0c4a6e;
+    font-size: 34px;
+}
+body.dark-theme .parents-section .section-header h2 {
+    color: #7dd3fc;
+}
+.parents-section .section-info {
+    font-size: 17px;
+    max-width: 620px;
+    margin: 12px auto 0;
+    line-height: 1.65;
+}
+.parents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+.parents-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 2px 12px rgba(14, 76, 110, 0.08);
+    border: 1px solid #e0f2fe;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+body.dark-theme .parents-card {
+    background: #162236;
+    border-color: #1e3a5f;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+.parents-card-icon {
+    width: 52px;
+    height: 52px;
+    background: #e0f2fe;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0369a1;
+    flex-shrink: 0;
+}
+body.dark-theme .parents-card-icon {
+    background: #0c2a45;
+    color: #38bdf8;
+}
+.parents-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+.parents-card p {
+    font-size: 14px;
+    color: var(--text-gray);
+    line-height: 1.7;
+    margin: 0;
+}
+.parents-cta-box {
+    background: #0369a1;
+    border-radius: 16px;
+    padding: 36px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+body.dark-theme .parents-cta-box {
+    background: #0c2a45;
+}
+.parents-cta-text h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+}
+.parents-cta-text p {
+    color: rgba(255,255,255,0.8);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 520px;
+}
+.parents-cta-btn {
+    background: #fff;
+    color: #0369a1;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+.parents-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+/* Fix: info-icon now has SVG inside — adjust styling */
+.info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-blue);
+}
+body.dark-theme .info-icon {
+    color: var(--blue-light);
+}
+/* Better empty state */
+.empty-state-enhanced {
+    text-align: center;
+    padding: 72px 24px;
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1.5px dashed var(--border-gray);
+}
+.empty-state-enhanced svg {
+    color: var(--border-gray);
+    margin-bottom: 20px;
+}
+.empty-state-enhanced h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+.empty-state-enhanced p {
+    color: var(--text-gray);
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 380px;
+    margin: 0 auto 24px;
+}
+/* Fix: employer vacancy stats - remove emoji from JS-rendered area via CSS label overrides */
+.employer-vacancy-stat [data-icon]::before { content: attr(data-icon); }
+@media (max-width: 640px) {
+    .parents-cta-box { padding: 28px 24px; }
+    .parents-cta-text h3 { font-size: 18px; }
+    .parents-section .section-header h2 { font-size: 26px; }
+    .parents-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<section class="parents-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Для родителей</h2>
+            <p class="section-info">Мы понимаем, что доверие родителей важно не меньше, чем интерес подростка к работе</p>
+        </div>
+        <div class="parents-grid">
+            <div class="parents-card">
+                <div class="parents-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                </div>
+                <h3>Проверка работодателей</h3>
+                <p>Каждая компания проходит ручную модерацию. Мы проверяем ИНН, ОГРН и реальный адрес организации перед допуском на платформу.</p>
+            </div>
+            <div class="parents-card">
+                <div class="parents-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <h3>Законодательная защита</h3>
+                <p>Все вакансии соответствуют Трудовому кодексу РФ (ст. 63, 92, 94). Максимальное количество часов и возрастные ограничения строго соблюдаются.</p>
+            </div>
+            <div class="parents-card">
+                <div class="parents-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <h3>Согласие родителей</h3>
+                <p>Для подростков 14–15 лет трудоустройство требует письменного согласия родителя или опекуна. Платформа не позволяет обойти это требование.</p>
+            </div>
+            <div class="parents-card">
+                <div class="parents-card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.08 6.08l1.01-.9a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <h3>Поддержка и связь</h3>
+                <p>Если у вас есть вопросы о конкретной вакансии или работодателе — напишите нам. Мы отвечаем в течение рабочего дня.</p>
+            </div>
+        </div>
+        <div class="parents-cta-box">
+            <div class="parents-cta-text">
+                <h3>Есть вопросы о безопасности?</h3>
+                <p>Напишите нам — расскажем, как работает платформа, как проверяются работодатели и что делать в случае нарушений.</p>
+            </div>
+            <button class="parents-cta-btn" onclick="openModal('infoModal', 'safety')">Подробнее о безопасности</button>
+        </div>
+    </div>
+</section>
 
     <div class="profile-page" id="profilePage">
         <div class="profile-header">
@@ -3846,10 +4082,13 @@
             
             if (STATE.filteredJobs.length === 0) {
                 grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔍</div>
-                        <h3>Вакансии не найдены</h3>
-                        <p>Попробуйте изменить параметры поиска</p>
+                    <div class="empty-state-enhanced" style="grid-column: 1 / -1;">
+                        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 20px; display:block; color: var(--border-gray);">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <h3>Вакансий по запросу не найдено</h3>
+                        <p>Попробуйте изменить параметры поиска или сбросьте фильтры — новые вакансии добавляются регулярно.</p>
+                        <button class="btn btn-primary" onclick="resetFilters()">Сбросить фильтры</button>
                     </div>
                 `;
                 document.getElementById('pagination').innerHTML = '';
@@ -3870,17 +4109,26 @@
                         </button>
                     </div>
                 ` : '';
-                
+                // Verified badge — показываем если работодатель верифицирован
+                const verifiedBadge = (job.verified || job.isVerified) ? `
+                    <span class="job-verified-badge" title="Проверенный работодатель">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Верифицирован
+                    </span>` : '';
+                const locationIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
                 return `
                     <div class="job-card" onclick="openApplyModal('${job.id}')">
                         ${adminBadge}
                         <div class="job-header">
-                            <div class="job-title">${job.title}</div>
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                                <div class="job-title" style="margin-bottom:0;">${job.title}</div>
+                                ${verifiedBadge}
+                            </div>
                             <div class="job-company">${job.company}</div>
-                            <div class="job-location">📍 ${job.city}</div>
+                            <div class="job-location">${locationIcon} ${job.city}</div>
                         </div>
                         <div class="job-details">
-                            <div class="job-salary">${job.salary.toLocaleString('ru-RU')} ₽</div>
+                            <div class="job-salary">${job.salary.toLocaleString('ru-RU')} <span style="font-size:15px;font-weight:600;">₽/мес</span></div>
                             <div class="job-tags">
                                 <span class="tag">${job.type}</span>
                             </div>
@@ -6367,16 +6615,16 @@ async function _renderEmployerVacancySection() {
                     <div class="employer-vacancy-status-badge ${statusClass}">${statusText}</div>
                 </div>
                 <div class="employer-vacancy-stats">
-                    <div class="employer-vacancy-stat">👁️ <span>${viewCount} просмотров</span></div>
-                    <div class="employer-vacancy-stat">📩 <span>${appCount} откликов</span></div>
+                    <div class="employer-vacancy-stat"><span style="font-size:12px;opacity:0.6;">Просмотры:</span> <span>${viewCount}</span></div>
+                    <div class="employer-vacancy-stat"><span style="font-size:12px;opacity:0.6;">Отклики:</span> <span>${appCount}</span></div>
                 </div>
                 <div class="employer-vacancy-controls">
                     <button class="btn-toggle-vacancy ${isClosed ? 'open-action' : 'close-action'}"
                         onclick="toggleVacancyClosed('${job.id}', ${isClosed})">
-                        ${isClosed ? '✓ Открыть набор' : '✗ Закрыть набор'}
+                        ${isClosed ? 'Открыть набор' : 'Закрыть набор'}
                     </button>
                     <button class="btn-edit-vacancy" onclick="openEditVacancyModal('${job.id}')">
-                        ✎ Редактировать
+                        Редактировать
                     </button>
                     <button class="btn btn-small btn-primary" onclick="showApplications('${job.id}')">
                         Отклики
