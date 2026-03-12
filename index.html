@@ -2933,6 +2933,18 @@ body.dark-theme .info-icon {
                     <label for="avatarUpload">Изменить фото</label>
                 </div>
             </div>
+
+            <!-- PROFILE COMPLETION PROGRESS (additive, не трогает логику) -->
+            <div class="profile-progress-block" id="profileProgressBlock" style="display:none;">
+                <div class="ppb-header">
+                    <span class="ppb-label">Профиль заполнен</span>
+                    <span class="ppb-pct" id="profileProgressPct">0%</span>
+                </div>
+                <div class="ppb-bar-wrap">
+                    <div class="ppb-bar" id="profileProgressBar"></div>
+                </div>
+                <div class="ppb-tip" id="profileProgressTip"></div>
+            </div>
             
             <form id="profileForm">
                 <div class="form-group">
@@ -2993,7 +3005,7 @@ body.dark-theme .info-icon {
                     <div class="form-group">
                         <label>Пароль</label>
                         <input type="password" id="loginPassword" name="password" required>
-                        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+                        <span class="password-toggle" onclick="togglePassword('loginPassword')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
                         <div class="form-error">Неверный пароль или email</div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Войти</button>
@@ -3037,7 +3049,7 @@ body.dark-theme .info-icon {
                 <form id="registerForm" novalidate>
                     <div class="form-group reg-field-group" id="rg-name">
                         <label class="reg-label">
-                            <span class="reg-label-icon">👤</span>
+                            <span class="reg-label-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                             Как тебя зовут?
                         </label>
                         <input type="text" name="nickname" id="regName"
@@ -3047,7 +3059,7 @@ body.dark-theme .info-icon {
                     </div>
                     <div class="form-group reg-field-group" id="rg-email">
                         <label class="reg-label">
-                            <span class="reg-label-icon">📧</span>
+                            <span class="reg-label-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
                             Email
                         </label>
                         <input type="email" name="email" id="regEmail"
@@ -3057,7 +3069,7 @@ body.dark-theme .info-icon {
                     </div>
                     <div class="form-group reg-field-group" id="rg-age">
                         <label class="reg-label">
-                            <span class="reg-label-icon">🎂</span>
+                            <span class="reg-label-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
                             Сколько тебе лет?
                         </label>
                         <div class="reg-age-selector" id="regAgeSelector">
@@ -3091,33 +3103,33 @@ body.dark-theme .info-icon {
                     </div>
                     <div class="form-group reg-field-group" id="rg-password" style="display:none;">
                         <label class="reg-label">
-                            <span class="reg-label-icon">🔒</span>
+                            <span class="reg-label-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
                             Придумай пароль
                         </label>
                         <div style="position:relative;">
                             <input type="password" name="password" id="regPassword"
                                 placeholder="Минимум 6 символов"
                                 autocomplete="new-password" required class="reg-input">
-                            <button type="button" class="reg-pwd-eye" onclick="togglePassword('regPassword')" tabindex="-1">👁️</button>
+                            <button type="button" class="reg-pwd-eye" onclick="togglePassword('regPassword')" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                         <div class="form-error" id="err-password">Пароль должен быть не менее 6 символов</div>
                         <div class="reg-pwd-strength" id="regPwdStrength"></div>
                     </div>
                     <div class="form-group reg-field-group" id="rg-role" style="display:none;">
                         <label class="reg-label">
-                            <span class="reg-label-icon">🎯</span>
+                            <span class="reg-label-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
                             Ты регистрируешься как:
                         </label>
                         <div class="reg-role-pills">
                             <button type="button" class="role-pill" id="rpill-worker"
                                 onclick="selectRegRole('worker', this)">
-                                <span class="role-pill-icon">🎯</span>
+                                <span class="role-pill-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
                                 <span class="role-pill-title">Ищу работу</span>
                                 <span class="role-pill-sub">Подросток</span>
                             </button>
                             <button type="button" class="role-pill" id="rpill-employer"
                                 onclick="selectRegRole('employer', this)">
-                                <span class="role-pill-icon">💼</span>
+                                <span class="role-pill-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
                                 <span class="role-pill-title">Работодатель</span>
                                 <span class="role-pill-sub">Нанимаю людей</span>
                             </button>
@@ -3130,7 +3142,7 @@ body.dark-theme .info-icon {
                         <div class="form-error" id="err-role">Выбери свою роль</div>
                     </div>
                     <button type="submit" class="btn btn-primary reg-submit-btn" id="regSubmitBtn" style="display:none;">
-                        Создать аккаунт 🚀
+                        Создать аккаунт
                     </button>
                     <div class="reg-signin-link">
                         Уже есть аккаунт?
@@ -3262,14 +3274,14 @@ body.dark-theme .info-icon {
             <div class="modal-body">
                 <div class="chat-messages" id="chatMessages"></div>
                 <!-- Upload progress indicator (hidden by default) -->
-                <div class="chat-upload-indicator" id="chatUploadIndicator">⏳ Загрузка файла...</div>
+                <div class="chat-upload-indicator" id="chatUploadIndicator">Загрузка файла...</div>
                 <div class="chat-input-container">
                     <!-- Hidden file input for image uploads -->
                     <input type="file" id="chatImageInput" accept="image/*">
                     <!-- NEW: Image upload button -->
-                    <button class="chat-media-btn" onclick="triggerChatImageUpload()" title="Отправить изображение">🖼️</button>
+                    <button class="chat-media-btn" onclick="triggerChatImageUpload()" title="Отправить изображение"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
                     <!-- NEW: Voice message button -->
-                    <button class="chat-media-btn" id="voiceRecordBtn" onclick="toggleVoiceRecording()" title="Голосовое сообщение">🎙️</button>
+                    <button class="chat-media-btn" id="voiceRecordBtn" onclick="toggleVoiceRecording()" title="Голосовое сообщение"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                     <!-- Existing text input (unchanged) -->
                     <input type="text" class="input" id="chatInput" placeholder="Введите сообщение...">
                     <!-- Existing send button (unchanged) -->
@@ -9566,7 +9578,13 @@ function _notifTimeAgo(ts) {
 }
 
 function _notifIcon(type) {
-    return { application: '📩', message: '💬', status: '✅', system: '🔔' }[type] || '🔔';
+    const icons = {
+        application: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+        message:     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+        status:      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+        system:      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    };
+    return icons[type] || icons.system;
 }
 
 function _notifIconClass(type) {
@@ -9616,7 +9634,7 @@ function _renderNotifDropdown(items) {
     const list = document.getElementById('notifList');
     if (!list) return;
     if (!items || items.length === 0) {
-        list.innerHTML = '<div class="notif-empty"><span class="notif-empty-icon">🔔</span><div class="notif-empty-text">Уведомлений нет</div><div class="notif-empty-sub">Новые уведомления появятся здесь</div></div>';
+        list.innerHTML = '<div class="notif-empty"><span class="notif-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><div class="notif-empty-text">Уведомлений нет</div><div class="notif-empty-sub">Новые уведомления появятся здесь</div></div>';
         return;
     }
     const sorted = [...items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -9717,7 +9735,7 @@ function _injectNotifBell() {
     bell.id = 'notifBellBtn';
     bell.className = 'notif-bell-btn';
     bell.title = 'Уведомления';
-    bell.innerHTML = '🔔<span class="notif-badge notif-hidden" id="notifBadge">0</span>';
+    bell.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge notif-hidden" id="notifBadge">0</span>';
     bell.onclick = function(e) { e.stopPropagation(); _toggleNotifDropdown(); };
     var navActions = document.getElementById('navActions');
     if (!navActions) return;
@@ -9732,7 +9750,7 @@ function _injectNotifOverlay() {
     overlay.className = 'notif-modal-overlay';
     overlay.id = 'notifOverlay';
     overlay.onclick = function(e) { if (e.target === overlay) overlay.classList.remove('active'); };
-    overlay.innerHTML = '<div class="notif-dropdown" id="notifDropdown"><div class="notif-dropdown-header"><div class="notif-dropdown-title">🔔 Уведомления</div><button class="notif-mark-all-btn" onclick="_markAllNotifRead()">Всё прочитано</button></div><div class="notif-list" id="notifList"><div class="notif-empty"><span class="notif-empty-icon">🔔</span><div class="notif-empty-text">Уведомлений нет</div><div class="notif-empty-sub">Новые уведомления появятся здесь</div></div></div></div>';
+    overlay.innerHTML = '<div class="notif-dropdown" id="notifDropdown"><div class="notif-dropdown-header"><div class="notif-dropdown-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Уведомления</div><button class="notif-mark-all-btn" onclick="_markAllNotifRead()">Всё прочитано</button></div><div class="notif-list" id="notifList"><div class="notif-empty"><span class="notif-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><div class="notif-empty-text">Уведомлений нет</div><div class="notif-empty-sub">Новые уведомления появятся здесь</div></div></div></div>';
     document.body.appendChild(overlay);
 }
 
@@ -10442,15 +10460,21 @@ async function _updateModerationBadge() {
 <!-- ================= BOTTOM NAVIGATION BAR ================= -->
 <nav class="bottom-nav" id="bottomNav">
     <button class="bottom-nav-item active" id="bnav-home" onclick="switchBottomTab('home')">
-        <span class="bottom-nav-icon">🏠</span>
+        <span class="bottom-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+        </span>
         <span class="bottom-nav-label">Главная</span>
     </button>
     <button class="bottom-nav-item" id="bnav-favorites" onclick="switchBottomTab('favorites')">
-        <span class="bottom-nav-icon">❤️</span>
+        <span class="bottom-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
         <span class="bottom-nav-label">Избранное</span>
     </button>
     <button class="bottom-nav-item" id="bnav-profile" onclick="switchBottomTab('profile')">
-        <span class="bottom-nav-icon">👤</span>
+        <span class="bottom-nav-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
         <span class="bottom-nav-label">Профиль</span>
     </button>
 </nav>
@@ -10540,7 +10564,14 @@ async function _updateModerationBadge() {
     font-size: 22px;
     line-height: 1;
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-gray);
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    color: var(--primary-blue);
 }
 
 .bottom-nav-label {
@@ -13969,6 +14000,441 @@ async function handleForgotPassword() {
   .nav-container { padding: 0 10px; }
 }
 </style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TASKS 2-6: PROFILE PROGRESS + EMPLOYER DASHBOARD + DESIGN
+     Все изменения аддитивные — существующая логика не тронута
+════════════════════════════════════════════════════════════ -->
+<style>
+/* ── PROFILE PROGRESS BAR ── */
+.profile-progress-block {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    transition: var(--transition);
+}
+body.dark-theme .profile-progress-block {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+.ppb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.ppb-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-gray);
+}
+.ppb-pct {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--primary-blue);
+}
+.ppb-bar-wrap {
+    height: 7px;
+    background: var(--border-gray);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.ppb-bar {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--blue-light));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+}
+.ppb-bar.full { background: linear-gradient(90deg, #10b981, #34d399); }
+.ppb-tip {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* ── EMPLOYER DASHBOARD SECTION ── */
+.employer-dashboard {
+    margin-top: 24px;
+    animation: fadeInUp 0.4s ease;
+}
+.employer-dashboard-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.employer-dashboard-title svg { color: var(--primary-blue); }
+.emp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.emp-stat-card {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 16px 14px;
+    text-align: center;
+    transition: var(--transition);
+}
+body.dark-theme .emp-stat-card {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+.emp-stat-card:hover {
+    border-color: var(--primary-blue);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+}
+.emp-stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--primary-blue);
+    line-height: 1;
+    margin-bottom: 5px;
+}
+.emp-stat-label {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 600;
+}
+.emp-stat-card.new-responses .emp-stat-value { color: #10b981; }
+.emp-stat-card.rejected .emp-stat-value { color: #ef4444; }
+.emp-vacancy-list-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+.emp-vacancy-row {
+    background: var(--white);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+body.dark-theme .emp-vacancy-row {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+.emp-vacancy-row:hover {
+    border-color: var(--primary-blue);
+    box-shadow: var(--shadow-sm);
+}
+.emp-vr-info { flex: 1; min-width: 0; }
+.emp-vr-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.emp-vr-meta {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-top: 2px;
+}
+.emp-vr-stats {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.emp-vr-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+.emp-vr-stat-val {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+.emp-vr-stat-lbl {
+    font-size: 10px;
+    color: var(--text-gray);
+    font-weight: 600;
+}
+.emp-vr-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    flex-shrink: 0;
+}
+.emp-vr-status.closed { background: #94a3b8; }
+.emp-dashboard-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+    font-size: 14px;
+    border: 1.5px dashed var(--border-gray);
+    border-radius: var(--radius-md);
+}
+
+/* ── NOTIF-EMPTY-ICON для SVG ── */
+.notif-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--border-gray);
+}
+.notif-empty-icon svg { width: 32px; height: 32px; }
+
+/* ── REG-LABEL-ICON для SVG ── */
+.reg-label-icon {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: -3px;
+    margin-right: 4px;
+    color: var(--primary-blue);
+}
+
+/* ── PASSWORD-TOGGLE для SVG ── */
+.password-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-gray);
+    cursor: pointer;
+}
+.reg-pwd-eye {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-gray);
+    padding: 4px;
+}
+
+/* ── BOTTOM NAV ACTIVE ICON COLOR OVERRIDE ── */
+.bottom-nav-item.active .bottom-nav-icon svg {
+    color: var(--primary-blue);
+    stroke: var(--primary-blue);
+}
+.bottom-nav-item:not(.active) .bottom-nav-icon svg {
+    color: var(--text-gray);
+    stroke: var(--text-gray);
+}
+
+@media (max-width: 640px) {
+    .emp-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .emp-vr-stats { gap: 6px; }
+    .emp-vr-stat-val { font-size: 13px; }
+}
+</style>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// PROFILE PROGRESS BAR — аддитивно, не трогает openProfile
+// ═══════════════════════════════════════════════════════════
+
+function _calcProfileProgress(user, resume) {
+    // Поля которые считаем "заполненными"
+    const checks = [
+        { label: 'Имя (никнейм)',  val: !!(user.nickname && user.nickname.trim()) },
+        { label: 'Аватар',         val: !!(user.avatar) },
+        { label: 'Возраст',        val: !!(resume && resume.age) },
+        { label: 'Город',          val: !!(resume && resume.city && resume.city.trim()) },
+        { label: 'Навыки',         val: !!(resume && resume.skills && resume.skills.trim()) },
+        { label: 'О себе',         val: !!(resume && resume.about && resume.about.trim()) },
+    ];
+    const done  = checks.filter(c => c.val).length;
+    const total = checks.length;
+    const pct   = Math.round((done / total) * 100);
+    const missing = checks.filter(c => !c.val).map(c => c.label);
+    return { pct, done, total, missing };
+}
+
+function _renderProfileProgress(user, resume) {
+    const block = document.getElementById('profileProgressBlock');
+    if (!block) return;
+    if (user.role !== 'worker') { block.style.display = 'none'; return; }
+
+    const { pct, missing } = _calcProfileProgress(user, resume);
+    const bar   = document.getElementById('profileProgressBar');
+    const pctEl = document.getElementById('profileProgressPct');
+    const tip   = document.getElementById('profileProgressTip');
+
+    block.style.display = 'block';
+    pctEl.textContent   = pct + '%';
+    bar.style.width     = pct + '%';
+    bar.className       = 'ppb-bar' + (pct >= 100 ? ' full' : '');
+
+    if (pct >= 100) {
+        tip.textContent = 'Профиль полностью заполнен — работодатели видят вас лучше!';
+    } else {
+        tip.textContent = 'Не заполнено: ' + missing.join(', ');
+    }
+}
+
+// Патчим openProfile: после рендера показываем прогресс
+const _origOpenProfile_progress = window.openProfile;
+window.openProfile = function() {
+    _origOpenProfile_progress();
+    const user = window.STATE && window.STATE.currentUser;
+    if (!user) return;
+    // resume может быть в кеше STATE.currentUser.resume
+    const resume = user.resume || null;
+    _renderProfileProgress(user, resume);
+    // Если resume в Firestore — подгружаем асинхронно
+    if (!resume && window.db && user.role === 'worker') {
+        const uid = user.uid || user.email;
+        import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js').then(({ doc, getDoc }) => {
+            getDoc(doc(window.db, 'users', uid)).then(snap => {
+                if (snap.exists()) {
+                    const r = snap.data().resume || null;
+                    if (r) user.resume = r;
+                    _renderProfileProgress(user, r);
+                }
+            }).catch(() => {});
+        });
+    }
+};
+
+// ═══════════════════════════════════════════════════════════
+// EMPLOYER DASHBOARD — аддитивно в профиле работодателя
+// ═══════════════════════════════════════════════════════════
+
+async function _renderEmployerDashboard(container, user) {
+    if (!container) return;
+
+    const userJobs = (window.STATE && window.STATE.jobs)
+        ? window.STATE.jobs.filter(j =>
+            j.employerEmail === user.email ||
+            j.employerId === (user.uid || user.email))
+        : [];
+
+    let totalViews = 0;
+    let totalApps  = 0;
+    let newApps    = 0;
+    let viewedApps = 0;
+    let rejectedApps = 0;
+
+    // Подсчёт из откликов если Firestore доступен
+    if (window.db && userJobs.length > 0) {
+        try {
+            const { collection, query, where, getDocs } =
+                await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+            for (const job of userJobs) {
+                totalViews += job.views || 0;
+                const q     = query(collection(window.db, 'applications'), where('jobId', '==', job.id));
+                const snap  = await getDocs(q);
+                snap.forEach(d => {
+                    const a = d.data();
+                    totalApps++;
+                    const st = (a.status || '').toLowerCase();
+                    if (!st || st === 'new')         newApps++;
+                    else if (st === 'viewed')         viewedApps++;
+                    else if (st === 'rejected')       rejectedApps++;
+                });
+            }
+        } catch (e) { /* silent */ }
+    }
+
+    const statsHtml = `
+        <div class="emp-stats-grid">
+            <div class="emp-stat-card">
+                <div class="emp-stat-value">${userJobs.length}</div>
+                <div class="emp-stat-label">Активных вакансий</div>
+            </div>
+            <div class="emp-stat-card">
+                <div class="emp-stat-value">${totalApps}</div>
+                <div class="emp-stat-label">Всего откликов</div>
+            </div>
+            <div class="emp-stat-card new-responses">
+                <div class="emp-stat-value">${newApps}</div>
+                <div class="emp-stat-label">Новых</div>
+            </div>
+            <div class="emp-stat-card">
+                <div class="emp-stat-value">${viewedApps}</div>
+                <div class="emp-stat-label">Просмотрено</div>
+            </div>
+            <div class="emp-stat-card rejected">
+                <div class="emp-stat-value">${rejectedApps}</div>
+                <div class="emp-stat-label">Отклонено</div>
+            </div>
+            <div class="emp-stat-card">
+                <div class="emp-stat-value">${totalViews}</div>
+                <div class="emp-stat-label">Просмотров вакансий</div>
+            </div>
+        </div>`;
+
+    let vacanciesHtml = '';
+    if (userJobs.length === 0) {
+        vacanciesHtml = '<div class="emp-dashboard-placeholder">У вас пока нет размещённых вакансий</div>';
+    } else {
+        vacanciesHtml = '<div class="emp-vacancy-list-title">Ваши вакансии</div>';
+        for (const job of userJobs) {
+            const isClosed = !!job.isClosed;
+            vacanciesHtml += `
+                <div class="emp-vacancy-row" onclick="showApplications('${job.id}')">
+                    <div class="emp-vr-status ${isClosed ? 'closed' : ''}"></div>
+                    <div class="emp-vr-info">
+                        <div class="emp-vr-title">${job.title}</div>
+                        <div class="emp-vr-meta">${(job.salary || 0).toLocaleString('ru-RU')} ₽/мес · ${isClosed ? 'Закрыта' : 'Активна'}</div>
+                    </div>
+                    <div class="emp-vr-stats">
+                        <div class="emp-vr-stat">
+                            <div class="emp-vr-stat-val">${job.views || 0}</div>
+                            <div class="emp-vr-stat-lbl">Просм.</div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+    }
+
+    container.innerHTML = `
+        <div class="employer-dashboard">
+            <div class="employer-dashboard-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Статистика
+            </div>
+            ${statsHtml}
+            ${vacanciesHtml}
+        </div>`;
+}
+
+// Патчим openProfile: показываем дашборд для работодателя
+const _origOpenProfile_dash = window.openProfile;
+window.openProfile = function() {
+    _origOpenProfile_dash();
+    const user = window.STATE && window.STATE.currentUser;
+    if (!user || user.role !== 'employer') return;
+    // Ищем существующий контейнер employer-section
+    setTimeout(() => {
+        const empSection = document.getElementById('profileEmployerSection');
+        if (!empSection) return;
+        let dashWrap = document.getElementById('empDashboardWrap');
+        if (!dashWrap) {
+            dashWrap = document.createElement('div');
+            dashWrap.id = 'empDashboardWrap';
+            empSection.insertBefore(dashWrap, empSection.firstChild);
+        }
+        _renderEmployerDashboard(dashWrap, user);
+    }, 100);
+};
+</script>
 
 </body>
 </html>
