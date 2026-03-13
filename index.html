@@ -16272,5 +16272,607 @@ window.openProfile = function() {
 })();
 </script>
 
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     ПОМОЩНИК ОТКЛИКА НА ВАКАНСИЮ (AI Apply Helper)
+     Полностью аддитивный блок. Ничего существующего не трогает.
+
+     Стратегия:
+     - Патчим openApplyModal в 4-й раз (после employer-desc,
+       verified-badge, closed-badge патчей).
+     - После того как оригинальный модал уже открыт и
+       applyModalBody заполнен, инжектируем блок помощника
+       ПЕРЕД textarea сопроводительного сообщения.
+     - Генерация 3 вариантов сообщения — локальная,
+       без внешних API.
+     - "Использовать" → вставляет текст в существующий
+       #applicationMessage textarea.
+     - applyToJob читает этот textarea как и раньше —
+       логика отправки НЕ ИЗМЕНЯЕТСЯ.
+════════════════════════════════════════════════════════════ -->
+<style>
+/* ── APPLY HELPER — CSS ── */
+
+.apply-helper-wrap {
+    margin-bottom: 16px;
+    border: 1.5px solid rgba(124, 58, 237, 0.2);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(124,58,237,0.04), rgba(168,85,247,0.02));
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.apply-helper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+}
+
+.apply-helper-header:hover {
+    background: rgba(124, 58, 237, 0.05);
+}
+
+.apply-helper-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+.apply-helper-title-icon {
+    font-size: 16px;
+    animation: helperSparkle 3s ease-in-out infinite;
+}
+
+@keyframes helperSparkle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50%       { transform: rotate(12deg) scale(1.15); }
+}
+
+.apply-helper-toggle {
+    font-size: 11px;
+    color: #7c3aed;
+    font-weight: 600;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.apply-helper-header:hover .apply-helper-toggle {
+    opacity: 1;
+}
+
+.apply-helper-body {
+    padding: 0 16px 16px;
+    border-top: 1px solid rgba(124, 58, 237, 0.1);
+}
+
+/* Варианты сообщений */
+.apply-helper-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.apply-helper-option {
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: var(--white);
+    position: relative;
+    animation: optionAppear 0.3s ease backwards;
+}
+
+.apply-helper-option:nth-child(1) { animation-delay: 0.05s; }
+.apply-helper-option:nth-child(2) { animation-delay: 0.12s; }
+.apply-helper-option:nth-child(3) { animation-delay: 0.19s; }
+
+@keyframes optionAppear {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.apply-helper-option:hover {
+    border-color: #7c3aed;
+    background: rgba(124, 58, 237, 0.04);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.apply-helper-option.selected {
+    border-color: #7c3aed;
+    background: rgba(124, 58, 237, 0.07);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.apply-option-style {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #a855f7;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.apply-option-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+    line-height: 1.55;
+}
+
+.apply-helper-option.selected .apply-option-text {
+    font-weight: 600;
+}
+
+/* Кнопки действий */
+.apply-helper-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.apply-helper-use-btn {
+    padding: 9px 18px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.apply-helper-use-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+}
+
+.apply-helper-use-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.apply-helper-skip-btn {
+    padding: 9px 14px;
+    background: transparent;
+    color: var(--text-gray);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s ease;
+}
+
+.apply-helper-skip-btn:hover {
+    background: var(--light-gray);
+    border-color: var(--text-gray);
+    color: var(--text-dark);
+}
+
+.apply-helper-regen-btn {
+    padding: 9px 14px;
+    background: transparent;
+    color: #7c3aed;
+    border: 1.5px solid rgba(124, 58, 237, 0.3);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.apply-helper-regen-btn:hover {
+    background: rgba(124, 58, 237, 0.07);
+    border-color: #7c3aed;
+}
+
+/* Состояние «вставлено» */
+.apply-helper-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #dcfce7;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    color: #15803d;
+    margin-top: 8px;
+    animation: successFadeIn 0.3s ease;
+}
+
+@keyframes successFadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* Loading dots */
+.apply-helper-loading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 0 6px;
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.apply-helper-loading-dots {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.apply-helper-loading-dots span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #a855f7;
+    animation: applyDotBounce 1.1s ease-in-out infinite;
+}
+
+.apply-helper-loading-dots span:nth-child(2) { animation-delay: 0.18s; }
+.apply-helper-loading-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes applyDotBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30%           { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Dark theme */
+body.dark-theme .apply-helper-wrap {
+    border-color: rgba(168, 85, 247, 0.25);
+    background: rgba(124, 58, 237, 0.07);
+}
+
+body.dark-theme .apply-helper-option {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+}
+
+body.dark-theme .apply-helper-option:hover,
+body.dark-theme .apply-helper-option.selected {
+    background: rgba(124, 58, 237, 0.12);
+    border-color: #a855f7;
+}
+
+body.dark-theme .apply-helper-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+}
+
+/* Мобильные */
+@media (max-width: 480px) {
+    .apply-helper-actions { flex-direction: column; }
+    .apply-helper-use-btn,
+    .apply-helper-skip-btn,
+    .apply-helper-regen-btn { width: 100%; justify-content: center; }
+}
+</style>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ПОМОЩНИК ОТКЛИКА НА ВАКАНСИЮ — JS
+// Аддитивный патч openApplyModal (4-й по счёту).
+// Существующая логика applyToJob не изменяется:
+// помощник лишь заполняет #applicationMessage textarea.
+// ═══════════════════════════════════════════════════════════
+
+(function() {
+'use strict';
+
+// ── ГЕНЕРАТОР СООБЩЕНИЙ ────────────────────────────────────
+
+var _MSG_OPENERS_FORMAL = [
+    'Здравствуйте! Меня заинтересовала вакансия',
+    'Добрый день! Хочу откликнуться на вакансию',
+    'Здравствуйте! Рассматриваю вакансию'
+];
+
+var _MSG_OPENERS_SHORT = [
+    'Привет! Хочу попробовать себя в роли',
+    'Меня интересует вакансия',
+    'Откликаюсь на вакансию'
+];
+
+var _MSG_OPENERS_FRIENDLY = [
+    'Привет! Очень хочу попробовать работу',
+    'Всем привет! Ищу первую работу и заинтересовался вакансией',
+    'Привет! Увидел(а) вакансию'
+];
+
+// Качества по ключевым словам в названии/описании вакансии
+var _JOB_QUALITIES = {
+    'касси':         ['аккуратен', 'ответственен', 'быстро учусь работе с кассой'],
+    'промоутер':     ['общительный', 'энергичный', 'умею находить контакт с людьми'],
+    'курьер':        ['физически активен', 'хорошо ориентируюсь', 'пунктуален'],
+    'бариста':       ['аккуратен', 'внимателен к деталям', 'люблю работу с людьми'],
+    'разнорабочий':  ['физически активен', 'исполнителен', 'не боюсь физического труда'],
+    'сборщик':       ['внимателен', 'аккуратен', 'умею работать методично'],
+    'smm':           ['разбираюсь в соцсетях', 'умею создавать контент', 'креативный'],
+    'дизайн':        ['творческий', 'работаю в графических редакторах'],
+    'офис':          ['грамотно пишу', 'разбираюсь в компьютере', 'аккуратен'],
+    'помощник':      ['исполнителен', 'быстро учусь', 'ответственен'],
+    'аниматор':      ['общительный', 'творческий', 'умею работать с детьми'],
+    'вожатый':       ['ответственен', 'умею работать с детьми', 'общительный'],
+    'магазин':       ['приветливый', 'умею работать с клиентами', 'аккуратен'],
+    'склад':         ['физически активен', 'внимателен', 'исполнителен'],
+    'default':       ['ответственен', 'быстро учусь', 'готов стараться с первого дня']
+};
+
+function _pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function _getJobQualities(job) {
+    var haystack = ((job.title || '') + ' ' + (job.description || '')).toLowerCase();
+    for (var key in _JOB_QUALITIES) {
+        if (key !== 'default' && haystack.indexOf(key) !== -1) {
+            return _JOB_QUALITIES[key];
+        }
+    }
+    return _JOB_QUALITIES['default'];
+}
+
+function _getUserTraits() {
+    var user = window.STATE && window.STATE.currentUser;
+    if (!user) return null;
+
+    var resume = user.resume || {};
+    var traits = [];
+
+    if (resume.skills && resume.skills.trim()) {
+        // Берём первые 1–2 навыка
+        var skillList = resume.skills.split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean);
+        if (skillList.length > 0) traits.push(skillList[0]);
+        if (skillList.length > 1) traits.push(skillList[1]);
+    }
+
+    if (resume.age) {
+        traits.push('мне ' + resume.age + ' лет');
+    }
+
+    return traits.length ? traits : null;
+}
+
+function _generateMessages(job) {
+    var qualities = _getJobQualities(job);
+    var userTraits = _getUserTraits();
+    var title = job.title || 'вашу вакансию';
+    var company = job.company || '';
+    var companyPart = company ? ' в компании ' + company : '';
+
+    // Формируем пользовательскую часть
+    var userPart = '';
+    if (userTraits && userTraits.length) {
+        userPart = ' Про себя: ' + userTraits.join(', ') + '.';
+    }
+
+    // q1, q2, q3 — разные качества из списка
+    var q1 = qualities[0] || 'ответственен';
+    var q2 = qualities[Math.min(1, qualities.length - 1)] || 'быстро учусь';
+    var q3 = qualities[Math.min(2, qualities.length - 1)] || 'готов стараться';
+
+    // --- Вариант 1: вежливый / формальный ---
+    var msg1 = _pickRandom(_MSG_OPENERS_FORMAL) + ' «' + title + '»' + companyPart + '. ' +
+        'У меня нет опыта работы, но я ' + q1 + ' и ' + q2 + '.' +
+        (userPart || '') +
+        ' Готов(а) пройти обучение и выполнять свои обязанности добросовестно. Буду рад(а) ответить на ваши вопросы!';
+
+    // --- Вариант 2: краткий / простой ---
+    var msg2 = _pickRandom(_MSG_OPENERS_SHORT) + ' «' + title + '». ' +
+        'Опыта нет, но я ' + q1 + ' и ' + q3 + '. Быстро учусь. Готов(а) начать!';
+
+    // --- Вариант 3: дружелюбный / мотивированный ---
+    msg3 = _pickRandom(_MSG_OPENERS_FRIENDLY) + ' «' + title + '»' + companyPart + ' — это именно то, что я ищу! ' +
+        'Я ' + q2 + ', ' + q1 + ' и очень хочу попробовать свои силы.' +
+        (userPart || '') +
+        ' Это будет моя первая работа и я готов(а) доказать, что справлюсь. Спасибо, что рассматриваете мою кандидатуру! 😊';
+
+    return [
+        { style: '🎩 Вежливо и официально', text: msg1 },
+        { style: '⚡ Коротко и по делу',    text: msg2 },
+        { style: '😊 Дружелюбно и живо',    text: msg3 }
+    ];
+}
+
+// ── РЕНДЕР БЛОКА ПОМОЩНИКА ─────────────────────────────────
+
+function _renderHelperBlock(jobId) {
+    var job = window.STATE && window.STATE.jobs.find(function(j) { return j.id === jobId; });
+    if (!job) return null;
+
+    var messages = _generateMessages(job);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'apply-helper-wrap';
+    wrap.id = 'applyHelperWrap';
+
+    // Заголовок (кликабельный, сворачивает/разворачивает)
+    var header = document.createElement('div');
+    header.className = 'apply-helper-header';
+    header.innerHTML =
+        '<div class="apply-helper-title">' +
+            '<span class="apply-helper-title-icon">✨</span>' +
+            'Помощник сообщения' +
+        '</div>' +
+        '<span class="apply-helper-toggle" id="applyHelperToggleLabel">скрыть</span>';
+
+    var body = document.createElement('div');
+    body.className = 'apply-helper-body';
+    body.id = 'applyHelperBody';
+
+    // Состояние
+    var _selected = 0;
+
+    function _buildOptions() {
+        return messages.map(function(m, i) {
+            return '<div class="apply-helper-option' + (i === _selected ? ' selected' : '') + '"' +
+                ' data-idx="' + i + '"' +
+                ' onclick="_applyHelperSelect(' + i + ')">' +
+                '<div class="apply-option-style">' + m.style + '</div>' +
+                '<div class="apply-option-text">' + m.text + '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function _buildBody() {
+        body.innerHTML =
+            '<div class="apply-helper-options" id="applyHelperOptions">' + _buildOptions() + '</div>' +
+            '<div class="apply-helper-actions">' +
+                '<button class="apply-helper-use-btn" id="applyHelperUseBtn"' +
+                ' onclick="_applyHelperUse()">✅ Использовать</button>' +
+                '<button class="apply-helper-regen-btn"' +
+                ' onclick="_applyHelperRegen(\'' + jobId + '\')">🔄 Другие варианты</button>' +
+                '<button class="apply-helper-skip-btn"' +
+                ' onclick="_applyHelperSkip()">Пропустить</button>' +
+            '</div>';
+    }
+
+    _buildBody();
+
+    // Сворачивание
+    var _collapsed = false;
+    header.addEventListener('click', function() {
+        _collapsed = !_collapsed;
+        body.style.display = _collapsed ? 'none' : '';
+        var lbl = document.getElementById('applyHelperToggleLabel');
+        if (lbl) lbl.textContent = _collapsed ? 'показать' : 'скрыть';
+    });
+
+    wrap.appendChild(header);
+    wrap.appendChild(body);
+
+    // Публичные колбеки (через window чтобы onclick в innerHTML работал)
+    window._applyHelperSelect = function(idx) {
+        _selected = idx;
+        document.querySelectorAll('#applyHelperOptions .apply-helper-option').forEach(function(el, i) {
+            el.classList.toggle('selected', i === idx);
+        });
+    };
+
+    window._applyHelperRegen = function(jid) {
+        var j = window.STATE && window.STATE.jobs.find(function(x) { return x.id === jid; });
+        if (!j) return;
+        // Показываем лоадер на 600мс
+        body.innerHTML =
+            '<div class="apply-helper-loading">' +
+                '<div class="apply-helper-loading-dots"><span></span><span></span><span></span></div>' +
+                'Генерируем новые варианты...' +
+            '</div>';
+        setTimeout(function() {
+            messages = _generateMessages(j);
+            _selected = 0;
+            _buildBody();
+        }, 650);
+    };
+
+    window._applyHelperUse = function() {
+        var textarea = document.getElementById('applicationMessage');
+        if (!textarea) return;
+
+        textarea.value = messages[_selected].text;
+        textarea.dispatchEvent(new Event('input'));
+
+        // Анимация успеха
+        var actionsEl = body.querySelector('.apply-helper-actions');
+        if (actionsEl) {
+            var successEl = document.createElement('div');
+            successEl.className = 'apply-helper-success';
+            successEl.innerHTML = '✓ Текст вставлен — можно редактировать или сразу отправить';
+            actionsEl.replaceWith(successEl);
+        }
+
+        // Прокручиваем к textarea
+        setTimeout(function() { textarea.focus(); }, 150);
+    };
+
+    window._applyHelperSkip = function() {
+        var w = document.getElementById('applyHelperWrap');
+        if (w) {
+            w.style.opacity = '0';
+            w.style.transform = 'translateY(-8px)';
+            w.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            setTimeout(function() { w.style.display = 'none'; }, 260);
+        }
+        var textarea = document.getElementById('applicationMessage');
+        if (textarea) setTimeout(function() { textarea.focus(); }, 270);
+    };
+
+    return wrap;
+}
+
+// ── ПАТЧ openApplyModal (4-й по счёту) ────────────────────
+// Запускается ПОСЛЕ всех предыдущих патчей.
+// Ждёт 50мс чтобы все патчи до него завершили рендер,
+// затем инжектирует блок помощника перед textarea.
+
+var _origOpenApplyModal_helper = window.openApplyModal;
+window.openApplyModal = async function(jobId, event) {
+    // Вызываем всю цепочку предыдущих патчей
+    await _origOpenApplyModal_helper(jobId, event);
+
+    // Не добавляем помощника если:
+    // 1. Пользователь уже откликнулся (нет textarea в modal)
+    // 2. Пользователь не авторизован
+    // 3. Пользователь — работодатель
+    var user = window.STATE && window.STATE.currentUser;
+    if (!user || user.role !== 'worker') return;
+
+    setTimeout(function() {
+        var modalBody = document.getElementById('applyModalBody');
+        if (!modalBody) return;
+
+        // Проверяем что textarea откликаПрисутствует (= ещё не откликался)
+        var textarea = document.getElementById('applicationMessage');
+        if (!textarea) return;
+
+        // Не добавляем повторно
+        if (document.getElementById('applyHelperWrap')) return;
+
+        var helperBlock = _renderHelperBlock(jobId);
+        if (!helperBlock) return;
+
+        // Вставляем перед секцией с textarea
+        // Ищем родительский div, содержащий textarea
+        var textareaParent = textarea.parentElement;
+        if (textareaParent) {
+            textareaParent.insertBefore(helperBlock, textareaParent.firstChild);
+        } else {
+            // Fallback: перед textarea напрямую
+            textarea.parentNode.insertBefore(helperBlock, textarea);
+        }
+    }, 60);
+};
+
+})();
+</script>
+
 </body>
 </html>
