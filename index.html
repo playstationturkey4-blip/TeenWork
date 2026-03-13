@@ -15467,5 +15467,810 @@ document.addEventListener('keydown', function(e) {
 })();
 </script>
 
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     ИИ-ПОМОЩНИК СОСТАВЛЕНИЯ РЕЗЮМЕ
+     Полностью аддитивный блок. Существующие функции не изменяются.
+     Использует локальную шаблонную генерацию — без внешних API.
+     Вставка результата идёт в поле resumeAbout через существующий
+     механизм _handleResumeSave (merge: true в Firestore).
+════════════════════════════════════════════════════════════ -->
+<style>
+/* ── AI RESUME ASSISTANT — CSS ── */
+
+.ai-resume-btn {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 13px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 3px 12px rgba(124, 58, 237, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-resume-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+}
+
+.ai-resume-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.ai-resume-btn .btn-sparkle {
+    font-size: 18px;
+    animation: sparkleSpin 3s ease-in-out infinite;
+}
+
+@keyframes sparkleSpin {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(15deg) scale(1.2); }
+}
+
+/* Модал */
+#aiResumeModal .modal-content {
+    max-width: 500px;
+}
+
+/* Прогресс-шаги */
+.ai-steps-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 24px;
+    padding: 0 10px;
+}
+
+.ai-step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--border-gray);
+    color: var(--text-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.ai-step-dot.active {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    transform: scale(1.18);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+}
+
+.ai-step-dot.done {
+    background: #10b981;
+    color: #fff;
+}
+
+.ai-step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border-gray);
+    max-width: 60px;
+    transition: background 0.4s ease;
+}
+
+.ai-step-line.done {
+    background: #10b981;
+}
+
+/* Блок вопроса */
+.ai-question-block {
+    text-align: center;
+    padding: 8px 0 20px;
+    animation: aiQAppear 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes aiQAppear {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ai-question-emoji {
+    font-size: 44px;
+    display: block;
+    margin-bottom: 16px;
+    animation: emojiPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes emojiPop {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.ai-question-text {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-dark);
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.ai-question-hint {
+    font-size: 13px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.ai-answer-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.22s ease;
+    background: var(--light-gray);
+    color: var(--text-dark);
+    resize: none;
+    min-height: 80px;
+    outline: none;
+}
+
+.ai-answer-input:focus {
+    border-color: #7c3aed;
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+.ai-next-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 3px 12px rgba(124, 58, 237, 0.3);
+}
+
+.ai-next-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+}
+
+.ai-next-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Блок результата */
+.ai-result-block {
+    animation: aiQAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ai-result-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7c3aed;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-result-text-box {
+    background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(168,85,247,0.04));
+    border: 1.5px solid rgba(124, 58, 237, 0.2);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-dark);
+    line-height: 1.7;
+    margin-bottom: 18px;
+    min-height: 80px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.ai-result-text-box::before {
+    content: '"';
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 32px;
+    color: rgba(124, 58, 237, 0.2);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.ai-result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ai-btn-use {
+    padding: 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 3px 12px rgba(124, 58, 237, 0.3);
+}
+
+.ai-btn-use:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+}
+
+.ai-btn-regen {
+    padding: 12px;
+    background: transparent;
+    color: #7c3aed;
+    border: 1.5px solid rgba(124, 58, 237, 0.3);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.22s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ai-btn-regen:hover {
+    background: rgba(124, 58, 237, 0.07);
+    border-color: #7c3aed;
+}
+
+.ai-btn-cancel {
+    padding: 11px;
+    background: transparent;
+    color: var(--text-gray);
+    border: 1.5px solid var(--border-gray);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.22s ease;
+}
+
+.ai-btn-cancel:hover {
+    background: var(--light-gray);
+    border-color: var(--text-gray);
+}
+
+/* Typing animation */
+.ai-typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 20px 0;
+    justify-content: center;
+    width: 100%;
+}
+
+.ai-typing-dots span {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #a855f7;
+    animation: aiDotBounce 1.2s ease-in-out infinite;
+}
+
+.ai-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes aiDotBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-8px); opacity: 1; }
+}
+
+/* Успешная вставка */
+@keyframes successPulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.ai-result-text-box.inserted {
+    border-color: #10b981;
+    animation: successPulse 0.6s ease;
+}
+
+/* Dark theme */
+body.dark-theme .ai-answer-input {
+    background: var(--dt-surface-2, #212536);
+    border-color: var(--border-gray);
+    color: var(--text-dark);
+}
+
+body.dark-theme .ai-answer-input:focus {
+    background: var(--dt-surface-3, #252840);
+    border-color: #a855f7;
+}
+
+body.dark-theme .ai-result-text-box {
+    background: rgba(124, 58, 237, 0.08);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+</style>
+
+<!-- HTML модала ИИ-помощника -->
+<div class="modal" id="aiResumeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✨ Помощник составления резюме</h3>
+            <button class="modal-close" onclick="closeModal('aiResumeModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="aiResumeModalBody"></div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ИИ-ПОМОЩНИК СОСТАВЛЕНИЯ РЕЗЮМЕ
+// Полностью аддитивный блок. Существующий код не изменяется.
+// ═══════════════════════════════════════════════════════════
+
+(function() {
+'use strict';
+
+// ── ВОПРОСЫ ────────────────────────────────────────────────
+var AI_QUESTIONS = [
+    {
+        step: 1,
+        emoji: '📚',
+        question: 'Какой у тебя любимый предмет в школе?',
+        hint: 'Например: математика, биология, рисование, физкультура...',
+        placeholder: 'Напиши один или несколько предметов',
+        key: 'subject'
+    },
+    {
+        step: 2,
+        emoji: '🎯',
+        question: 'Чем увлекаешься? Расскажи о своих хобби!',
+        hint: 'Например: спорт, музыка, программирование, готовка, игры...',
+        placeholder: 'Напиши свои увлечения',
+        key: 'hobbies'
+    },
+    {
+        step: 3,
+        emoji: '🤝',
+        question: 'Как тебе комфортнее работать?',
+        hint: 'Это поможет подобрать подходящие вакансии',
+        placeholder: 'Выбери свой вариант ниже',
+        key: 'style',
+        options: [
+            { value: 'people', label: '👥 Люблю общаться с людьми' },
+            { value: 'focus',  label: '🎧 Комфортнее спокойная работа' },
+            { value: 'mix',    label: '⚡ Мне подходит и то, и другое' }
+        ]
+    }
+];
+
+// ── СОСТОЯНИЕ АССИСТЕНТА ───────────────────────────────────
+var _aiState = {
+    step: 0,
+    answers: {},
+    lastGenerated: null
+};
+
+// ── ШАБЛОННЫЙ ГЕНЕРАТОР (без внешнего API) ─────────────────
+
+var _SUBJECT_TRAITS = {
+    'математика':       ['аналитически мыслю', 'быстро считаю', 'внимателен к деталям'],
+    'физика':           ['умею решать нестандартные задачи', 'технически грамотен'],
+    'биология':         ['ответственно подхожу к делу', 'внимателен к деталям'],
+    'химия':            ['аккуратен', 'люблю точную работу'],
+    'история':          ['хорошая память', 'умею анализировать'],
+    'география':        ['ориентируюсь в новых местах', 'наблюдателен'],
+    'литература':       ['умею выражать мысли', 'грамотно пишу'],
+    'русский':          ['грамотно пишу и говорю'],
+    'английский':       ['знаю английский язык'],
+    'физкультура':      ['физически активен', 'выносливый', 'умею работать в команде'],
+    'спорт':            ['физически активен', 'целеустремлён'],
+    'рисование':        ['творческий подход', 'внимателен к деталям'],
+    'музыка':           ['дисциплинирован', 'умею работать на результат'],
+    'информатика':      ['разбираюсь в компьютерах', 'быстро учусь работе с техникой'],
+    'программирование': ['умею логически мыслить', 'разбираюсь в IT'],
+    'обж':              ['ответственен', 'умею действовать в нестандартных ситуациях'],
+    'обществознание':   ['понимаю социальные процессы', 'коммуникабелен'],
+    'default':          ['стараюсь во всём', 'ответственно подхожу к учёбе']
+};
+
+var _HOBBY_TRAITS = {
+    'программирование': ['умею работать с компьютером', 'разрабатываю небольшие проекты'],
+    'спорт':            ['командный игрок', 'выносливый', 'физически активен'],
+    'футбол':           ['командный игрок', 'целеустремлён'],
+    'баскетбол':        ['командный игрок', 'быстро принимаю решения'],
+    'плавание':         ['дисциплинирован', 'физически активен'],
+    'музыка':           ['творческий', 'умею концентрироваться'],
+    'рисование':        ['творческий подход', 'внимателен к деталям'],
+    'дизайн':           ['чувство стиля', 'работаю в графических редакторах'],
+    'готовка':          ['аккуратен', 'внимателен', 'умею работать с людьми'],
+    'чтение':           ['широкий кругозор', 'умею сосредоточиться'],
+    'игры':             ['стратегическое мышление', 'быстро обучаюсь'],
+    'шахматы':          ['аналитически мыслю', 'стратегически планирую'],
+    'танцы':            ['артистичен', 'хорошая координация'],
+    'волонтёрство':     ['социально активен', 'умею работать в команде'],
+    'фотография':       ['внимателен к деталям', 'творческий взгляд'],
+    'блогинг':          ['умею писать', 'разбираюсь в соцсетях'],
+    'smm':              ['разбираюсь в соцсетях', 'умею создавать контент'],
+    'default':          ['разносторонние интересы', 'быстро осваиваю новое']
+};
+
+var _STYLE_JOBS = {
+    'people': ['работа с клиентами', 'продавец-кассир', 'промоутер', 'помощник в кафе'],
+    'focus':  ['сборщик заказов', 'курьер', 'помощник на складе', 'оператор ПК'],
+    'mix':    ['курьер', 'кассир', 'помощник бариста', 'разнорабочий']
+};
+
+var _STYLE_DESC = {
+    'people': 'люблю общаться с людьми, умею находить подход к клиентам',
+    'focus':  'предпочитаю сосредоточенную работу, внимателен и аккуратен',
+    'mix':    'одинаково комфортно работаю как в команде, так и самостоятельно'
+};
+
+function _findTraits(dict, input) {
+    if (!input) return dict['default'];
+    var lower = input.toLowerCase();
+    for (var key in dict) {
+        if (key !== 'default' && lower.indexOf(key) !== -1) {
+            return dict[key];
+        }
+    }
+    return dict['default'];
+}
+
+function _capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function _generateResumeSummary(answers) {
+    var subject = (answers.subject || '').trim();
+    var hobbies = (answers.hobbies || '').trim();
+    var style   = answers.style || 'mix';
+
+    var subjectTraits = _findTraits(_SUBJECT_TRAITS, subject);
+    var hobbyTraits   = _findTraits(_HOBBY_TRAITS, hobbies);
+    var styleDesc     = _STYLE_DESC[style] || _STYLE_DESC['mix'];
+    var jobOptions    = _STYLE_JOBS[style] || _STYLE_JOBS['mix'];
+
+    var t1   = subjectTraits[Math.floor(Math.random() * subjectTraits.length)];
+    var t2   = hobbyTraits[Math.floor(Math.random() * hobbyTraits.length)];
+    var job1 = jobOptions[Math.floor(Math.random() * Math.min(jobOptions.length, 2))];
+    var job2 = jobOptions[Math.floor(Math.random() * jobOptions.length)];
+    while (job2 === job1 && jobOptions.length > 1) {
+        job2 = jobOptions[Math.floor(Math.random() * jobOptions.length)];
+    }
+
+    var hobbyPart = '';
+    if (hobbies) {
+        var hobbyShort = hobbies.length > 40
+            ? hobbies.split(/[,;]/)[0].trim()
+            : hobbies;
+        hobbyPart = ', увлекаюсь ' + hobbyShort.toLowerCase();
+    }
+
+    var subjectPart = '';
+    if (subject) {
+        subjectPart = 'Любимый предмет — ' + subject.trim().toLowerCase() + '. ';
+    }
+
+    return subjectPart +
+        _capitalize(t1) + hobbyPart + '. ' +
+        _capitalize(t2) + ', ' + styleDesc + '. ' +
+        'Быстро учусь и готов(а) стараться с первого дня. ' +
+        'Ищу работу ' + job1 +
+        (job2 !== job1 ? ' или ' + job2 : '') + '.';
+}
+
+// ── РЕНДЕР МОДАЛА ──────────────────────────────────────────
+
+function _renderStepsBar(currentStep) {
+    var totalSteps = AI_QUESTIONS.length;
+    var html = '<div class="ai-steps-bar">';
+    for (var i = 1; i <= totalSteps; i++) {
+        var cls   = i < currentStep ? 'done' : (i === currentStep ? 'active' : '');
+        var label = i < currentStep ? '✓' : String(i);
+        html += '<div class="ai-step-dot ' + cls + '">' + label + '</div>';
+        if (i < totalSteps) {
+            html += '<div class="ai-step-line ' + (i < currentStep ? 'done' : '') + '"></div>';
+        }
+    }
+    html += '</div>';
+    return html;
+}
+
+function _aiAnswerReady() {
+    var q = AI_QUESTIONS[_aiState.step];
+    if (!q) return false;
+    var val = _aiState.answers[q.key];
+    if (q.options) return !!val;
+    return !!(val && val.trim().length >= 2);
+}
+
+function _renderQuestion(qIdx) {
+    var q = AI_QUESTIONS[qIdx];
+    if (!q) return '';
+
+    var optionsHtml = '';
+    if (q.options) {
+        optionsHtml = '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;">';
+        q.options.forEach(function(opt) {
+            var selected = _aiState.answers[q.key] === opt.value;
+            optionsHtml +=
+                '<button type="button" class="ai-option-btn"' +
+                ' data-key="' + q.key + '" data-value="' + opt.value + '"' +
+                ' style="padding:13px 16px;border:2px solid ' +
+                (selected ? '#7c3aed' : 'var(--border-gray)') + ';' +
+                'border-radius:12px;background:' +
+                (selected ? 'rgba(124,58,237,0.09)' : 'var(--white)') + ';' +
+                'color:var(--text-dark);font-size:14px;font-weight:700;cursor:pointer;' +
+                'font-family:inherit;text-align:left;transition:all 0.18s ease;"' +
+                ' onclick="_aiSelectOption(\'' + q.key + '\',\'' + opt.value + '\')">' +
+                opt.label + '</button>';
+        });
+        optionsHtml += '</div>';
+    }
+
+    var textareaHtml = !q.options
+        ? '<textarea class="ai-answer-input" id="aiAnswerInput"' +
+          ' placeholder="' + q.placeholder + '"' +
+          ' rows="3" oninput="_aiSyncInput()">' +
+          (_aiState.answers[q.key] || '') + '</textarea>'
+        : '';
+
+    var isLast = qIdx === AI_QUESTIONS.length - 1;
+
+    return '<div class="ai-question-block">' +
+        '<span class="ai-question-emoji">' + q.emoji + '</span>' +
+        '<div class="ai-question-text">' + q.question + '</div>' +
+        '<div class="ai-question-hint">' + q.hint + '</div>' +
+        optionsHtml +
+        textareaHtml +
+        '<button class="ai-next-btn" id="aiNextBtn" onclick="_aiNextStep()"' +
+        (_aiAnswerReady() ? '' : ' disabled') + '>' +
+        (isLast ? '✨ Составить резюме' : 'Далее →') +
+        '</button>' +
+        '</div>';
+}
+
+function _renderResult(text) {
+    return '<div class="ai-result-block">' +
+        '<div class="ai-result-label">✨ Готово! Вот твоё резюме</div>' +
+        '<div class="ai-result-text-box" id="aiResultText">' + text + '</div>' +
+        '<div class="ai-result-actions">' +
+        '<button class="ai-btn-use" onclick="_aiUseText()">✅ Использовать этот текст</button>' +
+        '<button class="ai-btn-regen" onclick="_aiRegenerate()">🔄 Сгенерировать заново</button>' +
+        '<button class="ai-btn-cancel" onclick="closeModal(\'aiResumeModal\')">Отмена</button>' +
+        '</div></div>';
+}
+
+function _renderLoading() {
+    return '<div style="text-align:center;padding:30px 0;">' +
+        '<div class="ai-typing-dots"><span></span><span></span><span></span></div>' +
+        '<div style="font-size:14px;color:var(--text-gray);font-weight:500;margin-top:8px;">' +
+        'Составляем твоё резюме...</div></div>';
+}
+
+function _redrawModal() {
+    var body = document.getElementById('aiResumeModalBody');
+    if (!body) return;
+
+    var stepsBar = _renderStepsBar(
+        _aiState.step + 1 <= AI_QUESTIONS.length ? _aiState.step + 1 : AI_QUESTIONS.length + 1
+    );
+
+    if (_aiState.step >= AI_QUESTIONS.length) {
+        var text = _generateResumeSummary(_aiState.answers);
+        _aiState.lastGenerated = text;
+        body.innerHTML = stepsBar + _renderResult(text);
+    } else {
+        body.innerHTML = stepsBar + _renderQuestion(_aiState.step);
+        var inp = document.getElementById('aiAnswerInput');
+        if (inp) setTimeout(function() { inp.focus(); }, 80);
+    }
+}
+
+// ── ПУБЛИЧНЫЕ ОБРАБОТЧИКИ ──────────────────────────────────
+
+window._aiSelectOption = function(key, value) {
+    _aiState.answers[key] = value;
+    document.querySelectorAll('.ai-option-btn').forEach(function(btn) {
+        var sel = btn.dataset.value === value;
+        btn.style.borderColor = sel ? '#7c3aed' : 'var(--border-gray)';
+        btn.style.background  = sel ? 'rgba(124,58,237,0.09)' : 'var(--white)';
+    });
+    var nextBtn = document.getElementById('aiNextBtn');
+    if (nextBtn) nextBtn.disabled = false;
+};
+
+window._aiSyncInput = function() {
+    var inp = document.getElementById('aiAnswerInput');
+    if (!inp) return;
+    var q = AI_QUESTIONS[_aiState.step];
+    if (q) _aiState.answers[q.key] = inp.value;
+    var nextBtn = document.getElementById('aiNextBtn');
+    if (nextBtn) nextBtn.disabled = !_aiAnswerReady();
+};
+
+window._aiNextStep = function() {
+    var inp = document.getElementById('aiAnswerInput');
+    if (inp) {
+        var q = AI_QUESTIONS[_aiState.step];
+        if (q) _aiState.answers[q.key] = inp.value.trim();
+    }
+    if (!_aiAnswerReady()) return;
+    _aiState.step++;
+    _redrawModal();
+};
+
+window._aiRegenerate = function() {
+    var body = document.getElementById('aiResumeModalBody');
+    if (!body) return;
+    var stepsBar = _renderStepsBar(AI_QUESTIONS.length + 1);
+    body.innerHTML = stepsBar + _renderLoading();
+    setTimeout(function() {
+        var text = _generateResumeSummary(_aiState.answers);
+        _aiState.lastGenerated = text;
+        body.innerHTML = stepsBar + _renderResult(text);
+    }, 900);
+};
+
+window._aiUseText = function() {
+    var text = _aiState.lastGenerated;
+    if (!text) return;
+
+    // Вставляем в поле resumeAbout (существующий input в #resumeModal)
+    var aboutField = document.getElementById('resumeAbout');
+    if (aboutField) aboutField.value = text;
+
+    // Анимация «вставлено»
+    var box = document.getElementById('aiResultText');
+    if (box) box.classList.add('inserted');
+
+    setTimeout(function() {
+        closeModal('aiResumeModal');
+        _aiOpenResumeWithText(text);
+    }, 500);
+};
+
+async function _aiOpenResumeWithText(text) {
+    if (typeof openResumeModal === 'function') {
+        await openResumeModal();
+        setTimeout(function() {
+            var aboutField = document.getElementById('resumeAbout');
+            if (aboutField) aboutField.value = text;
+        }, 200);
+    } else {
+        await _aiDirectSave(text);
+    }
+    if (window.showToast) {
+        showToast('Готово!', 'Текст добавлен в поле «О себе» — не забудь сохранить резюме', 'success');
+    }
+}
+
+async function _aiDirectSave(text) {
+    if (!window.db || !window.STATE || !window.STATE.currentUser) return;
+    var userId = window.STATE.currentUser.uid || window.STATE.currentUser.email;
+    if (!userId) return;
+    try {
+        var existing  = window.STATE.currentUser.resume || {};
+        var newResume = Object.assign({}, existing, { about: text, updatedAt: Date.now() });
+        var { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await setDoc(doc(window.db, 'users', userId), { resume: newResume }, { merge: true });
+        window.STATE.currentUser.resume = newResume;
+    } catch (e) {
+        console.warn('[ai-resume] direct save error:', e);
+    }
+}
+
+// ── ГЛАВНАЯ ТОЧКА ВХОДА ────────────────────────────────────
+
+window.openAiResumeAssistant = function() {
+    if (!window.STATE || !window.STATE.currentUser) {
+        if (window.openModal) openModal('loginModal');
+        return;
+    }
+    if (window.STATE.currentUser.role !== 'worker') return;
+
+    _aiState.step          = 0;
+    _aiState.answers       = {};
+    _aiState.lastGenerated = null;
+
+    openModal('aiResumeModal');
+    _redrawModal();
+};
+
+// ── КНОПКА В ПРОФИЛЕ ──────────────────────────────────────
+
+function _injectAiResumeButton() {
+    if (!window.STATE || !window.STATE.currentUser) return;
+    if (window.STATE.currentUser.role !== 'worker') return;
+    if (document.getElementById('aiResumeProfileBtn')) return;
+
+    var profileBody = document.querySelector('.profile-body');
+    if (!profileBody) return;
+
+    var btn = document.createElement('button');
+    btn.id        = 'aiResumeProfileBtn';
+    btn.className = 'ai-resume-btn';
+    btn.innerHTML = '<span class="btn-sparkle">✨</span> Помочь составить резюме';
+    btn.onclick   = window.openAiResumeAssistant;
+
+    // Вставляем сразу после кнопки «Моё резюме», если та есть
+    var resumeBtn = document.getElementById('resumeProfileBtn');
+    if (resumeBtn) {
+        if (resumeBtn.nextSibling) {
+            resumeBtn.parentNode.insertBefore(btn, resumeBtn.nextSibling);
+        } else {
+            resumeBtn.parentNode.appendChild(btn);
+        }
+        return;
+    }
+
+    // Fallback: после profileForm
+    var profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        if (profileForm.nextSibling) {
+            profileForm.parentNode.insertBefore(btn, profileForm.nextSibling);
+        } else {
+            profileForm.parentNode.appendChild(btn);
+        }
+        return;
+    }
+
+    profileBody.appendChild(btn);
+}
+
+// Патчим openProfile аддитивно
+var _origOpenProfile_aiResume = window.openProfile;
+window.openProfile = function() {
+    _origOpenProfile_aiResume();
+    setTimeout(_injectAiResumeButton, 200);
+};
+
+})();
+</script>
+
 </body>
 </html>
