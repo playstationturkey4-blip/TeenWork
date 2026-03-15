@@ -3779,12 +3779,7 @@ body.dark-theme .info-icon {
             }
             
             document.getElementById('profilePage').classList.add('active');
-            // NOTE: overflow управляется через _lockBodyScroll (UX Bundle v7+)
-            if (!window._lockBodyScroll) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                window._lockBodyScroll();
-            }
+            document.body.style.overflow = 'hidden';
         }
 
         async function renderAppliedJobs() {
@@ -4060,13 +4055,8 @@ body.dark-theme .info-icon {
 
         function closeProfile() {
             document.getElementById('profilePage').classList.remove('active');
-            // NOTE: overflow восстанавливается через _unlockBodyScroll (UX Bundle v7+)
-            // Прямое 'auto' оставляем как fallback только если счётчик не подключён
-            if (!window._unlockBodyScroll) {
-                document.body.style.overflow = 'auto';
-            } else {
-                window._unlockBodyScroll();
-            }
+            document.body.style.overflow = 'auto';
+        }
 
         async function logout() {
             if (STATE.chatUnsubscribe) {
@@ -4603,12 +4593,7 @@ body.dark-theme .info-icon {
             
             modal.classList.remove('hiding');
             modal.classList.add('active');
-            // NOTE: overflow управляется через _lockBodyScroll (UX Bundle v7+)
-            if (!window._lockBodyScroll) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                window._lockBodyScroll();
-            }
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal(modalId) {
@@ -4623,12 +4608,7 @@ body.dark-theme .info-icon {
             
             setTimeout(() => {
                 modal.classList.remove('active', 'hiding');
-                // NOTE: overflow восстанавливается через _unlockBodyScroll (UX Bundle v7+)
-                if (!window._unlockBodyScroll) {
-                    document.body.style.overflow = 'auto';
-                } else {
-                    window._unlockBodyScroll();
-                }
+                document.body.style.overflow = 'auto';
                 
                 const form = modal.querySelector('form');
                 if (form) {
@@ -15046,12 +15026,7 @@ window.openEmployerCabinet = function() {
     }
 
     cabinet.classList.add('active');
-    // NOTE: overflow управляется через _lockBodyScroll (UX Bundle v7+)
-    if (!window._lockBodyScroll) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        window._lockBodyScroll();
-    }
+    document.body.style.overflow = 'hidden';
 
     // Переключаем на таб вакансий и грузим данные
     ecSwitchTab('vacancies');
@@ -15061,12 +15036,7 @@ window.openEmployerCabinet = function() {
 window.closeEmployerCabinet = function() {
     var cabinet = document.getElementById('employerCabinet');
     if (cabinet) cabinet.classList.remove('active');
-    // NOTE: overflow управляется через _unlockBodyScroll (UX Bundle v7+)
-    if (!window._unlockBodyScroll) {
-        document.body.style.overflow = '';
-    } else {
-        window._unlockBodyScroll();
-    }
+    document.body.style.overflow = '';
     _ecLoaded = false; // сбрасываем кеш при закрытии — данные устарели
 };
 
@@ -16928,57 +16898,66 @@ window.openApplyModal = async function(jobId, event) {
 (function() {
     'use strict';
 
-    // ── BODY SCROLL LOCK v2 ──────────────────────────────────────────
-    // Исправления по сравнению с v1:
-    // 1. Убран position:fixed на body — он ломает sticky navbar и
-    //    bottom nav на iOS Safari (они пропадают или смещаются).
-    // 2. Вместо этого используем overflow:hidden на <html> И <body> —
-    //    это надёжнее на iOS и не вызывает layout shift.
-    // 3. Счётчик теперь также охватывает openEmployerCabinet /
-    //    closeEmployerCabinet, которые ранее обходили счётчик.
-    // 4. При разблокировке восстанавливаем scrollTop через
-    //    document.documentElement, а не window.scrollTo —
-    //    это работает корректно во всех браузерах.
-
+    // Счётчик открытых модалов — позволяет корректно снимать блокировку
+    // только когда ВСЕ модалы закрыты, а не только последний.
     var _scrollLockCount = 0;
     var _scrollY = 0;
 
     function _lockBodyScroll() {
         _scrollLockCount++;
         if (_scrollLockCount === 1) {
-            // Запоминаем текущую позицию
-            _scrollY = window.scrollY || window.pageYOffset ||
-                       document.documentElement.scrollTop || 0;
-            // Блокируем прокрутку на html + body (iOS требует оба)
-            document.documentElement.style.overflow = 'hidden';
+            // Сохраняем позицию прокрутки (нужно для iOS Safari)
+            _scrollY = window.scrollY || window.pageYOffset || 0;
             document.body.style.overflow = 'hidden';
+            // iOS Safari: position:fixed + top чтобы не прыгала страница
+            document.body.style.position = 'fixed';
+            document.body.style.top = '-' + _scrollY + 'px';
+            document.body.style.width = '100%';
         }
     }
 
     function _unlockBodyScroll() {
         _scrollLockCount = Math.max(0, _scrollLockCount - 1);
         if (_scrollLockCount === 0) {
-            // Снимаем блокировку
-            document.documentElement.style.overflow = '';
+            // Снимаем iOS-фиксацию и восстанавливаем позицию
             document.body.style.overflow = '';
-            // Восстанавливаем позицию прокрутки (может сбиться при iOS overflow:hidden)
-            if (_scrollY > 0) {
-                window.scrollTo(0, _scrollY);
-            }
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            window.scrollTo(0, _scrollY);
         }
     }
 
-    // ── Патч openModal / closeModal НЕ нужен здесь —
-    //    базовые функции сами вызывают window._lockBodyScroll /
-    //    window._unlockBodyScroll (исправлено в v8).
-    //    UX Bundle только экспортирует функции.
+    // Патчим openModal — сохраняем оригинал
+    var _origOpenModal_scroll = window.openModal;
+    window.openModal = function(modalId, contentKey) {
+        _origOpenModal_scroll(modalId, contentKey);
+        // openModal уже ставит overflow:hidden — переопределяем с iOS-фикс
+        _lockBodyScroll();
+    };
 
-    // ── profilePage и employerCabinet теперь вызывают
-    // window._lockBodyScroll / window._unlockBodyScroll напрямую
-    // из своих базовых функций (исправлено в v8).
-    // Дополнительные патчи здесь не нужны.
+    // Патчим closeModal — сохраняем оригинал
+    var _origCloseModal_scroll = window.closeModal;
+    window.closeModal = function(modalId) {
+        _origCloseModal_scroll(modalId);
+        // closeModal уже снимает overflow — переопределяем через наш счётчик
+        _unlockBodyScroll();
+    };
 
-    // ── Экспортируем для использования в будущих патчах
+    // Патч для profilePage (он не использует openModal/closeModal)
+    var _origOpenProfile_scroll = window.openProfile;
+    window.openProfile = function() {
+        _origOpenProfile_scroll.apply(this, arguments);
+        _lockBodyScroll();
+    };
+
+    var _origCloseProfile_scroll = window.closeProfile;
+    window.closeProfile = function() {
+        _origCloseProfile_scroll.apply(this, arguments);
+        _unlockBodyScroll();
+    };
+
+    // Экспортируем для внешнего использования (на случай будущих патчей)
     window._lockBodyScroll   = _lockBodyScroll;
     window._unlockBodyScroll = _unlockBodyScroll;
 
