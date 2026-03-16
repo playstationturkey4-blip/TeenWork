@@ -17800,5 +17800,464 @@ body.dark-theme .tw-empty-state {
      END OF UX BUNDLE v7
      ================================================================ -->
 
+<!-- ================================================================
+     CHAT UI MEGA-PATCH — визуальные улучшения чата
+     Только CSS, аддитивно. Firebase/логика не тронуты.
+     ================================================================ -->
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   1. МОДАЛЬНОЕ ОКНО ЧАТА — размер и структура
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatModal .modal-content {
+    max-width: 660px;
+    border-radius: 22px;
+    overflow: hidden;
+}
+
+#chatModal .modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    background: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+#chatModal .modal-body {
+    padding: 0 0 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. ОБЛАСТЬ СООБЩЕНИЙ — фон, высота, скролл
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatMessages.chat-messages {
+    max-height: 460px;
+    min-height: 200px;
+    padding: 20px 16px 12px;
+    margin-bottom: 0;
+    background: linear-gradient(180deg, #f0f4ff 0%, #f8faff 100%);
+    border-radius: 0;
+    flex: 1;
+}
+
+#chatMessages.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+#chatMessages.chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+#chatMessages.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(37, 99, 235, 0.25);
+    border-radius: 4px;
+}
+#chatMessages.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(37, 99, 235, 0.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. ПУЗЫРЬКИ СООБЩЕНИЙ
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatMessages .chat-message-row {
+    margin-bottom: 4px;
+    gap: 2px;
+}
+
+#chatMessages .chat-message-row + .chat-message-row.sent,
+#chatMessages .chat-message-row + .chat-message-row.received {
+    margin-top: 6px;
+}
+
+#chatMessages .chat-message {
+    padding: 10px 14px;
+    border-radius: 18px;
+    max-width: min(75%, 480px);
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.55;
+    position: relative;
+}
+
+#chatMessages .chat-message.sent {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.28);
+    margin-left: auto;
+    margin-right: 4px;
+}
+
+#chatMessages .chat-message.sent::after {
+    content: '✔';
+    font-size: 10px;
+    opacity: 0.6;
+    margin-top: 2px;
+    display: block;
+    text-align: right;
+    letter-spacing: -1px;
+}
+#chatMessages .chat-message.sent.read::after {
+    content: '✔✔';
+    opacity: 1;
+    color: #bfdbfe;
+}
+
+#chatMessages .chat-message.received {
+    background: #ffffff;
+    color: #0f172a;
+    border-radius: 18px 18px 18px 4px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 2px 10px rgba(148, 163, 184, 0.18);
+    margin-right: auto;
+    margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. ВРЕМЕННЫ́Е МЕТКИ
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatMessages .chat-message-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    padding: 0 6px;
+    margin-top: 3px;
+    letter-spacing: 0.01em;
+    opacity: 1;
+}
+
+#chatMessages .chat-message-time.sent {
+    text-align: right;
+    color: #93c5fd;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. ЗОНА ВВОДА
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatModal .chat-input-container {
+    margin: 10px 14px 0;
+    padding: 10px 10px 10px 12px;
+    border-radius: 24px;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    gap: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#chatModal .chat-input-container:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+#chatModal #chatInput {
+    font-size: 15px;
+    font-weight: 500;
+    color: #0f172a;
+    border: none;
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+    min-height: 42px;
+    padding: 0 4px;
+}
+
+#chatModal #chatInput::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+#chatModal #chatSendBtn {
+    min-width: 48px;
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 18px;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+#chatModal #chatSendBtn:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+}
+
+#chatModal #chatSendBtn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+}
+
+#chatModal #chatSendBtn:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+#chatModal #chatSendBtn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+#chatModal .chat-media-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+#chatModal .chat-media-btn:hover {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+    transform: scale(1.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. ШАПКА ЧАТА
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatModal .chat-header-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 15px;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
+    flex-shrink: 0;
+}
+
+#chatModal #chatModalTitle {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
+#chatModal .chat-header-subtitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+#chatModal .chat-header-badge {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    border-radius: 999px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   7. ПУСТОЕ СОСТОЯНИЕ ЧАТА
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatMessages .tw-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    min-height: 200px;
+}
+
+#chatMessages .tw-empty-state__icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+    opacity: 0.75;
+    animation: twChatFloatIcon 3s ease-in-out infinite;
+}
+
+@keyframes twChatFloatIcon {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+}
+
+#chatMessages .tw-empty-state__title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+#chatMessages .tw-empty-state__sub {
+    font-size: 13.5px;
+    color: #64748b;
+    font-weight: 500;
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. ИНДИКАТОР ЗАГРУЗКИ ФАЙЛА
+   ═══════════════════════════════════════════════════════════════ */
+
+#chatUploadIndicator {
+    margin: 0 14px;
+    padding: 8px 14px;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   9. АНИМАЦИЯ ПОЯВЛЕНИЯ ПУЗЫРЬКОВ
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes twBubbleIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#chatMessages .chat-message {
+    animation: twBubbleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   10. МОБИЛЬНАЯ АДАПТАЦИЯ
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+    #chatModal .modal-content {
+        border-radius: 18px 18px 0 0;
+        max-height: 92vh;
+    }
+
+    #chatMessages.chat-messages {
+        max-height: 48vh;
+        min-height: 160px;
+        padding: 14px 12px 10px;
+    }
+
+    #chatMessages .chat-message {
+        max-width: 88%;
+        font-size: 14px;
+        padding: 9px 13px;
+    }
+
+    #chatModal .chat-input-container {
+        margin: 8px 10px 0;
+        padding: 8px 8px 8px 12px;
+        border-radius: 20px;
+    }
+
+    #chatModal #chatSendBtn {
+        min-width: 42px;
+        padding: 0 12px;
+        border-radius: 14px;
+    }
+
+    #chatModal #chatSendBtn .chat-send-label {
+        display: none;
+    }
+
+    #chatModal #chatSendBtn::before {
+        content: '➤';
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    #chatModal .chat-header-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 13px;
+    }
+
+    #chatModal #chatModalTitle {
+        font-size: 15px;
+        max-width: 160px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   11. DARK THEME СОВМЕСТИМОСТЬ
+   ═══════════════════════════════════════════════════════════════ */
+
+body.dark-theme #chatMessages.chat-messages {
+    background: linear-gradient(180deg, #1e2535 0%, #1a2033 100%);
+}
+
+body.dark-theme #chatMessages .chat-message.received {
+    background: #2a3347;
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-theme #chatModal .chat-input-container {
+    background: #1e2535;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme #chatModal #chatInput {
+    color: #e2e8f0;
+}
+
+body.dark-theme #chatModal #chatInput::placeholder {
+    color: #64748b;
+}
+
+body.dark-theme #chatModal .chat-media-btn {
+    background: #2a3347;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+}
+
+body.dark-theme #chatModal .chat-media-btn:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+
+body.dark-theme #chatMessages .chat-message-time {
+    color: #64748b;
+}
+
+body.dark-theme #chatModal .modal-header {
+    background: #131929;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-theme #chatModal #chatModalTitle {
+    color: #e2e8f0;
+}
+
+body.dark-theme #chatMessages .tw-empty-state__title {
+    color: #e2e8f0;
+}
+
+body.dark-theme #chatMessages .tw-empty-state__sub {
+    color: #64748b;
+}
+
+body.dark-theme #chatUploadIndicator {
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+}
+</style>
+<!-- ================================================================
+     END CHAT UI MEGA-PATCH
+     ================================================================ -->
+
 </body>
 </html>
