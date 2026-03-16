@@ -1298,23 +1298,98 @@
             max-height: 400px;
             overflow-y: auto;
             margin-bottom: 16px;
-            padding: 16px;
-            background: var(--light-gray);
+            padding: 18px 18px 12px;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 32%),
+                linear-gradient(180deg, #f8fbff 0%, #f3f7fb 100%);
             border-radius: var(--radius-md);
             scroll-behavior: smooth;
         }
 
-        .chat-message {
+        .chat-header-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .chat-header-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--blue-light));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .chat-header-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chat-header-meta {
+            min-width: 0;
+        }
+
+        .chat-header-subtitle {
+            margin-top: 3px;
+            color: var(--text-gray);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            margin-right: 8px;
+            border-radius: 999px;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary-blue);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .chat-message-row {
+            display: flex;
+            flex-direction: column;
             margin-bottom: 12px;
-            padding: 10px 14px;
-            border-radius: var(--radius-md);
-            max-width: 70%;
+        }
+
+        .chat-message-row.sent {
+            align-items: flex-end;
+        }
+
+        .chat-message-row.received {
+            align-items: flex-start;
+        }
+
+        .chat-message {
+            padding: 12px 14px;
+            border-radius: 18px;
+            max-width: min(78%, 520px);
             word-wrap: break-word;
             display: block;
-            /* Enhanced: slightly smoother rendering */
-            line-height: 1.5;
+            line-height: 1.55;
             font-size: 14px;
             font-weight: 500;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
         }
 
         .chat-message.sent {
@@ -1322,23 +1397,41 @@
             color: var(--white);
             margin-left: auto;
             margin-right: 0;
-            text-align: right;
-            border-bottom-right-radius: 4px;
+            text-align: left;
+            border-bottom-right-radius: 6px;
         }
 
         .chat-message.received {
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.98);
             color: var(--text-dark);
             margin-right: auto;
             margin-left: 0;
-            border-bottom-left-radius: 4px;
-            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 8px 22px rgba(148, 163, 184, 0.16);
+        }
+
+        .chat-message-text {
+            white-space: pre-wrap;
+        }
+
+        .chat-message-time {
+            margin-top: 6px;
+            padding: 0 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-gray);
+            opacity: 0.82;
+        }
+
+        .chat-message-time.sent {
+            text-align: right;
         }
 
         /* NEW: Chat image message styling */
         .chat-message-image {
             max-width: 220px;
-            border-radius: var(--radius-md);
+            border-radius: 14px;
             cursor: pointer;
             transition: var(--transition);
             display: block;
@@ -1365,12 +1458,44 @@
 
         .chat-input-container {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
         }
 
         .chat-input-container input {
             flex: 1;
+        }
+
+        #chatInput {
+            min-height: 46px;
+            border: none;
+            background: transparent;
+            padding: 0 2px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: none;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        #chatSendBtn {
+            min-width: 124px;
+            min-height: 46px;
+            border-radius: 14px;
+            padding: 0 18px;
+        }
+
+        #chatSendBtn.is-loading {
+            opacity: 0.9;
+            pointer-events: none;
         }
 
         /* NEW: Media buttons in chat toolbar */
@@ -1429,6 +1554,40 @@
 
         .chat-upload-indicator.visible {
             display: block;
+        }
+
+        @media (max-width: 640px) {
+            .chat-header-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+
+            .chat-header-subtitle {
+                white-space: normal;
+                line-height: 1.35;
+            }
+
+            .chat-message {
+                max-width: 88%;
+                font-size: 13px;
+                padding: 11px 13px;
+            }
+
+            .chat-input-container {
+                gap: 8px;
+                padding: 10px;
+                border-radius: 16px;
+            }
+
+            #chatSendBtn {
+                min-width: 46px;
+                padding: 0 14px;
+            }
+
+            #chatSendBtn .chat-send-label {
+                display: none;
+            }
         }
 
         .admin-panel-badge {
@@ -3921,6 +4080,156 @@ body.dark-theme .info-icon {
             openChat(jobId, STATE.currentUser.uid || STATE.currentUser.email, workerId);
         }
 
+        function getChatSafeTime(ts) {
+            const normalizedTs = typeof ts === 'number'
+                ? ts
+                : (ts && typeof ts.toMillis === 'function' ? ts.toMillis() : null);
+
+            if (!normalizedTs) return '';
+            if (typeof window.smartTime === 'function') {
+                return window.smartTime(normalizedTs);
+            }
+
+            const date = new Date(normalizedTs);
+            return date.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getChatRoleLabel(role) {
+            if (role === 'employer') return 'Работодатель';
+            if (role === 'worker') return 'Соискатель';
+            if (role === 'admin') return 'Администратор';
+            return '';
+        }
+
+        function getChatInitials(name) {
+            const source = (name || 'Чат').trim();
+            const parts = source.split(/\s+/).filter(Boolean).slice(0, 2);
+            const joined = parts.map(part => part[0]).join('');
+            return (joined || source.slice(0, 2) || 'Ч').toUpperCase();
+        }
+
+        function escapeChatHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function ensureChatHeaderShell() {
+            const header = document.querySelector('#chatModal .modal-header');
+            const titleEl = document.getElementById('chatModalTitle');
+            if (!header || !titleEl) return null;
+
+            let shell = header.querySelector('.chat-header-main');
+            if (!shell) {
+                shell = document.createElement('div');
+                shell.className = 'chat-header-main';
+                shell.innerHTML = `
+                    <div class="chat-header-avatar" id="chatHeaderAvatar">TW</div>
+                    <div class="chat-header-meta">
+                        <div id="chatModalTitleSlot"></div>
+                        <div class="chat-header-subtitle" id="chatModalSubtitle">Загрузка данных чата...</div>
+                    </div>
+                `;
+
+                const titleSlot = shell.querySelector('#chatModalTitleSlot');
+                titleSlot.appendChild(titleEl);
+                header.insertBefore(shell, header.firstChild);
+            } else if (!document.getElementById('chatModalSubtitle')) {
+                const meta = shell.querySelector('.chat-header-meta');
+                if (meta) {
+                    const subtitle = document.createElement('div');
+                    subtitle.className = 'chat-header-subtitle';
+                    subtitle.id = 'chatModalSubtitle';
+                    subtitle.textContent = 'Загрузка данных чата...';
+                    meta.appendChild(subtitle);
+                }
+            }
+
+            return {
+                titleEl: document.getElementById('chatModalTitle'),
+                subtitleEl: document.getElementById('chatModalSubtitle'),
+                avatarEl: document.getElementById('chatHeaderAvatar')
+            };
+        }
+
+        async function resolveChatUser(userId) {
+            if (!userId) return null;
+
+            const localUsers = Array.isArray(STATE.users) ? STATE.users : [];
+            const localMatch = localUsers.find(user => user.uid === userId || user.email === userId);
+            if (localMatch) return localMatch;
+
+            if (STATE.currentUser && (STATE.currentUser.uid === userId || STATE.currentUser.email === userId)) {
+                return STATE.currentUser;
+            }
+
+            if (!window.db) return null;
+
+            try {
+                const { doc, getDoc, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+                if (!String(userId).includes('@')) {
+                    const userSnap = await getDoc(doc(window.db, 'users', userId));
+                    if (userSnap.exists()) return userSnap.data();
+                }
+
+                const emailQuery = query(collection(window.db, 'users'), where('email', '==', userId));
+                const emailSnapshot = await getDocs(emailQuery);
+                if (!emailSnapshot.empty) return emailSnapshot.docs[0].data();
+            } catch (profileError) {
+                console.warn('[chat] resolveChatUser error:', profileError);
+            }
+
+            return null;
+        }
+
+        async function updateChatHeader(jobId, employerId, workerId) {
+            const currentUserId = STATE.currentUser ? (STATE.currentUser.uid || STATE.currentUser.email) : null;
+            const otherUserId = currentUserId === employerId ? workerId : employerId;
+            const otherUser = await resolveChatUser(otherUserId);
+            const headerNodes = ensureChatHeaderShell();
+            const job = Array.isArray(STATE.jobs) ? STATE.jobs.find(j => String(j.id) === String(jobId)) : null;
+            const displayName = otherUser?.nickname || otherUser?.name || otherUser?.email || 'Чат';
+            const roleLabel = getChatRoleLabel(otherUser?.role);
+            const subtitleParts = [];
+
+            if (!headerNodes) return;
+
+            if (roleLabel) {
+                subtitleParts.push(`<span class="chat-header-badge">${escapeChatHtml(roleLabel)}</span>`);
+            }
+            if (job?.title) {
+                subtitleParts.push(`По вакансии: ${escapeChatHtml(job.title)}`);
+            }
+
+            headerNodes.titleEl.textContent = displayName;
+            headerNodes.subtitleEl.innerHTML = subtitleParts.join('<span style="margin:0 6px;color:rgba(100,116,139,0.5);">•</span>') || 'Чат открыт';
+
+            if (otherUser?.avatar) {
+                headerNodes.avatarEl.innerHTML = `<img src="${escapeChatHtml(otherUser.avatar)}" alt="${escapeChatHtml(displayName)}">`;
+            } else {
+                headerNodes.avatarEl.textContent = getChatInitials(displayName);
+            }
+        }
+
+        function getChatSendButton() {
+            const button = document.getElementById('chatSendBtn') || document.querySelector('#chatModal .btn.btn-primary[onclick="sendChatMessage()"]');
+            if (button && !button.id) button.id = 'chatSendBtn';
+            if (button && !button.querySelector('.chat-send-label')) {
+                button.innerHTML = '<span class="chat-send-label">Отправить</span>';
+            }
+            return button;
+        }
+
         async function openChat(jobId, employerId, workerId) {
             if (!window.db) {
                 showToast('Ошибка', 'База данных недоступна', 'error');
@@ -3962,9 +4271,10 @@ body.dark-theme .info-icon {
                 }
 
                 STATE.currentChatId = chatId;
+                STATE.currentChatMeta = { jobId, employerId, workerId, chatId };
 
-                const job = STATE.jobs.find(j => j.id === jobId);
-                document.getElementById('chatModalTitle').textContent = `Чат: ${job ? job.title : 'Вакансия'}`;
+                await updateChatHeader(jobId, employerId, workerId);
+                getChatSendButton();
 
                 const messagesRef = collection(window.db, 'messages');
                 const messagesQuery = query(messagesRef, 
@@ -3984,35 +4294,49 @@ body.dark-theme .info-icon {
                         const msg = docSnap.data();
                         const isSent = msg.senderId === (STATE.currentUser.uid || STATE.currentUser.email);
                         const alignClass = isSent ? 'sent' : 'received';
+                        const readClass = isSent && msg.read ? ' read' : '';
+                        const timeLabel = getChatSafeTime(msg.createdAt);
 
                         // IMAGE MESSAGE LOGIC: render image if imageUrl present
                         if (msg.imageUrl) {
                             html += `
-                                <div class="chat-message ${alignClass}">
-                                    <img
-                                        class="chat-message-image"
-                                        src="${msg.imageUrl}"
-                                        alt="Изображение"
-                                        onclick="window.open('${msg.imageUrl}', '_blank')"
-                                    />
+                                <div class="chat-message-row ${alignClass}">
+                                    <div class="chat-message ${alignClass}${readClass}">
+                                        <img
+                                            class="chat-message-image"
+                                            src="${msg.imageUrl}"
+                                            alt="Изображение"
+                                            onclick="window.open('${msg.imageUrl}', '_blank')"
+                                        />
+                                    </div>
+                                    ${timeLabel ? `<div class="chat-message-time ${alignClass}">${timeLabel}</div>` : ''}
                                 </div>`;
                         }
                         // VOICE MESSAGE LOGIC: render audio player if audioUrl present
                         else if (msg.audioUrl) {
                             html += `
-                                <div class="chat-message ${alignClass}">
-                                    🎙️
-                                    <audio
-                                        class="chat-message-audio"
-                                        controls
-                                        src="${msg.audioUrl}"
-                                        preload="metadata"
-                                    ></audio>
+                                <div class="chat-message-row ${alignClass}">
+                                    <div class="chat-message ${alignClass}${readClass}">
+                                        🎙️
+                                        <audio
+                                            class="chat-message-audio"
+                                            controls
+                                            src="${msg.audioUrl}"
+                                            preload="metadata"
+                                        ></audio>
+                                    </div>
+                                    ${timeLabel ? `<div class="chat-message-time ${alignClass}">${timeLabel}</div>` : ''}
                                 </div>`;
                         }
                         // Original text message logic — unchanged
                         else {
-                            html += `<div class="chat-message ${alignClass}">${msg.text}</div>`;
+                            html += `
+                                <div class="chat-message-row ${alignClass}">
+                                    <div class="chat-message ${alignClass}${readClass}">
+                                        <div class="chat-message-text">${msg.text || ''}</div>
+                                    </div>
+                                    ${timeLabel ? `<div class="chat-message-time ${alignClass}">${timeLabel}</div>` : ''}
+                                </div>`;
                         }
                     });
 
@@ -4031,11 +4355,18 @@ body.dark-theme .info-icon {
 
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
+            const sendBtn = getChatSendButton();
             const text = input.value.trim();
 
-            if (!text || !STATE.currentChatId || !window.db) return;
+            if (!text || !STATE.currentChatId || !window.db || (sendBtn && sendBtn.disabled)) return;
 
             try {
+                if (sendBtn) {
+                    sendBtn.disabled = true;
+                    sendBtn.classList.add('is-loading');
+                    sendBtn.innerHTML = '<span class="chat-send-label">Отправка...</span>';
+                }
+
                 const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
                 const messagesRef = collection(window.db, 'messages');
                 
@@ -4047,9 +4378,16 @@ body.dark-theme .info-icon {
                 });
 
                 input.value = '';
+                input.dispatchEvent(new Event('input'));
             } catch (error) {
                 console.error('Error sending message:', error);
                 showToast('Ошибка', 'Не удалось отправить сообщение', 'error');
+            } finally {
+                if (sendBtn) {
+                    sendBtn.classList.remove('is-loading');
+                    sendBtn.innerHTML = '<span class="chat-send-label">Отправить</span>';
+                    sendBtn.disabled = !input.value.trim();
+                }
             }
         }
 
@@ -5811,7 +6149,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!chatInput) return;
 
     function syncSendBtn() {
-        const btn = document.getElementById('chatSendBtn');
+        const btn = typeof getChatSendButton === 'function'
+            ? getChatSendButton()
+            : document.getElementById('chatSendBtn');
         if (btn) btn.disabled = !chatInput.value.trim();
     }
 
@@ -9587,18 +9927,21 @@ window.resetFilters = function() {
 .chat-preview-row {
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin-top: 3px;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.06);
 }
 
 .chat-preview-text {
     font-size: 12px;
     color: var(--text-gray);
-    font-weight: 500;
+    font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 180px;
+    max-width: 220px;
 }
 
 .chat-preview-text.unread-preview {
@@ -9624,6 +9967,7 @@ window.resetFilters = function() {
 .applied-job-item.has-unread-chat {
     border-left: 3px solid var(--primary-blue);
     background: linear-gradient(90deg, rgba(239,246,255,0.6) 0%, rgba(255,255,255,0) 100%);
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
 }
 
 /* New message divider */
